@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1A6B45">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>和声 · Harmony Path</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EFEDE8;--surface:#FFFFFF;--surface2:#F2F1EE;--border:#E5E3DD;--border2:#D0CEC8;
+  --text:#1C1B18;--text2:#4A4845;--muted:#8C8A84;--muted2:#B8B6B0;
+  --accent:#1A6B45;--accent-bg:#E8F4EE;--amber:#92560A;--amber-bg:#FBF2E6;
+  --purple:#6B3FA0;--purple-bg:#F0E8F7;--red:#9B2C2C;--blue:#1D4E89;
+  --radius:10px;--radius-sm:6px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);
+  --shadow:0 4px 16px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.05);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;overflow-x:clip;}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+.topbar{position:sticky;top:0;z-index:200;}
+.site-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px 12px;padding-top:calc(env(safe-area-inset-top) + 16px);box-shadow:var(--shadow-sm);}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1100px;margin:0 auto;}
+.logo h1{font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;}
+.logo h1 span{color:var(--accent);}
+.logo p{font-size:0.65rem;color:var(--muted);margin-top:1px;letter-spacing:0.02em;}
+.header-btns{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.hbtn{font-family:inherit;font-size:0.72rem;font-weight:600;padding:7px 12px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.hbtn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+.nav-wrap{background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.nav-wrap::-webkit-scrollbar{display:none;}
+.nav{display:flex;width:max-content;min-width:100%;padding:0 10px;max-width:1100px;margin:0 auto;}
+.ntab{font-family:inherit;font-weight:700;font-size:0.74rem;padding:11px 13px;border:none;border-bottom:2.5px solid transparent;background:none;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.ntab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.ntab .lock{font-size:0.7rem;opacity:0.5;}
+.ntab .mod-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);}
+.ntab .mod-dot.done{background:var(--accent);}
+.ntab .mod-dot.part{background:var(--amber);}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 18px 60px;}
+.mod-head{margin-bottom:6px;}
+.mod-head .mtag{font-size:0.6rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);}
+.mod-head h2{font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;margin-top:3px;}
+.mod-head p{font-size:0.82rem;color:var(--text2);margin-top:6px;line-height:1.5;max-width:680px;}
+.mod-prog{display:flex;align-items:center;gap:10px;margin:14px 0 4px;}
+.bar{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.bar > i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .4s;}
+.mod-prog span{font-size:0.66rem;font-weight:700;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.lesson{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border2);border-radius:var(--radius);padding:14px 15px;margin-top:10px;display:flex;gap:13px;align-items:flex-start;cursor:pointer;transition:box-shadow .15s,transform .1s;position:relative;}
+.lesson:hover{box-shadow:var(--shadow);}
+.lesson:active{transform:scale(.997);}
+.lesson.locked{cursor:not-allowed;opacity:0.6;background:var(--surface2);}
+.lesson.mastered{border-left-color:var(--accent);}
+.lesson.available{border-left-color:var(--amber);}
+.lesson.cp{border-left-color:var(--purple);background:linear-gradient(0deg,var(--purple-bg),var(--surface) 60%);}
+.lesson.cp.mastered{border-left-color:var(--accent);}
+.l-badge{width:38px;height:38px;min-width:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8rem;font-family:'JetBrains Mono',monospace;background:var(--surface2);color:var(--muted);border:1.5px solid var(--border2);}
+.l-badge.mastered{background:var(--accent);color:#fff;border-color:var(--accent);}
+.l-badge.available{background:var(--amber-bg);color:var(--amber);border-color:#E8C07A;}
+.l-badge.cp{background:var(--purple-bg);color:var(--purple);border-color:#C4A8DC;}
+.l-badge.cp.mastered{background:var(--accent);color:#fff;border-color:var(--accent);}
+.l-main{flex:1;min-width:0;}
+.l-title{font-size:0.92rem;font-weight:700;line-height:1.3;}
+.l-focus{font-size:0.74rem;color:var(--muted);margin-top:3px;line-height:1.45;}
+.l-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.chip{font-family:'JetBrains Mono',monospace;font-size:0.56rem;padding:2px 6px;border-radius:3px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);}
+.chip.tempo{background:var(--amber-bg);border-color:#E8C07A;color:var(--amber);}
+.chip.covers{background:var(--accent-bg);border-color:#A8C0DC;color:var(--blue);}
+.chip.cp{background:var(--purple-bg);border-color:#C4A8DC;color:var(--purple);}
+.l-status{font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;align-self:flex-start;white-space:nowrap;}
+.l-status.mastered{color:var(--accent);}
+.l-status.available{color:var(--amber);}
+.l-status.locked{color:var(--muted2);}
+.scrim{display:none;position:fixed;inset:0;background:rgba(28,27,24,.45);z-index:899;}
+.scrim.open{display:block;}
+.detail{display:none;position:fixed;inset:0;z-index:910;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;flex-direction:column;}
+.detail.open{display:flex;}
+.d-close{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 12px) 20px 12px;background:var(--surface);border-bottom:1px solid var(--border);font-size:0.65rem;color:var(--muted);font-weight:700;position:sticky;top:0;z-index:10;letter-spacing:0.05em;text-transform:uppercase;}
+.d-close button{border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);border-radius:var(--radius-sm);padding:7px 14px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.d-body{padding:24px 20px calc(env(safe-area-inset-bottom) + 40px);max-width:720px;margin:0 auto;width:100%;}
+.d-title{font-size:1.5rem;font-weight:800;letter-spacing:-0.02em;line-height:1.2;}
+.d-focus{font-size:0.95rem;color:var(--text2);margin-top:8px;line-height:1.6;}
+.d-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.d-section{margin-top:24px;}
+.d-h{font-size:0.6rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:11px;}
+.d-h.cp{color:var(--purple);}
+.d-h.std{color:var(--amber);}
+.item{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);}
+.item:last-child{border-bottom:none;}
+.check{width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .12s;}
+.check.on{background:var(--accent);border-color:var(--accent);}
+.check.on::after{content:'✓';color:#fff;font-size:0.8rem;font-weight:800;}
+.check.std.on{background:var(--amber);border-color:var(--amber);}
+.item-text{font-size:0.9rem;line-height:1.55;color:var(--text2);flex:1;}
+.std .item-text{font-weight:600;color:var(--text);}
+.notes{width:100%;border:1.5px solid var(--border2);border-radius:8px;padding:11px 13px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);resize:vertical;min-height:80px;line-height:1.55;-webkit-appearance:none;}
+.notes:focus{outline:none;border-color:var(--accent);}
+.cp-note{background:var(--purple-bg);border:1px solid #C4A8DC;border-radius:var(--radius);padding:14px 16px;font-size:0.85rem;line-height:1.6;color:var(--text2);}
+.cp-note b{color:var(--purple);}
+.master-btn{width:100%;margin-top:26px;padding:16px;border-radius:var(--radius);border:none;font-family:inherit;font-size:0.95rem;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:0.02em;}
+.master-btn.ready{background:var(--accent);color:#fff;}
+.master-btn.ready:hover{background:#145535;}
+.master-btn.notready{background:var(--surface2);color:var(--muted2);border:1.5px solid var(--border);cursor:not-allowed;}
+.master-btn.done{background:var(--accent-bg);color:var(--accent);border:1.5px solid var(--accent);}
+.gate-hint{text-align:center;font-size:0.72rem;color:var(--muted);margin-top:10px;}
+.unmark{display:block;margin:14px auto 0;background:none;border:none;color:var(--muted);font-size:0.72rem;text-decoration:underline;cursor:pointer;font-family:inherit;}
+.bcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-top:14px;box-shadow:var(--shadow-sm);}
+.bcard-title{font-size:0.95rem;font-weight:800;color:var(--accent);margin-bottom:3px;}
+.bcard-sub{font-size:0.66rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:10px;}
+.bcard ul{list-style:none;}
+.bcard li{font-size:0.84rem;line-height:1.55;padding:6px 0 6px 20px;position:relative;border-bottom:1px solid var(--border);}
+.bcard li:last-child{border-bottom:none;}
+.bcard li::before{content:'›';position:absolute;left:2px;top:5px;color:var(--accent);font-weight:800;}
+.road{margin-top:6px;}
+.road-row{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.road-row:last-child{border-bottom:none;}
+.road-tag{font-size:0.58rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;padding:3px 8px;border-radius:4px;white-space:nowrap;min-width:74px;text-align:center;background:var(--accent-bg);color:var(--accent);}
+.road-tag.c{background:var(--purple-bg);color:var(--purple);}
+.road-tag.peak{background:#FBEAEA;color:var(--red);}
+.road-body{font-size:0.8rem;color:var(--text2);line-height:1.45;}
+.road-body b{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:500;}
+.pmod{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.pmod:last-child{border-bottom:none;}
+.pmod-n{font-size:0.7rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--muted);min-width:26px;}
+.pmod-t{flex:1;font-size:0.86rem;font-weight:600;}
+.pmod-c{font-size:0.66rem;font-family:'JetBrains Mono',monospace;color:var(--muted);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:12px 22px;border-radius:24px;font-size:0.82rem;font-weight:700;z-index:999;transition:transform .28s cubic-bezier(.22,1,.36,1);box-shadow:var(--shadow-lg);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.storage-banner{background:var(--amber-bg);color:var(--amber);font-size:0.72rem;padding:8px 16px;text-align:center;font-weight:600;display:none;}
+/* ---- audio tool panel ---- */
+.tool-panel{background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-top:14px;box-shadow:var(--shadow-sm);}
+.tool-panel .t-title{font-size:0.6rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.t-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;}
+.t-label{font-size:0.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;min-width:100%;margin-top:6px;}
+.tbtn{font-family:inherit;font-size:0.78rem;font-weight:700;padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all .15s;}
+.tbtn:hover{background:#145535;}
+.tbtn.sec{background:var(--surface);color:var(--accent);}
+.tbtn.sec:hover{background:var(--accent-bg);}
+.tbtn.warn{background:var(--surface);color:var(--amber);border-color:var(--amber);}
+.tsel{font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;padding:8px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);}
+.t-hint{font-size:0.7rem;color:var(--muted);margin-top:9px;line-height:1.5;}
+/* ---- live tuner ---- */
+.pd{margin-top:11px;padding:11px 12px;border:1.5px dashed var(--border2);border-radius:var(--radius-sm);background:var(--surface2);transition:border-color .15s,background .15s;}
+.pd.locked{border-style:solid;border-color:var(--accent);background:var(--accent-bg);}
+.pd-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pd-read{display:flex;align-items:baseline;gap:7px;font-family:'JetBrains Mono',monospace;}
+.pd-note{font-size:1.25rem;font-weight:700;color:var(--text);min-width:42px;}
+.pd-cents{font-size:0.72rem;color:var(--muted);}
+.pd-lock{margin-left:auto;font-size:0.66rem;font-weight:800;letter-spacing:0.04em;padding:3px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
+.pd-lock.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pd-lock.sharp,.pd-lock.flat{background:var(--amber-bg);color:var(--amber);border-color:#E8C07A;}
+.pd-meter{position:relative;height:12px;margin-top:10px;border-radius:6px;background:linear-gradient(90deg,#E8C07A22,#E8C07A11 40%,var(--accent-bg) 50%,#E8C07A11 60%,#E8C07A22);border:1px solid var(--border);overflow:hidden;}
+.pd-zone{position:absolute;left:calc(50% - 9%);width:18%;top:0;bottom:0;background:rgba(26,107,69,.16);border-left:1px solid var(--accent);border-right:1px solid var(--accent);}
+.pd-needle{position:absolute;top:-2px;bottom:-2px;width:3px;left:50%;transform:translateX(-50%);background:var(--text);border-radius:2px;transition:left .07s linear,background .15s;}
+.pd.locked .pd-needle{background:var(--accent);}
+.pd-msg{display:none;font-size:0.72rem;color:var(--red);font-weight:600;margin-top:9px;line-height:1.45;}
+.pd-msg.show{display:block;}
+/* ---- in-app recorder ---- */
+.rec{margin-top:12px;padding:13px 14px;border:1.5px solid var(--purple);border-radius:var(--radius);background:linear-gradient(0deg,var(--purple-bg),var(--surface) 70%);}
+.rec-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.rec-btn{font-family:inherit;font-size:0.82rem;font-weight:800;padding:10px 16px;border-radius:var(--radius-sm);border:none;background:var(--red);color:#fff;cursor:pointer;display:flex;align-items:center;gap:7px;}
+.rec-btn.stop{background:var(--text);}
+.rec-dot{width:9px;height:9px;border-radius:50%;background:#fff;}
+.rec-btn.live .rec-dot{animation:recpulse 1s infinite;}
+@keyframes recpulse{0%,100%{opacity:1}50%{opacity:.25}}
+.rec-time{font-family:'JetBrains Mono',monospace;font-size:0.9rem;font-weight:600;color:var(--text2);}
+.rec audio{width:100%;margin-top:11px;height:38px;}
+.rec-dl{display:inline-block;margin-top:9px;font-size:0.74rem;font-weight:700;color:var(--purple);text-decoration:underline;cursor:pointer;}
+.rec-hint{font-size:0.68rem;color:var(--muted);margin-top:8px;line-height:1.5;}
+/* ---- tempo slider + count-in ---- */
+.slider-row{display:flex;align-items:center;gap:11px;margin-top:8px;}
+.slider-row label{font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;min-width:48px;}
+.slider-row input[type=range]{flex:1;accent-color:var(--accent);height:4px;}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:600;color:var(--accent);min-width:62px;text-align:right;}
+.toggle-chip{display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;font-weight:700;padding:7px 11px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;user-select:none;}
+.toggle-chip.on{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+.toggle-chip .tg{width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);}
+.toggle-chip.on .tg{background:var(--accent);border-color:var(--accent);}
+/* ---- metronome ---- */
+.metro-dot{width:54px;height:54px;border-radius:50%;background:var(--surface2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;color:var(--muted);transition:transform .05s,background .05s,color .05s,border-color .05s;}
+.metro-dot.beat{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.12);}
+.metro-dot.accent{background:var(--amber);border-color:var(--amber);}
+/* ---- quick drill ---- */
+.qd-cta{width:100%;margin-top:14px;padding:15px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:0.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:var(--shadow-sm);}
+.qd-cta:hover{background:#145535;}
+.qd-cta.sec{background:var(--purple-bg);color:var(--purple);border:1.5px solid #C4A8DC;box-shadow:none;}
+.qd-big{font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;text-align:center;color:var(--accent);margin:6px 0;}
+.qd-sub{text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:14px;}
+.score-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px;}
+.score-btn{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--border2);background:var(--surface);font-size:1.3rem;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;}
+.score-val{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;min-width:70px;text-align:center;}
+/* ---- streak card ---- */
+.streak{display:flex;gap:10px;margin-top:14px;}
+.streak-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow-sm);}
+.streak-box .sk-n{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:700;color:var(--accent);line-height:1;}
+.streak-box .sk-l{font-size:0.6rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+.road-tag.mando{background:#FBEAF2;color:#9B2C6B;}
+@media(max-width:768px){
+  .site-header{padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;}
+  .logo p{display:none;}
+  .ntab{font-size:0.84rem;padding:12px 13px;}
+  .d-title{font-size:1.25rem;}
+  .item-text{font-size:0.95rem;}
+  .l-title{font-size:1rem;}
+  .l-focus{font-size:0.82rem;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+<header class="site-header"><div class="header-inner">
+  <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
+  <div class="header-btns">
+    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v8</span>
+    <button class="hbtn" onclick="doExport()">Backup</button>
+    <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
+    <button class="hbtn" onclick="doReset()">Reset</button>
+    <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
+  </div>
+</div></header>
+<div class="storage-banner" id="sb">⚠ Browser storage unavailable — progress won't save this session.</div>
+<div class="nav-wrap"><div class="nav" id="nav"></div></div>
+</div>
+<main class="wrap" id="main"></main>
+<div class="scrim" id="scrim" onclick="closeDetail()"></div>
+<div class="detail" id="detail"><div class="d-close"><span id="dCrumb">Lesson</span><button onclick="closeDetail()">✕ Close</button></div><div class="d-body" id="dBody"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ===================== PROGRAM DATA ===================== */
+const MODULES=[
+{n:1,t:'Hear & Hold a Note',g:'Harmony is mostly the skill of not being pulled onto someone else’s note. Before you sing different notes, you learn to hold your own note rock-steady while hearing something else. Everything later is built on this.',lessons:[
+ {id:'1.1',t:'Land the Note',f:'Hit a played pitch instantly — no scooping up to it.',time:'~10 min',covers:'Pitch accuracy',tool:'tone',
+  tasks:['Play a note in your comfortable range with the tone player. Sing it on “ooh” and hold for a slow count of 8.','Record yourself on your phone and listen back: did you start under the note and slide up? Most beginners scoop — aim to land dead-on instantly.','Repeat on five different roots, low and high.'],
+  stds:['You land on the played note instantly, without sliding up to it.','You can hold it for 8 counts without drifting.','You verified this by listening back to a recording — not just by feel.']},
+ {id:'1.2',t:'Hold Against the Drone',f:'Sustain your note while the same note drones underneath.',time:'~10 min',covers:'Stability',tool:'tone',
+  tasks:['Start the drone. Sing the same note and hold 8 counts. When you are perfectly in tune the two voices fuse — learn that fused sound.','If you hear a slow “wah-wah-wah” beating, you are slightly off. Nudge your pitch until the beating stops.','Three holds per session, recorded once.'],
+  stds:['A unison hold for 8 counts with no audible beating.','You can deliberately drift off the note and pull back into the fused sound.']},
+ {id:'1.3',t:'The Tug-of-War',f:'Hold your note while the drone plays a DIFFERENT note.',time:'~10 min',covers:'Independence',tool:'tone',
+  tasks:['Drone on the root. Use the second-note buttons to hear a 3rd or 5th, sing that note, then keep holding it while the drone continues.','Your note will feel tugged toward the drone — do not let it move. That feeling of two notes ringing against each other IS harmony.','Record one hold per session and check it stayed put.'],
+  stds:['You hold your note 8 counts against a different droning note.','Three clean holds in a row, confirmed by recording.']},
+ {id:'1.4',t:'Steps Away',f:'Move deliberately while the drone stays still.',time:'~10 min',covers:'Controlled movement',tool:'tone',
+  tasks:['With the drone on “do”, sing do–re–do slowly. Then do–re–mi–re–do.','Move slowly and deliberately; land each step, do not slide between them.','Finish each pass by locking back into unison with the drone.'],
+  stds:['The steps are in tune on the way up and the way down.','The return to unison locks (no beating) every time.']},
+ {id:'cpA',cp:true,t:'Checkpoint — The Drone Hold',f:'Prove the foundation holds before building on it.',covers:'Module 1',
+  rec:['Record ~45 seconds: with the drone on one note, sing and hold a different note (a 3rd or 5th) for 8 counts, three separate times.'],
+  stds:['No audible drift on any of the three holds.','Each note is landed instantly, no scooping.']},
+]},
+{n:2,t:'Find the Third',g:'Roughly 80% of pop and folk harmony is singing a third above or below the melody — the warm sound in every Everly Brothers and Simon & Garfunkel record. A third is “do” up to “mi”. If you can find a third on demand, you can already harmonize simple songs.',lessons:[
+ {id:'2.1',t:'Walk Up to It',f:'Find the third by stepping: do–re–mi, hold the mi.',time:'~10 min',covers:'Interval: major 3rd',tool:'interval',
+  tasks:['Play a root. Sing do–re–mi up from it and hold the “mi”.','Press “Reveal answer” to check yourself. Then “Both together” to hear the third ringing against the root.','Repeat across ten different roots.'],
+  stds:['You can land the third by walking up, from any root in your range.']},
+ {id:'2.2',t:'Jump to It',f:'Hear the root, sing the third directly — no walking.',time:'~15 min',covers:'The core skill',tool:'interval',
+  tasks:['Use “Random root” so you cannot memorize. Hear the root, jump straight to the third, then reveal.','Score yourself out of 10 every session and log it in the practice notes below — watch the number climb.','This is the highest-value drill in the whole program. When short on time, do this.'],
+  stds:['8 out of 10 random roots: third sung correctly, jumping straight to it.']},
+ {id:'2.3',t:'The Lock',f:'Hold the third against the drone and learn its “ring”.',time:'~10 min',covers:'Tuning by ear',tool:'tone',
+  tasks:['Drone on a root. Sing the third above and hold it.','When a third locks in, the combined sound goes smooth and sweet. Bend your note slightly off and back, until you can feel the lock engage.','This lock feeling is the tuning instinct you will rely on forever — it tells you you are right without thinking.'],
+  stds:['You hold a locked third for 8 counts.','You can reliably tell a locked third from a slightly-off one.']},
+ {id:'2.4',t:'The Other Intervals',f:'The 5th, the 4th and the 6th — harmony’s supporting cast.',time:'~10 min',covers:'Intervals: 4th, 5th, 6th',tool:'interval',
+  tasks:['Same jump game with the perfect 5th — think the first two notes of “Twinkle Twinkle”.','Then the perfect 4th — “Here Comes the Bride” — and the major 6th — the “My Bon-” of “My Bonnie”.','Mix all intervals with random roots once each feels stable.'],
+  stds:['7 out of 10 on the 5th.','7 out of 10 on the 4th.','You can sing a minor 3rd when asked (use the selector to compare it with major).']},
+ {id:'cpB',cp:true,t:'Checkpoint — Ten Random Thirds',f:'The gate into real harmony singing.',covers:'Module 2',
+  rec:['Record one full session of the jump drill: ten random roots, singing the major third above each, with the reveal played after each attempt so the recording shows right/wrong.'],
+  stds:['At least 8 of 10 correct.','Every attempt jumps straight to the note — no walking up do–re–mi.']},
+]},
+{n:3,t:'A Moving Line',g:'Now the third has to move. In parallel-thirds harmony your line copies the shape of the melody, staying a third above it the whole way. The practice song is Row, Row, Row Your Boat — simple enough that you know it cold, so all your attention goes to staying on your line.',lessons:[
+ {id:'3.1',t:'Your Part Is a Song',f:'Learn the harmony line until it stands alone.',time:'~15 min',covers:'The golden rule',tool:'row',
+  tasks:['Press “Harmony only” and sing along, over and over.','Keep going until the harmony line stops feeling like “the melody but higher” and becomes a tune you could hum in the shower.','This is the single most important trick in all harmony singing: learn your part until it is a melody to YOU.'],
+  stds:['You can sing the full harmony line from memory, with no playback.']},
+ {id:'3.2',t:'Against the Melody',f:'Hold your line while the melody plays underneath.',time:'~15 min',covers:'Independence in motion',tool:'row',
+  tasks:['Press “Melody only” and sing the harmony line over it. The melody will try to drag you down onto it — this is where Module 1’s stubbornness pays off.','If you collapse onto the melody: stop, play “Harmony only” twice, try again.','Finish with “Both together”, singing along with the harmony voice to confirm you were right.'],
+  stds:['A full run against the melody without falling onto it.','Three clean runs in a row.']},
+ {id:'3.3',t:'Duet With Yourself',f:'Harmonize over your own recorded voice.',time:'~15 min',covers:'First real duet',tool:'row',
+  tasks:['Record yourself singing the MELODY on your phone.','Play it back out loud and sing the harmony line live over your own voice.','Congratulations — you are a duo. Capture the duet if you have a second device or a recording app that plays and records at once.'],
+  stds:['You can harmonize live over your own recorded melody, full song.']},
+ {id:'cpC',cp:true,t:'Checkpoint — The Duet',f:'A moving harmony line, held start to finish.',covers:'Module 3',
+  rec:['Record yourself singing the harmony line against the “Melody only” playback, full song, three takes.'],
+  stds:['Three runs with no collapse onto the melody.','The thirds stay locked (listen for the sweet/smooth ring, not sourness).']},
+]},
+{n:4,t:'Real Songs',g:'Now you steal from the masters. Each lesson applies the same four-step method to a real recording: isolate the harmony part, learn it as a melody, reattach it to the track, record and review. The song ladder in Reference orders them by difficulty.',lessons:[
+ {id:'4.1',t:'The Everly Method — Song One',f:'“All I Have to Do Is Dream” — pure parallel thirds, the textbook starter.',time:'2–3 sessions',covers:'Isolate · learn · reattach · record',
+  tasks:['ISOLATE: find the harmony part. On many old records the voices are panned left/right — use headphones and pull one side, or use a stem-splitting app (Moises, LALAL.AI), or search YouTube for a “harmony only” video.','LEARN: sing the harmony part alone, with the lyric, until it stands on its own — the Module 3 trick.','REATTACH: sing your part against the full recording. Quietly at first; listen more than you sing.','RECORD: one take over the track. Mark the spots where you drifted to the melody and drill just those lines.'],
+  stds:['Your part holds at full volume, not just whispering.','A recorded take you would let someone else hear.']},
+ {id:'4.2',t:'Song Two',f:'Pick one: “Bye Bye Love” (faster thirds), “Jackson” (call-and-response), or “The Sound of Silence” (slow and forgiving).',time:'2–3 sessions',covers:'Same method, new song',
+  tasks:['Run the same four steps: isolate, learn, reattach, record.','This time, also match the lead voice’s vowels and phrasing — blend is half of harmony. End words together; shape “ooh” the same way they do.'],
+  stds:['A clean recorded take of song two.','Your entrances and cutoffs line up with the lead voice.']},
+ {id:'4.3',t:'Song Three — Step Up',f:'Pick one: “If I Fell” (lines go independent in spots) or “Emmylou” (sustained close harmony).',time:'3+ sessions',covers:'Independent lines',
+  tasks:['Same four steps — but these harmonies stop being pure parallel thirds in places. Where the line does something unexpected, slow down and learn just that phrase.','Notice WHERE it breaks from thirds and what it does instead (often: holds still while the melody moves). That observation is Module 5’s seed.'],
+  stds:['A clean recorded take of song three, including the non-parallel moments.']},
+ {id:'cpD',cp:true,t:'Checkpoint — Three Songs',f:'Your first repertoire.',covers:'Module 4',
+  rec:['Record (or collect) your best take of each of the three songs — you singing harmony over the original track.'],
+  stds:['You stay on your part at full volume in all three.','Blend: vowels and phrase-endings track the lead voice.']},
+]},
+{n:5,t:'Invent Your Own',g:'The skill people mean by “she can just harmonize with anything”. It is not magic — it is the Module 2 reflex (find the third) plus one new idea: when the parallel third sounds wrong, hold your note still until it sounds right again. Your ear, trained by Modules 1–4, tells you which to do.',lessons:[
+ {id:'5.1',t:'Harmonize the Radio',f:'Improvise thirds over choruses of songs you know well.',time:'~15 min',covers:'Improvisation',
+  tasks:['Put on simple, familiar songs and quietly sing thirds above the chorus. Choruses repeat, so you get many tries.','When a note clashes: hold your previous note instead of moving, or try a 4th or 5th. Listen for the Module 2 “lock” to tell you when you have found it.','Different song every session.'],
+  stds:['A passable improvised harmony over a chorus you never practised.']},
+ {id:'5.2',t:'Below the Melody',f:'The same reflex, inverted — often easier for lower voices.',time:'~15 min',covers:'Low harmony',
+  tasks:['Take choruses you harmonized above and find the third BELOW the melody instead.','Low harmony hides under the tune — sing it slightly softer than the lead, and keep it locked.','Very common in folk; this doubles your usefulness in any singing group.'],
+  stds:['You can harmonize below the melody as comfortably as above.']},
+ {id:'5.3',t:'Write Your Own',f:'Compose a full harmony line for a song that has none.',time:'1–2 sessions',covers:'Arranging',
+  tasks:['Pick a song with no recorded harmony. Work out your own line chorus by chorus — mostly thirds, holding still where thirds clash.','Record yourself singing it over the track.','Keep a list in the notes below of songs you have “harmonized from scratch”.'],
+  stds:['One complete, original harmony line, recorded over the song.']},
+ {id:'5.4',t:'Sing With Humans',f:'Nothing replaces it.',time:'ongoing',covers:'The whole point',
+  tasks:['Find a melody-singing friend, an open mic, a casual choir, or a karaoke partner.','Live voices push and pull in ways recordings never do — hold your part through it.','You are done “learning to harmonize” the day you stop thinking about it mid-song.'],
+  stds:['You held a harmony part live, with another human being.']},
+ {id:'cpFinal',cp:true,t:'Checkpoint — Free Harmony',f:'The finish line: harmony nobody wrote down for you.',covers:'The whole path',
+  rec:['Record two things: (1) you improvising harmony over a chorus you never practised, first or second attempt; (2) your original full-song harmony from lesson 5.3.'],
+  stds:['In tune, locked thirds where intended.','You never collapse onto the melody.','It sounds like music, not an exercise.']},
+]},
+];
+/* ===================== AUDIO ENGINE ===================== */
+let actx=null,droneNodes=[],sessionMode='playback',actxMode='playback';
+const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true};
+function setAudioSession(mode){
+ /* iOS WebKit AudioSession. 'playback' is output-only and is INCOMPATIBLE with
+    mic capture; 'play-and-record' allows both. We remember the requested mode so a
+    freshly created AudioContext adopts it. */
+ sessionMode=mode;
+ if(navigator.audioSession){try{navigator.audioSession.type=mode;}catch(e){}}
+}
+function ac(){
+ if(!actx){
+  actx=new (window.AudioContext||window.webkitAudioContext)();
+  actxMode=sessionMode;
+  if(navigator.audioSession){try{navigator.audioSession.type=sessionMode;}catch(e){}}
+ }
+ if(actx.state==='suspended')actx.resume();
+ return actx;
+}
+/* iOS will not switch a live AudioContext between output-only ('playback') and
+   capture ('play-and-record'), and stopping the mic can leave a play-and-record
+   context unable to play. So we rebuild the context on each transition, restarting
+   the drone if it was on. Transitions are serialized on a promise chain to avoid
+   close/create races. */
+let acChain=Promise.resolve();
+function rebuildContext(mode){
+ const wasDrone=TS.droneOn;
+ return (actx?actx.close().catch(()=>{}):Promise.resolve()).then(()=>{
+  actx=null;droneNodes=[];TS.droneOn=false;pdSource=null;pdAnalyser=null;pdSink=null;
+  setAudioSession(mode);ac();syncDroneBtns();
+  if(wasDrone)toggleDrone();
+ });
+}
+function enterCaptureMode(){
+ acChain=acChain.then(()=>{
+  setAudioSession('play-and-record');
+  if(actx && actxMode!=='play-and-record')return rebuildContext('play-and-record');
+  ac();
+ });
+ return acChain;
+}
+function exitCaptureMode(){
+ acChain=acChain.then(()=>{
+  if(pdActive||(mediaRec&&mediaRec.state==='recording'))return; // capture resumed
+  setAudioSession('playback');
+  if(actx && actxMode!=='playback')return rebuildContext('playback');
+ });
+ return acChain;
+}
+/* iOS unlock: the context only truly starts inside a user gesture — resume it and
+   play one silent sample on the first touch/click anywhere. */
+function unlockAudio(){
+ const a=ac();
+ const kick=()=>{try{const b=a.createBuffer(1,1,22050);const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}};
+ if(a.state==='running')kick();else a.resume().then(kick).catch(()=>{});
+ document.removeEventListener('touchend',unlockAudio);
+ document.removeEventListener('click',unlockAudio);
+}
+document.addEventListener('touchend',unlockAudio,{passive:true});
+document.addEventListener('click',unlockAudio);
+const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function freq(s){return 261.626*Math.pow(2,s/12);}
+function nlabel(s){return NN[((s%12)+12)%12]+(4+Math.floor(s/12));}
+function tone(s,dur,when,vol){
+ const a=ac();
+ const go=()=>{const o=a.createOscillator(),g=a.createGain();o.type='triangle';o.frequency.value=freq(s);const t=a.currentTime+(when||0);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||0.25,t+0.03);g.gain.setValueAtTime(vol||0.25,t+dur-0.08);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+0.05);};
+ if(a.state==='running')go();else a.resume().then(go).catch(go);
+}
+/* a single percussive metronome click, optionally scheduled ahead */
+function metroClick(accent,when){
+ const a=ac();const t=a.currentTime+(when||0);
+ const o=a.createOscillator(),g=a.createGain();o.type='square';o.frequency.value=accent?1760:1200;
+ g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(accent?0.3:0.2,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+0.07);
+ o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+0.09);
+}
+function playRoot(){setTarget(TS.root);tone(TS.root,1.5,0);}
+function playOff(off){setTarget(TS.root+off);tone(TS.root+off,1.5,0);}
+function playBoth(off){setTarget(TS.root+off);tone(TS.root,2,0,0.18);tone(TS.root+off,2,0,0.18);}
+function stopDrone(){if(droneNodes.length){const a=ac();droneNodes.forEach(n=>{try{n.gain.gain.linearRampToValueAtTime(0,a.currentTime+0.2);n.osc.stop(a.currentTime+0.25);}catch(e){}});droneNodes=[];TS.droneOn=false;syncDroneBtns();}}
+function addDrone(off,type,vol){const a=ac();const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq(TS.root+off);g.gain.setValueAtTime(0,a.currentTime);g.gain.linearRampToValueAtTime(vol,a.currentTime+0.3);o.connect(g);g.connect(a.destination);o.start();droneNodes.push({osc:o,gain:g,off:off});}
+function toggleDrone(){
+ if(droneNodes.length){stopDrone();return;}
+ const a=ac();
+ const go=()=>{if(droneNodes.length)return;setTarget(TS.root);addDrone(0,'triangle',0.13);addDrone(-12,'sine',0.11);if(TS.drone5)addDrone(7,'sine',0.05);TS.droneOn=true;syncDroneBtns();};
+ if(a.state==='running')go();else a.resume().then(go).catch(go);
+}
+function toggleDrone5(el){TS.drone5=!TS.drone5;if(el)el.classList.toggle('on',TS.drone5);if(droneNodes.length){stopDrone();toggleDrone();}}
+function syncDroneBtns(){document.querySelectorAll('.droneBtn').forEach(b=>{b.textContent=TS.droneOn?'■ Stop drone':'▶ Start drone';});}
+function reTuneDrone(){if(droneNodes.length){const a=ac();droneNodes.forEach(n=>n.osc.frequency.setValueAtTime(freq(TS.root+n.off),a.currentTime));}}
+function setRoot(v){TS.root=parseInt(v,10);setTarget(TS.root);reTuneDrone();}
+function randRoot(){TS.root=-12+Math.floor(Math.random()*20);document.querySelectorAll('.rootSel').forEach(s=>{s.value=TS.root;});reTuneDrone();playRoot();}
+/* Row Row Row Your Boat — [semitones from C4, beats] */
+const MEL=[[0,3],[0,3],[0,2],[2,1],[4,3],[4,2],[2,1],[4,2],[5,1],[7,6],
+[12,1],[12,1],[12,1],[7,1],[7,1],[7,1],[4,1],[4,1],[4,1],[0,1],[0,1],[0,1],
+[7,2],[5,1],[4,2],[2,1],[0,6]];
+const T3={0:4,2:5,4:7,5:9,7:11,12:16};
+function setBpm(v){TS.bpm=parseInt(v,10);const el=document.getElementById('bpmVal');if(el)el.textContent=TS.bpm+' bpm';}
+function toggleCountin(el){TS.countin=!TS.countin;if(el)el.classList.toggle('on',TS.countin);}
+function playSeq(part,both){
+ const a=ac();const beat=60/TS.bpm;let t=0.12;
+ if(TS.countin){for(let i=0;i<4;i++)metroClick(i===0,t+i*beat);t+=4*beat;}
+ MEL.forEach(n=>{const d=n[1]*beat;if(part!=='harm')tone(n[0]+TS.key,d*0.95,t,0.2);if(part==='harm'||both)tone(T3[n[0]]+TS.key,d*0.95,t,part==='harm'?0.2:0.13);t+=d;});
+}
+/* ===================== LIVE PITCH ENGINE ===================== */
+let micStream=null,pdSource=null,pdAnalyser=null,pdSink=null,pdBuf=null,pdActive=false,pdHost=null,pdRAF=null,pdSmooth=0,pdFrame=0,pdTargetHz=0,pdHold=0,pdHist=[],pdLocked=false;
+function setTarget(semi){pdTargetHz=freq(semi);pdHist.length=0;pdLocked=false;}
+async function getMic(){
+ if(micStream)return micStream;
+ try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+ catch(e){if(e&&(e.name==='OverconstrainedError'||e.name==='TypeError'||e.name==='NotReadableError')){micStream=await navigator.mediaDevices.getUserMedia({audio:true});}else{throw e;}}
+ return micStream;
+}
+function maybeReleaseMic(){
+ if(pdActive||(mediaRec&&mediaRec.state==='recording'))return;
+ if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+ pdSource=null;pdAnalyser=null;pdSink=null;
+ exitCaptureMode();
+}
+async function ensurePitch(){
+ await enterCaptureMode();const a=ac();const stream=await getMic();
+ if(!pdSource){
+  pdSource=a.createMediaStreamSource(stream);
+  pdAnalyser=a.createAnalyser();pdAnalyser.fftSize=4096;
+  pdSource.connect(pdAnalyser);
+  /* iOS/WebKit only runs the graph (and fills the analyser) if it reaches an
+     output, so feed the analyser to a muted sink — silent, but keeps data flowing. */
+  pdSink=a.createGain();pdSink.gain.value=0;pdAnalyser.connect(pdSink);pdSink.connect(a.destination);
+  pdBuf=new Float32Array(pdAnalyser.fftSize);
+ }
+ try{await a.resume();}catch(e){}
+}
+async function togglePitch(hostId){
+ if(pdActive&&pdHost===hostId){stopPitch();return;}
+ if(!window.isSecureContext){pdError(hostId,'This page is not a secure context (needs https://). The mic API is unavailable here.');return;}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){pdError(hostId,'No microphone API in this browser/context. If installed to the Home Screen, try opening the site in Safari instead.');return;}
+ try{await ensurePitch();}
+ catch(e){
+  const n=(e&&e.name)||'';
+  let m;
+  if(n==='NotAllowedError'||n==='SecurityError')m='Mic permission is blocked for this site. Safari: tap the ᴀA / page menu in the address bar → Website Settings → Microphone → Allow, then reload. Also check Settings ▸ Screen Time ▸ Content & Privacy.';
+  else if(n==='NotFoundError')m='No microphone is available to the browser.';
+  else if(n==='NotReadableError')m='The mic is busy or unavailable — close other apps using it and retry.';
+  else if(n==='OverconstrainedError')m='Mic settings not supported by this device.';
+  else m='Mic request failed — '+(n||'unknown')+(e&&e.message?' ('+e.message+')':'');
+  pdError(hostId,m);
+  return;
+ }
+ pdHost=hostId;pdActive=true;pdSmooth=0;clearPdMsg();syncPitchBtns();loopPitch();
+}
+function pdError(host,msg){const h=document.getElementById(host);if(h){const c=h.querySelector('.pd-cents');if(c)c.textContent='mic blocked';let box=h.querySelector('.pd-msg');if(box){box.textContent=msg;box.classList.add('show');}}showToast('Mic blocked — see the tuner panel');}
+function clearPdMsg(){const h=pdHost&&document.getElementById(pdHost);if(h){const box=h.querySelector('.pd-msg');if(box){box.classList.remove('show');box.textContent='';}}}
+function stopPitch(){if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)nd.style.left='50%';const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}}syncPitchBtns();maybeReleaseMic();}
+function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.textContent=on?'■ Stop tuner':'🎤 Live tuner';b.classList.toggle('sec',!on);});}
+function autoCorrelate(buf,sr){
+ const SIZE=buf.length;
+ let c0=0;for(let i=0;i<SIZE;i++)c0+=buf[i]*buf[i];
+ if(Math.sqrt(c0/SIZE)<0.008)return -1;            // too quiet to be a sung note
+ const minHz=60,maxHz=1100;                         // ~C2 up to ~C#6 — full vocal range
+ let minLag=Math.max(2,Math.floor(sr/maxHz));
+ let maxLag=Math.min(SIZE-2,Math.ceil(sr/minHz));
+ if(maxLag<=minLag)return -1;
+ const n=maxLag-minLag+1,corr=new Float32Array(n);
+ let best=-1,bestv=0;
+ for(let k=0;k<n;k++){
+  const lag=minLag+k;let s=0;
+  for(let i=0;i<SIZE-lag;i++)s+=buf[i]*buf[i+lag];
+  corr[k]=s;
+  if(s>bestv){bestv=s;best=k;}
+ }
+ if(best<0||c0<=0||bestv/c0<0.3)return -1;          // not clearly pitched
+ /* Pick the FIRST strong local peak, not the global max — autocorrelation peaks
+    just as well at twice the true period, which is what made it read an octave low. */
+ const thr=0.86*bestv;let pk=best;
+ for(let k=1;k<n-1;k++){if(corr[k]>=thr&&corr[k]>corr[k-1]&&corr[k]>=corr[k+1]){pk=k;break;}}
+ let lag=minLag+pk;
+ const ym=pk>0?corr[pk-1]:corr[pk],y0=corr[pk],yp=pk<n-1?corr[pk+1]:corr[pk];
+ const a2=(ym+yp-2*y0)/2,b2=(yp-ym)/2;
+ if(a2)lag=lag-b2/(2*a2);
+ const hz=sr/lag;
+ return(hz>45&&hz<1500)?hz:-1;
+}
+function hzToNote(hz){const midi=69+12*Math.log2(hz/440);const r=Math.round(midi);const cents=Math.round((midi-r)*100);return{name:NN[((r%12)+12)%12]+(Math.floor(r/12)-1),cents};}
+function centsToTarget(hz){if(pdTargetHz<=0)return null;let s=12*Math.log2(hz/pdTargetHz);while(s>6)s-=12;while(s<=-6)s+=12;return s*100;}
+function loopPitch(){
+ if(!pdActive){pdRAF=null;return;}
+ pdRAF=requestAnimationFrame(loopPitch);pdFrame++;if(pdFrame%2)return;
+ pdAnalyser.getFloatTimeDomainData(pdBuf);
+ const hz=autoCorrelate(pdBuf,ac().sampleRate);
+ if(hz>0){
+  pdSmooth=pdSmooth?pdSmooth*0.75+hz*0.25:hz;pdHold=6;
+  if(pdTargetHz>0){const cc=centsToTarget(pdSmooth);if(cc!==null){pdHist.push(cc);if(pdHist.length>14)pdHist.shift();}}
+ }else if(pdHold>0){pdHold--;}else{pdHist.length=0;}
+ paintTuner((hz>0||pdHold>0)?pdSmooth:-1);
+}
+function medianCents(){if(!pdHist.length)return null;const a=pdHist.slice().sort((x,y)=>x-y);const m=a.length>>1;return a.length%2?a[m]:(a[m-1]+a[m])/2;}
+function paintTuner(hz){
+ const h=pdHost&&document.getElementById(pdHost);if(!h)return;
+ const noteEl=h.querySelector('.pd-note'),centsEl=h.querySelector('.pd-cents'),needle=h.querySelector('.pd-needle'),lock=h.querySelector('.pd-lock');
+ if(!noteEl)return;
+ const tName=pdTargetHz>0?hzToNote(pdTargetHz).name:'';
+ if(hz<=0){noteEl.textContent='—';centsEl.textContent=pdTargetHz>0?('aim '+tName+' · sing…'):'sing a steady note…';needle.style.left='50%';h.classList.remove('locked');lock.className='pd-lock';lock.textContent='';return;}
+ const n=hzToNote(hz);noteEl.textContent=n.name;
+ if(pdTargetHz<=0){
+  /* free mode — intonation against the nearest note */
+  centsEl.textContent=(n.cents>0?'+':'')+n.cents+'¢';
+  needle.style.left=(50+Math.max(-50,Math.min(50,n.cents)))+'%';
+  lock.className='pd-lock';lock.textContent='free';h.classList.remove('locked');pdLocked=false;return;
+ }
+ /* target mode — needle, number AND lamp all measured against the target note,
+    so they never disagree. Needle follows the live (smoothed) reading; the lamp
+    uses the median so vibrato wobbles the needle but doesn't flicker the lock. */
+ const live=centsToTarget(hz);
+ needle.style.left=(50+Math.max(-50,Math.min(50,live)))+'%';
+ centsEl.textContent=(live>=0?'+':'')+Math.round(live)+'¢ vs '+tName;
+ if(pdHist.length<4){lock.className='pd-lock';lock.textContent='hold '+tName+'…';h.classList.remove('locked');return;}
+ const m=medianCents();
+ const thr=pdLocked?34:24;                 // hysteresis: easy to keep the lock, harder to grab it
+ if(Math.abs(m)<thr){pdLocked=true;lock.className='pd-lock on';lock.textContent='● LOCKED';h.classList.add('locked');}
+ else if(Math.abs(m)<55){pdLocked=false;lock.className='pd-lock '+(m>0?'sharp':'flat');lock.textContent=(m>0?'▲ a touch high':'▼ a touch low');h.classList.remove('locked');}
+ else{pdLocked=false;lock.className='pd-lock '+(m>0?'sharp':'flat');lock.textContent=(m>0?'▲ too high':'▼ too low');h.classList.remove('locked');}
+}
+function tunerHTML(host){return '<div class="pd" id="'+host+'"><div class="pd-row"><button class="tbtn sec pdBtn" data-host="'+host+'" onclick="togglePitch(\''+host+'\')">🎤 Live tuner</button><div class="pd-read"><span class="pd-note">—</span><span class="pd-cents">tuner off</span></div><div class="pd-lock"></div></div><div class="pd-meter"><div class="pd-zone"></div><div class="pd-needle"></div></div><div class="pd-msg"></div></div>';}
+/* ===================== IN-APP RECORDER ===================== */
+let mediaRec=null,recChunks=[],recURL=null,recOwner=null,recT0=0,recTick=null;
+function recPickMime(){if(!window.MediaRecorder)return null;const t=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/aac','audio/ogg'];for(const m of t)if(MediaRecorder.isTypeSupported(m))return m;return '';}
+function recExt(){const m=mediaRec?mediaRec.mimeType:'';if(m.indexOf('mp4')>=0||m.indexOf('aac')>=0)return 'm4a';if(m.indexOf('ogg')>=0)return 'ogg';return 'webm';}
+async function toggleRecord(){
+ if(mediaRec&&mediaRec.state==='recording'){mediaRec.stop();return;}
+ if(recPickMime()===null){showToast('Recording not supported in this browser');return;}
+ try{await enterCaptureMode();const stream=await getMic();recChunks=[];const mime=recPickMime();mediaRec=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+  mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data);};
+  mediaRec.onstop=()=>{if(recURL)URL.revokeObjectURL(recURL);const blob=new Blob(recChunks,{type:mediaRec.mimeType||'audio/webm'});recURL=URL.createObjectURL(blob);recOwner=curId;if(recTick){clearInterval(recTick);recTick=null;}paintRec();maybeReleaseMic();};
+  mediaRec.start();recT0=Date.now();paintRec();recTick=setInterval(paintRec,250);
+ }catch(e){showToast('Allow microphone access to record');}
+}
+function recTimeStr(){const s=Math.floor((Date.now()-recT0)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function downloadRec(){if(!recURL)return;const a=document.createElement('a');a.href=recURL;a.download='harmony-'+(recOwner||'take')+'-'+new Date().toISOString().slice(0,10)+'.'+recExt();a.click();}
+function recorderHTML(){
+ const live=mediaRec&&mediaRec.state==='recording';
+ let h='<div class="rec" id="recBox"><div class="rec-row"><button class="rec-btn '+(live?'stop live':'')+'" onclick="toggleRecord()"><span class="rec-dot"></span>'+(live?'Stop':'Record take')+'</button><span class="rec-time" id="recTime">'+(live?recTimeStr():'00:00')+'</span></div>';
+ if(recURL&&recOwner===curId&&!live)h+='<audio controls src="'+recURL+'"></audio><span class="rec-dl" onclick="downloadRec()">⤓ Download this take to send to Claude</span>';
+ h+='<div class="rec-hint">Records straight in the app — no separate voice-memo app needed. Take stays until you record again or leave this checkpoint; download it to keep or share.</div></div>';
+ return h;
+}
+function paintRec(){const box=document.getElementById('recBox');if(!box)return;box.outerHTML=recorderHTML();const t=document.getElementById('recTime');if(t&&mediaRec&&mediaRec.state==='recording')t.textContent=recTimeStr();}
+/* ===================== METRONOME ===================== */
+let metroTimer=null,metroBpm=96,metroBeat=0;
+function setMetroBpm(v){metroBpm=parseInt(v,10);const el=document.getElementById('metVal');if(el)el.textContent=metroBpm+' bpm';if(metroTimer){stopMetro();toggleMetro();}}
+function metroFlash(accent){const d=document.getElementById('metDot');if(!d)return;d.classList.add('beat');if(accent)d.classList.add('accent');d.textContent=(metroBeat%4)+1;setTimeout(()=>{d.classList.remove('beat','accent');},90);}
+function toggleMetro(){
+ if(metroTimer){stopMetro();return;}
+ ac();metroBeat=0;
+ const tick=()=>{const acc=metroBeat%4===0;metroClick(acc,0);metroFlash(acc);metroBeat++;};
+ tick();metroTimer=setInterval(tick,60000/metroBpm);
+ const b=document.getElementById('metBtn');if(b)b.textContent='■ Stop';
+}
+function stopMetro(){if(metroTimer){clearInterval(metroTimer);metroTimer=null;}const b=document.getElementById('metBtn');if(b)b.textContent='▶ Start';const d=document.getElementById('metDot');if(d){d.classList.remove('beat','accent');d.textContent='♩';}}
+function metroHTML(){
+ return '<div class="tool-panel"><div class="t-title">♪ Metronome</div>'+
+ '<div class="t-row" style="align-items:center"><div class="metro-dot" id="metDot">♩</div><button class="tbtn" id="metBtn" onclick="toggleMetro()">▶ Start</button></div>'+
+ '<div class="slider-row"><label>Tempo</label><input type="range" min="40" max="200" value="'+metroBpm+'" oninput="setMetroBpm(this.value)"><span class="slider-val" id="metVal">'+metroBpm+' bpm</span></div>'+
+ '<div class="t-hint">A steady pulse for the Row drill and any song work — accented click on beat 1 of every 4.</div></div>';
+}
+/* ===================== STREAK / META ===================== */
+function meta(){if(!S.__meta)S.__meta={streak:0,best:0,last:'',quick:0};return S.__meta;}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function yestStr(){const d=new Date(Date.now()-86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function markDayActive(){const M=meta();const t=todayStr();if(M.last===t)return;M.streak=(M.last===yestStr())?(M.streak+1):1;M.last=t;if(M.streak>(M.best||0))M.best=M.streak;persist();}
+/* ===================== QUICK DRILL ===================== */
+let qdScore=5,qdMode='quick';
+function openQuick(){
+ qdScore=5;curId=null;stopDrone();
+ document.getElementById('dCrumb').textContent='Daily Drill · Jump to the Third';
+ setTarget(TS.root+TS.intv);
+ let h='<div class="d-title">5-Minute Daily Drill</div><div class="d-focus">The highest-value drill in the program (lesson 2.2): hear a random root, jump straight to the third above it, then reveal to check. Use the live tuner to confirm the lock. A minute of this every day beats an hour once a week.</div>';
+ h+='<div class="d-section"><div class="qd-sub">Current root</div><div class="qd-big" id="qdRoot">'+nlabel(TS.root)+'</div>';
+ h+='<div class="t-row" style="justify-content:center"><button class="tbtn sec" onclick="qdNew()">↻ New random root</button><button class="tbtn" onclick="playRoot()">1 · Play root</button></div>';
+ h+='<div class="t-row" style="justify-content:center"><button class="tbtn sec" onclick="setTarget(TS.root+TS.intv);playOff(TS.intv)">3 · Reveal the third</button><button class="tbtn sec" onclick="playBoth(TS.intv)">Both together</button></div>';
+ h+='<div class="t-hint" style="text-align:center">Step 2 is you — sing the third before you reveal.</div>';
+ h+=tunerHTML('tuner_quick')+'</div>';
+ h+='<div class="d-section"><div class="d-h">Score this session — out of 10 random roots</div><div class="score-row"><button class="score-btn" onclick="qdAdj(-1)">−</button><span class="score-val" id="qdScore">5 / 10</span><button class="score-btn" onclick="qdAdj(1)">+</button></div></div>';
+ h+='<button class="master-btn ready" onclick="logQuick()">✓ Log today\u2019s drill</button>';
+ document.getElementById('dBody').innerHTML=h;
+ document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
+}
+function qdNew(){TS.root=-9+Math.floor(Math.random()*14);setTarget(TS.root+TS.intv);const el=document.getElementById('qdRoot');if(el)el.textContent=nlabel(TS.root);playRoot();}
+function qdAdj(d){qdScore=Math.max(0,Math.min(10,qdScore+d));const el=document.getElementById('qdScore');if(el)el.textContent=qdScore+' / 10';}
+function logQuick(){markDayActive();const M=meta();M.quick=(M.quick||0)+1;persist();stopPitch();showToast('Logged — streak '+M.streak+' day'+(M.streak===1?'':'s'));closeDetail();}
+/* ---- tool panels ---- */
+function rootSelHTML(){let h='<select class="tsel rootSel" onchange="setRoot(this.value)">';for(let s=-12;s<=7;s++)h+='<option value="'+s+'"'+(s===TS.root?' selected':'')+'>'+nlabel(s)+'</option>';return h+'</select>';}
+function intSelHTML(){const I=[[4,'Major 3rd (do→mi)'],[3,'Minor 3rd'],[5,'Perfect 4th'],[7,'Perfect 5th (do→so)'],[9,'Major 6th'],[12,'Octave']];let h='<select class="tsel" onchange="TS.intv=parseInt(this.value,10)">';I.forEach(p=>{h+='<option value="'+p[0]+'"'+(p[0]===TS.intv?' selected':'')+'>'+p[1]+'</option>';});return h+'</select>';}
+function keySelHTML(){const K=[[0,'Key C'],[-3,'Key A (lower)'],[-5,'Key G (lower)'],[2,'Key D (higher)']];let h='<select class="tsel" onchange="TS.key=parseInt(this.value,10)">';K.forEach(p=>{h+='<option value="'+p[0]+'"'+(p[0]===TS.key?' selected':'')+'>'+p[1]+'</option>';});return h+'</select>';}
+function toolHTML(type){
+ if(type==='tone')return '<div class="tool-panel"><div class="t-title">♪ Tone &amp; Drone</div>'+
+  '<div class="t-row">'+rootSelHTML()+'<button class="tbtn" onclick="playRoot()">▶ Play note</button><button class="tbtn sec droneBtn" onclick="toggleDrone()">'+(TS.droneOn?'■ Stop drone':'▶ Start drone')+'</button><span class="toggle-chip'+(TS.drone5?' on':'')+'" onclick="toggleDrone5(this)"><span class="tg"></span>+5th</span></div>'+
+  '<div class="t-label">Second note, over the drone</div><div class="t-row"><button class="tbtn warn" onclick="playOff(2)">One step up</button><button class="tbtn warn" onclick="playOff(4)">A 3rd up</button><button class="tbtn warn" onclick="playOff(7)">A 5th up</button></div>'+
+  tunerHTML('tuner_tone')+
+  '<div class="t-hint">Fuller drone (root + octave below) makes the “lock” easier to hear; add the 5th for a richer pad. Use headphones or low volume so the drone does not bleed into recordings.</div></div>';
+ if(type==='interval')return '<div class="tool-panel"><div class="t-title">♪ Interval Trainer</div>'+
+  '<div class="t-row">'+rootSelHTML()+'<button class="tbtn sec" onclick="randRoot()">↻ Random root</button>'+intSelHTML()+'</div>'+
+  '<div class="t-row"><button class="tbtn" onclick="playRoot();setTarget(TS.root+TS.intv)">1 · Play root</button><button class="tbtn sec" onclick="setTarget(TS.root+TS.intv);playOff(TS.intv)">3 · Reveal answer</button><button class="tbtn sec" onclick="playBoth(TS.intv)">Both together</button></div>'+
+  tunerHTML('tuner_interval')+
+  '<div class="t-hint">Step 2 is you: sing the interval before pressing reveal. Turn on the tuner and watch for the LOCK as you hold it.</div></div>';
+ if(type==='row')return '<div class="tool-panel"><div class="t-title">♪ Row Your Boat — in thirds</div>'+
+  '<div class="t-row">'+keySelHTML()+'<span class="toggle-chip'+(TS.countin?' on':'')+'" onclick="toggleCountin(this)"><span class="tg"></span>Count-in</span></div>'+
+  '<div class="slider-row"><label>Tempo</label><input type="range" min="60" max="200" value="'+TS.bpm+'" oninput="setBpm(this.value)"><span class="slider-val" id="bpmVal">'+TS.bpm+' bpm</span></div>'+
+  '<div class="t-row"><button class="tbtn" onclick="playSeq(\'mel\')">▶ Melody only</button><button class="tbtn" onclick="playSeq(\'harm\')">▶ Harmony only</button><button class="tbtn sec" onclick="playSeq(\'mel\',true)">▶ Both together</button></div>'+
+  tunerHTML('tuner_row')+
+  '<div class="t-hint">Start slow and raise the tempo as the line locks in. Count-in gives you four clicks before the melody enters. Pick the key where both lines sit comfortably.</div></div>';
+ return '';
+}
+/* ===================== APP (path engine) ===================== */
+const FLAT=[];MODULES.forEach(m=>m.lessons.forEach(l=>FLAT.push(l.id)));
+let OK=false,S={};
+function init(){
+ try{localStorage.setItem('_t','1');localStorage.removeItem('_t');OK=true;}catch(e){OK=false;document.getElementById('sb').style.display='block';}
+ if(OK){try{S=JSON.parse(localStorage.getItem('harmony_lessons_v1')||'{}');}catch(e){S={};}}
+}
+function persist(){if(OK)try{localStorage.setItem('harmony_lessons_v1',JSON.stringify(S));}catch(e){}}
+function st(id){if(!S[id])S[id]={mastered:false,tasks:{},stds:{},notes:'',recorded:false,review:''};return S[id];}
+function isMastered(id){return !!(S[id]&&S[id].mastered);}
+function statusOf(id){if(isMastered(id))return 'mastered';const i=FLAT.indexOf(id);if(i===0)return 'available';return isMastered(FLAT[i-1])?'available':'locked';}
+function lessonById(id){for(const m of MODULES)for(const l of m.lessons)if(l.id===id)return l;}
+function moduleProgress(m){const tot=m.lessons.length;const done=m.lessons.filter(l=>isMastered(l.id)).length;return {done,tot};}
+let view=1;
+function renderNav(){
+ let h=MODULES.map(m=>{const p=moduleProgress(m);const cls=p.done===p.tot?'done':(p.done>0?'part':'');const firstLocked=statusOf(m.lessons[0].id)==='locked';
+  return '<button class="ntab '+(view===m.n?'active':'')+'" onclick="go('+m.n+')"><span class="mod-dot '+cls+'"></span>M'+m.n+(firstLocked?' <span class="lock">🔒</span>':'')+'</button>';}).join('');
+ h+='<button class="ntab '+(view==='room'?'active':'')+'" onclick="go(\'room\')" style="color:'+(view==='room'?'var(--accent)':'var(--purple)')+'">♪ Practice Room</button>';
+ h+='<button class="ntab '+(view==='ref'?'active':'')+'" onclick="go(\'ref\')">📖 Reference</button>';
+ h+='<button class="ntab '+(view==='prog'?'active':'')+'" onclick="go(\'prog\')">📈 Progress</button>';
+ document.getElementById('nav').innerHTML=h;
+}
+function go(v){stopDrone();stopPitch();stopMetro();view=v;render();window.scrollTo({top:0});}
+function render(){
+ renderNav();const main=document.getElementById('main');
+ if(view==='room'){main.innerHTML=renderRoom();return;}
+ if(view==='ref'){main.innerHTML=renderRef();return;}
+ if(view==='prog'){main.innerHTML=renderProg();return;}
+ const m=MODULES.find(x=>x.n===view);const p=moduleProgress(m);const pct=Math.round(p.done/p.tot*100);
+ let h='<div class="mod-head"><div class="mtag">Module '+m.n+'</div><h2>'+m.t+'</h2><p>'+m.g+'</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+p.done+'/'+p.tot+'</span></div></div>';
+ h+=m.lessons.map(l=>renderLesson(l)).join('');
+ main.innerHTML=h;
+}
+function renderLesson(l){
+ const s=statusOf(l.id);const cp=l.cp?'cp':'';
+ const badge=l.cp?'◆':(s==='mastered'?'✓':(l.id.split('.')[1]||'★'));
+ const statusTxt=s==='mastered'?'Mastered':s==='available'?(l.cp?'Ready':'Available'):'Locked';
+ const chips=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'')+(l.tool?'<span class="chip">♪ built-in tool</span>':'')+(l.cp?'<span class="chip cp">recording</span>':'');
+ const onclick=s==='locked'?'':'onclick="openLesson(\''+l.id+'\')"';
+ return '<div class="lesson '+s+' '+cp+'" '+onclick+'><div class="l-badge '+s+' '+cp+'">'+badge+'</div><div class="l-main"><div class="l-title">'+l.t+'</div><div class="l-focus">'+l.f+'</div><div class="l-chips">'+chips+'</div></div><div class="l-status '+s+'">'+(s==='locked'?'🔒 '+statusTxt:statusTxt)+'</div></div>';
+}
+let curId=null;
+function openLesson(id){
+ if(statusOf(id)==='locked')return;
+ stopPitch();if(recOwner&&recOwner!==id){if(recURL)URL.revokeObjectURL(recURL);recURL=null;recOwner=null;}
+ curId=id;const l=lessonById(id);const s=st(id);const mod=MODULES.find(m=>m.lessons.some(x=>x.id===id));
+ document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+id);
+ const meta=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'');
+ let h='<div class="d-title">'+l.t+'</div><div class="d-focus">'+l.f+'</div><div class="d-meta">'+meta+'</div>';
+ if(l.tool)h+=toolHTML(l.tool);
+ if(l.cp){
+  h+='<div class="d-section"><div class="d-h cp">What to record</div>'+l.rec.map(r=>'<div class="item"><div class="item-text">'+r+'</div></div>').join('')+'</div>';
+  h+='<div class="d-section"><div class="d-h cp">Record it here</div>'+recorderHTML()+'</div>';
+  h+='<div class="d-section"><div class="cp-note">📤 <b>Send the recording to Claude in chat.</b> I will listen for pitch accuracy, drift, scooping, and whether your line holds against the other voice — then give specific feedback. Paste the key points below so this checkpoint keeps a record.</div></div>';
+  h+='<div class="d-section"><div class="d-h">Recording done</div><div class="item"><div class="check '+(s.recorded?'on':'')+'" onclick="toggleRec()"></div><div class="item-text">I have recorded this and sent it for review.</div></div></div>';
+ } else {
+  h+='<div class="d-section"><div class="d-h">Practise</div>'+l.tasks.map((t,i)=>'<div class="item"><div class="check '+(s.tasks[i]?'on':'')+'" onclick="toggleTask('+i+')"></div><div class="item-text">'+t+'</div></div>').join('')+'</div>';
+ }
+ h+='<div class="d-section"><div class="d-h std">Standard to pass'+(l.cp?'':' — tick when true')+'</div>'+l.stds.map((t,i)=>'<div class="item std"><div class="check std '+(s.stds[i]?'on':'')+'" onclick="toggleStd('+i+')"></div><div class="item-text">'+t+'</div></div>').join('')+'</div>';
+ h+='<div class="d-section"><div class="d-h">'+(l.cp?'Review notes / self-assessment':'Practice log')+'</div><textarea class="notes" placeholder="'+(l.cp?'Paste Claude feedback or your own assessment...':'What locked in, your jump-drill score, what to chase next time...')+'" onchange="saveNotes(this.value)">'+((l.cp?s.review:s.notes)||'')+'</textarea></div>';
+ const allStd=l.stds.every((_,i)=>s.stds[i]);const recOk=l.cp?s.recorded:true;const ready=allStd&&recOk;
+ if(s.mastered){
+  h+='<button class="master-btn done">✓ '+(l.cp?'Checkpoint passed':'Mastered')+' — next unlocked</button><button class="unmark" onclick="unmark()">un-mark this</button>';
+ } else {
+  h+='<button class="master-btn '+(ready?'ready':'notready')+'" '+(ready?'onclick="markMastered()"':'')+'>'+(l.cp?'Pass checkpoint':'Mark mastered')+' → unlock next</button>';
+  if(!ready)h+='<div class="gate-hint">'+(l.cp&&!s.recorded?'Mark the recording done, and tick':'Tick')+' all standards above to unlock this.</div>';
+ }
+ document.getElementById('dBody').innerHTML=h;
+ document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
+}
+function closeDetail(){stopDrone();stopPitch();if(mediaRec&&mediaRec.state==='recording')mediaRec.stop();document.getElementById('scrim').classList.remove('open');document.getElementById('detail').classList.remove('open');document.body.style.overflow='';render();}
+function toggleTask(i){const s=st(curId);s.tasks[i]=!s.tasks[i];persist();openLesson(curId);}
+function toggleStd(i){const s=st(curId);s.stds[i]=!s.stds[i];persist();openLesson(curId);}
+function toggleRec(){const s=st(curId);s.recorded=!s.recorded;persist();openLesson(curId);}
+function saveNotes(v){const s=st(curId);const l=lessonById(curId);if(l.cp)s.review=v;else s.notes=v;persist();}
+function markMastered(){const s=st(curId);s.mastered=true;markDayActive();persist();const l=lessonById(curId);showToast((l.cp?'Checkpoint passed':'Mastered')+' — next unlocked');openLesson(curId);}
+function unmark(){const s=st(curId);s.mastered=false;persist();openLesson(curId);}
+/* ---- Practice Room ---- */
+function renderRoom(){
+ return '<div class="mod-head"><div class="mtag">Practice Room</div><h2>All the Tools</h2><p>The sound tools from the lessons, in one place — for warm-ups and free practice once you know the drills. Always warm up first: gentle humming, lip trills, sirens low to high.</p></div>'+
+ '<button class="qd-cta" onclick="openQuick()">⚡ Start the 5-minute daily drill</button>'+
+ toolHTML('tone')+toolHTML('interval')+toolHTML('row')+metroHTML()+
+ '<div class="tool-panel"><div class="t-title">♪ Quick Recorder</div>'+recorderHTML()+'</div>'+
+ '<div class="bcard"><div class="bcard-title">The 30–40 minute session</div><div class="bcard-sub">2–3 sessions a week · no calendar, only gates</div><div class="road">'+
+ '<div class="road-row"><span class="road-tag">5 min</span><span class="road-body">Warm up — humming, lip trills, sirens. Never harmonize on a cold voice.</span></div>'+
+ '<div class="road-row"><span class="road-tag">5 min</span><span class="road-body">Module 1 maintenance — one drone hold, whatever module you are in.</span></div>'+
+ '<div class="road-row"><span class="road-tag">15–20 min</span><span class="road-body">Current lesson work.</span></div>'+
+ '<div class="road-row"><span class="road-tag">5–10 min</span><span class="road-body">Sing for fun — end every session on a song you love. That is what keeps a no-deadline program alive.</span></div>'+
+ '</div><p style="font-size:0.74rem;color:var(--muted);margin-top:12px;line-height:1.5">Only 10 minutes? Hit the <b>daily drill</b> button above — random-root thirds with the live tuner. Highest value per minute in the program.</p></div>';
+}
+/* ---- Reference ---- */
+function renderRef(){
+ const iv=[[4,'Major 3rd','do → mi · the harmony interval'],[3,'Minor 3rd','the darker third'],[5,'Perfect 4th','“Here Comes the Bride”'],[7,'Perfect 5th','first notes of “Twinkle Twinkle”'],[9,'Major 6th','“My Bon-nie”'],[12,'Octave','same note, higher floor']];
+ const songs=[
+  {t:'Start',c:'',b:'<b>All I Have to Do Is Dream</b> — Everly Brothers. Pure parallel thirds, both voices equal.'},
+  {t:'Start',c:'',b:'<b>Bye Bye Love</b> — Everly Brothers. Same trick at a faster tempo.'},
+  {t:'Easy',c:'',b:'<b>Jackson</b> — Johnny Cash & June Carter. Call-and-response; an easier entry into duet feel.'},
+  {t:'Easy',c:'',b:'<b>The Sound of Silence</b> — Simon & Garfunkel. Thirds that occasionally split wider; slow and forgiving.'},
+  {t:'Middle',c:'c',b:'<b>If I Fell</b> — The Beatles. Two genuinely independent lines in spots.'},
+  {t:'Middle',c:'c',b:'<b>Emmylou</b> — First Aid Kit. Modern folk duo; sustained close harmony throughout.'},
+  {t:'Harder',c:'peak',b:'<b>Poison &amp; Wine</b> — The Civil Wars. Dynamics and blend matter as much as the notes.'},
+  {t:'Harder',c:'peak',b:'<b>Helplessly Hoping</b> — Crosby, Stills &amp; Nash. Three-part; pick one part and live there.'},
+  {t:'Mando',c:'mando',b:'<b>月亮代表我的心</b> — Teresa Teng. Slow and forgiving — the Mandopop equivalent of a beginner ballad. Find the third over the chorus.'},
+  {t:'Mando',c:'mando',b:'<b>小酒窝</b> — JJ Lin &amp; Charlene Choi. A genuine duet: call-and-response plus shared chorus lines.'},
+  {t:'Mando',c:'mando',b:'<b>知足</b> — Mayday. Anthemic chorus with stacked harmony and octave doubling — sing the upper line over the lead.'},
+  {t:'Mando',c:'mando',b:'<b>小幸运</b> — Hebe Tien. Sustained chorus lines with close-harmony backing in the production to copy.'},
+ ];
+ return '<div class="mod-head"><div class="mtag">Reference</div><h2>Intervals, Songs & Craft</h2><p>The orientation material: what the intervals sound like, the song ladder for Module 4, and how to isolate a harmony part from a record.</p></div>'+
+ '<div class="bcard"><div class="bcard-title">Interval cheat-sheet</div><div class="bcard-sub">root fixed at C4 · tap to hear root → interval → both</div><div class="road">'+iv.map(p=>'<div class="road-row"><span class="road-tag">'+p[1]+'</span><span class="road-body" style="flex:1">'+p[2]+'</span><button class="tbtn sec" style="padding:6px 10px;font-size:0.68rem" onclick="TS.root=0;tone(0,0.8,0);tone('+p[0]+',0.8,0.9);tone(0,1.4,1.9,0.16);tone('+p[0]+',1.4,1.9,0.16)">▶</button></div>').join('')+'</div></div>'+
+ '<div class="bcard"><div class="bcard-title">The song ladder</div><div class="bcard-sub">module 4 repertoire · in rough order of difficulty</div><div class="road">'+songs.map(r=>'<div class="road-row"><span class="road-tag '+r.c+'">'+r.t+'</span><span class="road-body">'+r.b+'</span></div>').join('')+'</div></div>'+
+ '<div class="bcard"><div class="bcard-title">Isolating a harmony part</div><div class="bcard-sub">the module 4 toolbox</div><ul>'+
+ '<li>Old records (Everly Brothers era) often pan the two voices left/right — headphones, pull one side out.</li>'+
+ '<li>Stem-splitter apps (Moises, LALAL.AI) separate vocals from a track; some split double-tracked vocals too.</li>'+
+ '<li>YouTube has “harmony only” / “isolated vocals” videos for most classic duets — search the song title + “harmony”.</li>'+
+ '<li>No isolation available? Learn the melody cold first — then the other moving line you hear IS the harmony.</li>'+
+ '</ul></div>'+
+ '<div class="bcard"><div class="bcard-title">Blend — the other half of harmony</div><div class="bcard-sub">what separates correct from beautiful</div><ul>'+
+ '<li>Match vowels: shape your “ooh” and “ah” the way the lead does, not your default way.</li>'+
+ '<li>Match phrasing: start and end words exactly together — cutoffs sell the blend.</li>'+
+ '<li>Sing harmony slightly softer than the lead; tuck underneath rather than compete.</li>'+
+ '<li>Less vibrato than you would use solo — straight tone locks intervals tighter.</li>'+
+ '</ul></div>'+
+ '<div class="bcard"><div class="bcard-title">和声 in Mandopop</div><div class="bcard-sub">applying the method to your own repertoire</div><ul>'+
+ '<li>The same reflex transfers: most Mandopop chorus harmony is a third above the melody, or an octave double on the hook — exactly Modules 2–4.</li>'+
+ '<li>Choruses repeat heavily, so you get many tries per song — pick the chorus, not the verse, to harmonize first.</li>'+
+ '<li>The harmony is often low in the mix under the lead. A stem-splitter (Moises) or the 伴奏 / karaoke version helps you hear the lead alone and sing your line against it.</li>'+
+ '<li>Mandarin vowels are crisper than English — match the lead’s vowel shape exactly on held notes or the blend smears.</li>'+
+ '<li>Ballads (月亮代表我的心) are the gentlest start; save fast, syllable-dense songs until thirds are automatic.</li>'+
+ '</ul></div>';
+}
+/* ---- Progress ---- */
+function renderProg(){
+ const totL=FLAT.length;const doneL=FLAT.filter(isMastered).length;const pct=Math.round(doneL/totL*100);
+ const cps=[];MODULES.forEach(m=>m.lessons.forEach(l=>{if(l.cp)cps.push(l);}));
+ let h='<div class="mod-head"><div class="mtag">Progress</div><h2>Your Path</h2><p>'+doneL+' of '+totL+' lessons mastered. Each module unlocks the next as you pass its standards — no calendar, only gates.</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+pct+'%</span></div></div>';
+ const M=meta();
+ h+='<div class="streak"><div class="streak-box"><div class="sk-n">'+(M.streak||0)+'</div><div class="sk-l">Day streak</div></div><div class="streak-box"><div class="sk-n">'+(M.best||0)+'</div><div class="sk-l">Best streak</div></div><div class="streak-box"><div class="sk-n">'+(M.quick||0)+'</div><div class="sk-l">Drills logged</div></div></div>';
+ h+='<button class="qd-cta sec" onclick="openQuick()">⚡ Do today\u2019s 5-minute drill</button>';
+ h+='<div class="bcard" style="margin-top:14px"><div class="bcard-title">Modules</div><div class="bcard-sub">tap a module tab to open its lessons</div>';
+ MODULES.forEach(m=>{const p=moduleProgress(m);const locked=statusOf(m.lessons[0].id)==='locked';h+='<div class="pmod"><div class="pmod-n">M'+m.n+'</div><div class="pmod-t">'+m.t+(locked?' 🔒':'')+'</div><div class="pmod-c">'+p.done+'/'+p.tot+'</div></div>';});
+ h+='</div><div class="bcard"><div class="bcard-title">Recording checkpoints</div><div class="bcard-sub">upload these to Claude for review</div>';
+ cps.forEach(l=>{const done=isMastered(l.id);const open=statusOf(l.id)!=='locked';h+='<div class="pmod"><div class="pmod-n">'+(done?'✓':(open?'◆':'🔒'))+'</div><div class="pmod-t">'+l.t.replace('Checkpoint — ','')+'</div><div class="pmod-c">'+(done?'passed':(open?'ready':'locked'))+'</div></div>';});
+ h+='</div>';
+ return h;
+}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function doExport(){const blob=new Blob([JSON.stringify({lessons:S,exported:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='harmony-path-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();showToast('Backup downloaded');}
+function doImport(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.lessons){S=d.lessons;persist();render();showToast('Progress restored');}}catch(e){showToast('Could not read that file');}};r.readAsText(f);ev.target.value='';}
+function doReset(){if(!confirm('Erase all progress and start the path fresh? Export a backup first if unsure.'))return;S={};persist();render();showToast('Progress reset');}
+init();
+(function(){for(const m of MODULES){if(m.lessons.some(l=>!isMastered(l.id))){view=m.n;break;}}})();
+render();
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail();});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+</script>
+</body>
+</html>
