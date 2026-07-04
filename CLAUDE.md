@@ -20,8 +20,8 @@ only as an offline validation harness (see Testing), never at runtime.
    node -e "const fs=require('fs');new Function('function c(){'+fs.readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]+'}');console.log('parse OK')"
    ```
 3. **Bump BOTH version markers together on any shippable change** — or the PWA serves stale cache:
-   - `index.html`: build marker `title="build">vN`  (currently **v29** — confirm first).
-   - `sw.js`: cache constant `harmony-vN` (must match — currently **harmony-v29**).
+   - `index.html`: build marker `title="build">vN`  (currently **v32** — confirm first).
+   - `sw.js`: cache constant `harmony-vN` (must match — currently **harmony-v32**).
 4. **Validate scoring LOGIC with a node harness before shipping.** Parse-OK is not enough; the
    check-kinds carry real logic. (No harness is committed yet — committing one is a priority task.)
 5. **Never trust green sandbox tests for anything acoustic.** See "On-device gap."
