@@ -1,5 +1,9 @@
 # CLAUDE.md — 和声 · Harmony Path
 
+> **Resuming / switching machines?** Read **`HANDOFF.md`** first — current build (v32), what
+> changed last session, the test harness, and open tasks. This file is the stable reference;
+> HANDOFF.md is the live session state.
+
 Single-file vanilla-JS Progressive Web App that teaches vocal harmony singing. No build step,
 no framework, no dependencies. Runs as an installed PWA on the user's iPhone (iOS Safari);
 **headphones are assumed for every mic exercise.** Deployed on GitHub Pages (confirm URL with
