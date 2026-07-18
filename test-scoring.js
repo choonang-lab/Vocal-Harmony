@@ -404,6 +404,52 @@ group('FLAT lesson order (interlude 3.5 between M3 and M4)');
   eq(A.statusOf(F[0]), 'available', 'first lesson is available from the start');
 }
 
+/* ---- Bridge-song melody fixtures ----------------------------------
+   Pins the interlude-module melodies to transcriptions cross-verified
+   against trusted references (abcnotation.com hymnal + noobnotes for
+   Amazing Grace; abcnotation.com for Aura Lee, AABA structure confirmed).
+   Both were flagged in CLAUDE.md as unverified first-draft data; a wrong
+   melody silently fails correct singing, so pin the pitches here. Key of C
+   (semitones from C4), one note per sung syllable, [melody,harmony,beats].
+------------------------------------------------------------------- */
+group('bridge-song melody data (grace / auralee verified vs reference)');
+{
+  const eqNotes = (got, want, msg) =>
+    eq(JSON.stringify(got), JSON.stringify(want), msg);
+
+  // Amazing Grace — New Britain, lines 1-2, key of C.
+  // "A-ma-zing grace, how sweet the sound, that saved a wretch like me."
+  eqNotes(A.SONGS.grace.notes, [
+    [-5,-1,1],[0,4,2],[4,7,1],[4,7,2],[2,5,1],[0,4,2],[-3,0,1],[-5,-1,3],
+    [-5,-1,1],[0,4,2],[4,7,1],[4,7,2],[2,5,1],[7,11,3],
+  ], 'grace melody matches the verified New Britain transcription');
+
+  // Aura Lee — Poulton, first two phrases, key of C.
+  // "As the blackbird in the spring, 'neath the willow tree."
+  eqNotes(A.SONGS.auralee.notes, [
+    [-5,-1,1],[0,4,1],[-1,2,1],[0,4,1],[2,5,1],[-3,0,1],[2,5,2],
+    [0,4,1],[-1,2,1],[-3,0,1],[-1,2,1],[0,4,4],
+  ], 'auralee melody matches the verified Poulton transcription');
+
+  // Invariant: harmony is the diatonic third above the melody in C major.
+  const SCALE = [0, 2, 4, 5, 7, 9, 11];
+  const thirdAbove = (mel) => {
+    const pc = ((mel % 12) + 12) % 12, idx = SCALE.indexOf(pc);
+    if (idx < 0) return null; // non-diatonic melody note — not expected here
+    const ni = idx + 2;
+    return SCALE[ni % 7] + (Math.floor(mel / 12) + Math.floor(ni / 7)) * 12;
+  };
+  for (const key of ['grace', 'auralee']) {
+    ok(A.SONGS[key].notes.every(([mel, harm]) => thirdAbove(mel) === harm),
+      key + ' harmony is a diatonic third above every melody note');
+  }
+
+  // Amazing Grace is pentatonic (C D E G A) — no F(5)/B(11) in the melody.
+  ok(A.SONGS.grace.notes.every(([mel]) => {
+    const pc = ((mel % 12) + 12) % 12; return pc !== 5 && pc !== 11;
+  }), 'grace melody stays pentatonic (no F or B)');
+}
+
 /* ================================================================ */
 /*  SUMMARY                                                          */
 /* ================================================================ */

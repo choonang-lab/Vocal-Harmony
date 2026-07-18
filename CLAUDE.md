@@ -80,10 +80,11 @@ synthetic pitch samples into a run's windows, call the scorer, assert. Gotchas:
   live voices, or the point is leaving the app. Leave them manual.
 
 ## Known gaps / landmines
-- **Unverified melody data:** `grace` (Amazing Grace) and `auralee` (Aura Lee) melody pitches in
-  `SONGS` are first-draft transcriptions, NOT verified against an instrument. `lang` (Auld Lang
-  Syne) melody is confirmed and its harmony hand-tuned to stay pentatonic. Verify grace/auralee
-  before trusting their scoring — a wrong melody silently fails correct singing.
+- **Melody data — now verified (v33).** `grace` (Amazing Grace) and `auralee` (Aura Lee) were
+  wrong first-draft transcriptions; corrected in v33 against cross-verified references and pinned
+  in the harness (see HANDOFF "v32 → v33"). `lang` (Auld Lang Syne) melody is confirmed and its
+  harmony hand-tuned to stay pentatonic. All three now trustworthy in the sandbox; the v33 fix
+  still awaits an on-device singing retest.
 - **No regression tests in the repo.** Highest-value early task: commit the node harness.
 - **On-device acoustic gap:** ALL validation is mocked-audio in node. Timing/sync (duet playback,
   improv reaction lag), low-note clarity, and iOS AudioSession behavior can ONLY be verified by the

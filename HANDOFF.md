@@ -6,7 +6,7 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-07-05 · **Build: v32 / harmony-v32** — live on GitHub Pages, commit `2843612` on `main`.
+**Last updated:** 2026-07-18 · **Build: v33 / harmony-v33** — staged locally (SONGS melody fix), not yet committed/deployed. Previous live build: v32, commit `2843612` on `main`.
 
 ---
 
@@ -38,7 +38,26 @@ kind, `evaluateAuto` std-ticking, `rowRunOk` run-type cross-count guards, the dr
 hold guards (below), and a guard that Modules 4 / 5.3 / 5.4 stay unscored. Mutation-tested — it
 was confirmed to fail when the scoring logic is deliberately broken, so green means something.
 
-## What changed this session (v29 → v32)
+## What changed this session (v32 → v33)
+**Task B — bridge-song melody verification, DONE.** Both `grace` (Amazing Grace) and
+`auralee` (Aura Lee) in the `SONGS` registry were wrong first-draft transcriptions, now
+corrected in the key of C against cross-verified references:
+- **Amazing Grace** (New Britain, lines 1–2): verified against the abcnotation.com hymnal
+  transcription AND noobnotes.net letter-notes — both agree exactly. The old data mis-set
+  "how sweet the sound" and "a wretch like me"; corrected to the canonical pentatonic line.
+- **Aura Lee** (Poulton, first two phrases): verified against the abcnotation.com transcription
+  (AABA repeat structure confirmed). The old data was a descending scale that isn't the tune;
+  corrected to the characteristic "As the black-bird" sol-do-ti-do opening.
+- Harmonies recomputed as the diatonic third above each melody note (matches the `row`/`SONGS`
+  convention); rhythm/phrase-length kept as-is to minimise change.
+- **Harness fixtures added** (`test-scoring.js`, now 102 assertions): pin both melody arrays to
+  the verified transcriptions, assert the diatonic-third harmony invariant, and guard that
+  Amazing Grace stays pentatonic. Green means a future stray edit can't silently corrupt them.
+- Versions bumped **v32 → v33** in both markers; parse-check + harness green.
+- **STILL NEEDS on-device retest** (see Open tasks) — the pitches are proven in the sandbox,
+  the acoustics are not.
+
+## What changed last session (v29 → v32)
 **The drone-relationship hold-scoring fixes.** The `hold8` scorer used to tick a lesson's
 standard for holding *any* target note steady, without checking that note's relationship to the
 drone — so it under-verified the written standard. Fixed:
@@ -63,13 +82,14 @@ are intentionally manual/unscored by design (can't be machine-scored); a harness
 protects that from a stray auto-check.
 
 ## Open tasks / next steps
-- **[Task B] Verify the `grace` (Amazing Grace) and `auralee` (Aura Lee) melody data** in the
-  `SONGS` registry (`index.html`). CLAUDE.md flags them as unverified first-draft transcriptions;
-  `lang` (Auld Lang Syne) is already confirmed. A wrong melody silently fails correct singing.
-  Establish the correct pitches against a trusted reference, then drop them into the harness as
-  fixtures. **This is the main remaining scoring gap.**
+- **[Task B] — DONE this session** (grace/auralee corrected + pinned in the harness; see above).
+  Only optional extension left: the fix keeps each song at its current phrase length (grace =
+  lines 1–2, auralee = first two phrases). Extend to the full verse later if desired.
+- **On-device (iPhone) retest of the v33 melody fix.** After a hard reload to v33, sing through
+  the interlude-module song lessons for Amazing Grace and Aura Lee and confirm the corrected
+  melodies score correct singing (the old wrong pitches would have failed a correct rendition).
 - **On-device (iPhone) retest of the v30–v32 hold changes** (sandbox proves the math, not the
-  acoustics). After a hard reload to v32: `1.1` third standard stays manual; `1.2` counts only a
+  acoustics). After a hard reload: `1.1` third standard stays manual; `1.2` counts only a
   unison hold vs a live drone; `1.3` / `2.3` count only a note held OFF the drone.
 
 ## How to resume
