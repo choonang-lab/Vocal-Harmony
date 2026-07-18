@@ -137,6 +137,8 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .tool-panel .t-title{font-size:0.6rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
 .t-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;}
 .t-label{font-size:0.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;min-width:100%;margin-top:6px;}
+.t-target{display:none;font-size:0.74rem;font-weight:600;color:var(--accent);background:var(--accent-bg);border-radius:var(--radius-sm);padding:8px 11px;margin-top:8px;line-height:1.45;}
+.t-target.show{display:block;}
 .tbtn{font-family:inherit;font-size:0.78rem;font-weight:700;padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all .15s;}
 .tbtn:hover{background:#145535;}
 .tbtn.sec{background:var(--surface);color:var(--accent);}
@@ -256,7 +258,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 <header class="site-header"><div class="header-inner">
   <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
   <div class="header-btns">
-    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v33</span>
+    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v34</span>
     <button class="hbtn" onclick="doExport()">Backup</button>
     <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
     <button class="hbtn" onclick="doReset()">Reset</button>
@@ -399,7 +401,13 @@ const MODULES=[
 ];
 /* ===================== AUDIO ENGINE ===================== */
 let actx=null,droneNodes=[],sessionMode='playback',actxMode='playback';
-const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true};
+const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true,holdOff:null};
+/* holdOff = the "second note" offset (semitones above root) the live tuner is aimed
+   at and the hold scorer locks to. null → the root itself (unison). It PERSISTS across
+   drone/root toggles so enabling the tuner (which rebuilds the context and restarts the
+   drone) can no longer snap the target back to unison. offDrone lessons default it to a
+   3rd so the tuner stops guiding the singer to the drone's own note. */
+function holdTargetSemi(){return TS.root+(TS.holdOff||0);}
 function setAudioSession(mode){
  /* iOS WebKit AudioSession. 'playback' is output-only and is INCOMPATIBLE with
     mic capture; 'play-and-record' allows both. We remember the requested mode so a
@@ -473,7 +481,7 @@ function metroClick(accent,when){
  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+0.09);
 }
 function playRoot(){setTarget(TS.root);tone(TS.root,1.5,0);}
-function playOff(off){setTarget(TS.root+off);tone(TS.root+off,1.5,0);rangeNudge(off);}
+function playOff(off){TS.holdOff=off;setTarget(TS.root+off);tone(TS.root+off,1.5,0);rangeNudge(off);syncHoldTarget();}
 function rangeNudge(off){const p=profile();if(!p)return;const tgt=TS.root+off+60;if(tgt>p.high+2)showToast('That note sits above your tested range — try a lower root');else if(tgt<p.low-2)showToast('That note sits below your tested range — try a higher root');}
 function playBoth(off){setTarget(TS.root+off);tone(TS.root,2,0,0.18);tone(TS.root+off,2,0,0.18);}
 function stopDrone(){if(droneNodes.length){const a=ac();droneNodes.forEach(n=>{try{n.gain.gain.linearRampToValueAtTime(0,a.currentTime+0.2);n.osc.stop(a.currentTime+0.25);}catch(e){}});droneNodes=[];TS.droneOn=false;syncDroneBtns();}}
@@ -481,13 +489,13 @@ function addDrone(off,type,vol){const a=ac();const o=a.createOscillator(),g=a.cr
 function toggleDrone(){
  if(droneNodes.length){stopDrone();return;}
  const a=ac();
- const go=()=>{if(droneNodes.length)return;setTarget(TS.root);addDrone(0,'triangle',0.13);addDrone(-12,'sine',0.11);if(TS.drone5)addDrone(7,'sine',0.05);TS.droneOn=true;syncDroneBtns();};
+ const go=()=>{if(droneNodes.length)return;setTarget(holdTargetSemi());addDrone(0,'triangle',0.13);addDrone(-12,'sine',0.11);if(TS.drone5)addDrone(7,'sine',0.05);TS.droneOn=true;syncDroneBtns();syncHoldTarget();};
  if(a.state==='running')go();else a.resume().then(go).catch(go);
 }
 function toggleDrone5(el){TS.drone5=!TS.drone5;if(el)el.classList.toggle('on',TS.drone5);if(droneNodes.length){stopDrone();toggleDrone();}}
 function syncDroneBtns(){document.querySelectorAll('.droneBtn').forEach(b=>{b.textContent=TS.droneOn?'■ Stop drone':'▶ Start drone';});}
 function reTuneDrone(){if(droneNodes.length){const a=ac();droneNodes.forEach(n=>n.osc.frequency.setValueAtTime(freq(TS.root+n.off),a.currentTime));}}
-function setRoot(v){TS.root=parseInt(v,10);setTarget(TS.root);reTuneDrone();}
+function setRoot(v){TS.root=parseInt(v,10);setTarget(holdTargetSemi());reTuneDrone();syncHoldTarget();}
 function randRoot(){TS.root=-12+Math.floor(Math.random()*20);document.querySelectorAll('.rootSel').forEach(s=>{s.value=TS.root;});reTuneDrone();playRoot();}
 /* Row Row Row Your Boat — [semitones from C4, beats] */
 /* ===== SONG REGISTRY — each note is [melodySemi, harmonySemi, beats] (semitones from C4).
@@ -829,6 +837,22 @@ function syncHoldBtns(){document.querySelectorAll('.hold-btn').forEach(b=>{b.tex
 function setHoldNum(n,ok){document.querySelectorAll('.hold-num').forEach(e=>{e.textContent=n;e.style.color=ok===true?'var(--accent)':(ok===false?'var(--amber)':'');});}
 function setHoldBar(pct){document.querySelectorAll('.hold-bar').forEach(e=>{e.style.width=pct+'%';});}
 function setHoldRes(txt,ok){document.querySelectorAll('.hold-res').forEach(e=>{e.textContent=txt||'';e.className='hold-res'+(txt?(' show '+(ok?'ok':'warn')):'');});}
+/* Tells the singer exactly which note the tuner is scoring, so the needle and the
+   drone-relationship check can never point at different notes. offDrone → a 3rd/5th
+   above the drone; onDrone → unison with it; otherwise hidden. */
+const OFFNAME={2:'a whole step',3:'a minor 3rd',4:'a 3rd',5:'a 4th',7:'a 5th',9:'a 6th',12:'an octave'};
+function syncHoldTarget(){
+ const el=document.getElementById('holdTarget');if(!el)return;
+ const l=curId&&lessonById(curId),hc=l&&l.auto&&holdCheck(l);
+ if(hc&&hc.offDrone){
+  const off=TS.holdOff||4;
+  el.textContent='🎯 Sing '+nlabel(TS.root+off)+' — '+(OFFNAME[off]||off+' semitones')+' above the drone ('+nlabel(TS.root)+'). Hold it steady; do NOT let it slide onto the drone’s own note.';
+  el.className='t-target show';
+ }else if(hc&&hc.onDrone){
+  el.textContent='🎯 Sing '+nlabel(TS.root)+' — match the drone exactly, in unison. Aim for the fused, beat-free sound.';
+  el.className='t-target show';
+ }else{el.className='t-target';el.textContent='';}
+}
 function setHoldHint(txt,ok){if(holdHintTxt===txt)return;holdHintTxt=txt;setHoldRes(txt,ok);}
 function resetAutoHold(){holdArmed=true;holdOnset=0;holdSil=0;holdDoneAt=0;holdHintTxt='';}
 function toggleHoldAuto(el){holdAuto=!holdAuto;if(el)el.classList.toggle('on',holdAuto);holdOnset=0;holdHintTxt='';if(!holdTimer)setHoldRes('');}
@@ -1513,6 +1537,7 @@ function toolHTML(type){
  if(type==='tone')return '<div class="tool-panel"><div class="t-title">♪ Tone &amp; Drone</div>'+
   '<div class="t-row">'+rootSelHTML()+'<button class="tbtn" onclick="playRoot()">▶ Play note</button><button class="tbtn sec droneBtn" onclick="toggleDrone()">'+(TS.droneOn?'■ Stop drone':'▶ Start drone')+'</button><span class="toggle-chip'+(TS.drone5?' on':'')+'" onclick="toggleDrone5(this)"><span class="tg"></span>+5th</span></div>'+
   '<div class="t-label">Second note, over the drone</div><div class="t-row"><button class="tbtn warn" onclick="playOff(2)">One step up</button><button class="tbtn warn" onclick="playOff(4)">A 3rd up</button><button class="tbtn warn" onclick="playOff(7)">A 5th up</button></div>'+
+  '<div class="t-target" id="holdTarget"></div>'+
   tunerHTML('tuner_tone')+
   '<div class="t-label">Hold for a slow count of 8</div>'+
   '<div class="hold"><button class="tbtn sec hold-btn" onclick="toggleHold()">▶ Hold count (8)</button><span class="toggle-chip'+(holdAuto?' on':'')+'" onclick="toggleHoldAuto(this)"><span class="tg"></span>Auto-start</span><div class="hold-meter"><div class="hold-num">8</div><div class="hold-prog"><i class="hold-bar"></i></div></div></div>'+
@@ -1588,6 +1613,9 @@ function openLesson(id){
  if(statusOf(id)==='locked')return;
  stopPitch();if(recOwner&&recOwner!==id){if(recURL)URL.revokeObjectURL(recURL);recURL=null;recOwner=null;}
  curId=id;const l=lessonById(id);setSong(l.song||'row');const s=st(id);const mod=MODULES.find(m=>m.lessons.some(x=>x.id===id));
+ /* Aim the tuner at the note THIS lesson wants: a 3rd above the drone for an
+    off-drone hold, the root itself otherwise. Persisted so drone/tuner toggles keep it. */
+ const _hc=l.auto?holdCheck(l):null;TS.holdOff=(_hc&&_hc.offDrone)?4:null;setTarget(holdTargetSemi());
  document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+id);
  const meta=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'');
  let h='<div class="d-title">'+l.t+'</div><div class="d-focus">'+l.f+'</div><div class="d-meta">'+meta+'</div>';
@@ -1611,7 +1639,7 @@ function openLesson(id){
   if(!ready)h+='<div class="gate-hint">'+(l.cp&&!s.recorded?'Mark the recording done, and tick':'Tick')+' all standards above to unlock this.</div>';
  }
  document.getElementById('dBody').innerHTML=h;
- if(l.auto)paintLessonLog();
+ if(l.auto)paintLessonLog();syncHoldTarget();
  document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
 }
 function closeDetail(){stopDrone();stopPitch();stopHold();if(mediaRec&&mediaRec.state==='recording')mediaRec.stop();document.getElementById('scrim').classList.remove('open');document.getElementById('detail').classList.remove('open');document.body.style.overflow='';render();}

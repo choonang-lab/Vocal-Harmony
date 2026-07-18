@@ -6,7 +6,7 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-07-18 · **Build: v33 / harmony-v33** — staged locally (SONGS melody fix), not yet committed/deployed. Previous live build: v32, commit `2843612` on `main`.
+**Last updated:** 2026-07-18 · **Build: v34 / harmony-v34** — staged locally (Tug-of-War target fix), not yet committed/deployed. v33 (SONGS melody fix) committed `15cad1e` and deployed live. Previous: v32, commit `2843612`.
 
 ---
 
@@ -38,7 +38,29 @@ kind, `evaluateAuto` std-ticking, `rowRunOk` run-type cross-count guards, the dr
 hold guards (below), and a guard that Modules 4 / 5.3 / 5.4 stay unscored. Mutation-tested — it
 was confirmed to fail when the scoring logic is deliberately broken, so green means something.
 
-## What changed this session (v32 → v33)
+## What changed this session (v33 → v34)
+**Tug-of-War (1.3 / cpA / 2.3) target fix.** The live tuner scores against a *target* note
+(`pdTargetHz`). Root cause of the "it asks me to sing in unison" complaint: the target defaulted
+to the root AND got reset to the root by `toggleDrone`/`setRoot` — including the automatic drone
+restart when the tuner rebuilds the audio context on capture. So enabling the tuner snapped the
+target back to unison, the needle rewarded the drone's own note, then the `offDrone` check scolded
+the singer at 8 counts. Fixes:
+- New persisted `TS.holdOff` (offset above the root the tuner is aimed at) + `holdTargetSemi()`.
+  Interval buttons set it; drone/root toggles now respect it instead of hard-resetting to root.
+- `openLesson` defaults `holdOff` to a **3rd** for offDrone lessons (root/unison otherwise), so
+  the tuner guides toward the 3rd from the start. Design decision (user): valid Tug-of-War hold =
+  **a 3rd or a 5th**, default the 3rd; not "any note".
+- New `🎯` target readout in the tone panel names the exact note to sing ("Sing E — a 3rd above
+  the drone C"), so needle and scorer can never point at different notes.
+- Harness: +9 assertions (111 total) driving `setTarget`/`holdOffDroneOk`/`holdOnDroneOk` to prove
+  a 3rd/5th target passes offDrone, a unison target passes onDrone, and the target survives a root
+  change. Bumped both markers v33 → v34; parse-check + harness green.
+- **STILL on-device only (not fixed in code, iOS platform behaviour):** (a) drone goes quiet when
+  the tuner turns on — `play-and-record` routes output to the earpiece unless headphones are in,
+  and the rebuilt AudioContext may need a gesture to resume; (b) Bluetooth earphones failing to
+  capture voice (iOS HFP flakiness). Retest both on the iPhone with WIRED headphones.
+
+## What changed earlier this session (v32 → v33)
 **Task B — bridge-song melody verification, DONE.** Both `grace` (Amazing Grace) and
 `auralee` (Aura Lee) in the `SONGS` registry were wrong first-draft transcriptions, now
 corrected in the key of C against cross-verified references:

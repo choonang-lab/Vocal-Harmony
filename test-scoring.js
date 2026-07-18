@@ -91,7 +91,7 @@ const EXPOSE = [
   'classifyMemory', 'classifyHarmony', 'classifyImprov',
   'checkMet', 'evaluateAuto', 'autoChecks',
   'rowRunOk', 'rowScore', 'rowFold', 'improvScore', 'improvRunOk', 'holdScore',
-  'holdOffDroneOk', 'holdOnDroneOk', 'setTarget',
+  'holdOffDroneOk', 'holdOnDroneOk', 'setTarget', 'holdTargetSemi',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -448,6 +448,41 @@ group('bridge-song melody data (grace / auralee verified vs reference)');
   ok(A.SONGS.grace.notes.every(([mel]) => {
     const pc = ((mel % 12) + 12) % 12; return pc !== 5 && pc !== 11;
   }), 'grace melody stays pentatonic (no F or B)');
+}
+
+/* ---- holdOff persistence: the tuner target drives the drone check ----
+   Regression guard for the Tug-of-War fix. The live tuner scores against the
+   note holdTargetSemi() = root + TS.holdOff. offDrone lessons default holdOff
+   to a 3rd (so the tuner stops guiding the singer to unison), and the value
+   must survive drone/root changes. Here we drive the real setTarget +
+   holdOffDroneOk/holdOnDroneOk to prove the wiring. */
+group('holdOff target drives the drone-relationship checks (Tug-of-War fix)');
+{
+  const savedRoot = A.TS.root, savedOff = A.TS.holdOff, savedDrone = A.TS.droneOn;
+  A.TS.droneOn = true; // holdVsDroneCents is null unless the drone is on
+
+  // offDrone default: hold a 3rd above the drone.
+  A.TS.root = 0; A.TS.holdOff = 4; A.setTarget(A.holdTargetSemi());
+  eq(A.holdTargetSemi(), 4, 'a 3rd target resolves to root+4');
+  ok(A.holdOffDroneOk({ offDrone: true }), 'a held 3rd satisfies the offDrone check');
+  ok(!A.holdOnDroneOk({ onDrone: true }), 'a held 3rd fails the onDrone (unison) check');
+
+  // a 5th is also a valid off-drone hold.
+  A.TS.holdOff = 7; A.setTarget(A.holdTargetSemi());
+  ok(A.holdOffDroneOk({ offDrone: true }), 'a held 5th satisfies the offDrone check');
+
+  // the target persists across a root change (setRoot re-aims via holdTargetSemi).
+  A.TS.root = -5; A.setTarget(A.holdTargetSemi());
+  eq(A.holdTargetSemi(), 2, 'holdOff survives a root change (still a 5th above)');
+  ok(A.holdOffDroneOk({ offDrone: true }), 'still off-drone after the root moved');
+
+  // unison (holdOff null → the root itself): the mirror case for 1.2.
+  A.TS.root = 0; A.TS.holdOff = null; A.setTarget(A.holdTargetSemi());
+  eq(A.holdTargetSemi(), 0, 'no second note → target is the root (unison)');
+  ok(!A.holdOffDroneOk({ offDrone: true }), 'a unison hold no longer passes offDrone');
+  ok(A.holdOnDroneOk({ onDrone: true }), 'a unison hold satisfies the onDrone check');
+
+  A.TS.root = savedRoot; A.TS.holdOff = savedOff; A.TS.droneOn = savedDrone;
 }
 
 /* ================================================================ */
