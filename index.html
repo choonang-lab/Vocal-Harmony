@@ -258,7 +258,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 <header class="site-header"><div class="header-inner">
   <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
   <div class="header-btns">
-    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v34</span>
+    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v36</span>
     <button class="hbtn" onclick="doExport()">Backup</button>
     <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
     <button class="hbtn" onclick="doReset()">Reset</button>
@@ -523,6 +523,10 @@ let micStream=null,pdSource=null,pdAnalyser=null,pdSink=null,pdBuf=null,pdActive
 let lastScoopCls=null,lastScoopDepth=0,lastScoopAt=0,holdScoopCls=null;
 let drPhase='idle',drLockF=0,drDriftF=0,drVoidF=0;
 function setTarget(semi){pdTargetHz=freq(semi);pdHist.length=0;pdLocked=false;resetDrift();}
+/* Clear the target → the tuner drops into free mode (intonation vs the nearest note).
+   Used for moving-line lessons (song/harmony rows, improv) where a single fixed target
+   would pin the needle to the root and read "sharp" for every note that isn't the tonic. */
+function clearTarget(){pdTargetHz=0;pdHist.length=0;pdLocked=false;resetDrift();}
 async function getMic(){
  if(micStream)return micStream;
  try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
@@ -618,6 +622,7 @@ function loopPitch(){
   if(pdSilCount>=6)pdArmed=true;                     // real silence → arm next onset
   if(pdHold>0){pdHold--;}else{pdHist.length=0;}
  }
+ if(stepArmed)stepRetarget(hz>0?pdSmooth:0);
  paintTuner((hz>0||pdHold>0)?pdSmooth:-1);
  const voiced=(hz>0||pdHold>0);
  updateDrift(voiced,(voiced&&pdTargetHz>0&&pdSmooth)?Math.abs(centsToTarget(pdSmooth)):null);
@@ -650,7 +655,7 @@ function updateDrift(voiced,cAbs){
    the drone root (octave-tolerant), then matches the run to do·re·mi·re·do and
    scores two things separately: every step in tune, and the final note re-locks
    at unison. */
-let stepArmed=false,stepSegs=[],stepBuf=[],stepDevBuf=[],stepGap=0,stepStarted=false;
+let stepArmed=false,stepSegs=[],stepBuf=[],stepDevBuf=[],stepGap=0,stepStarted=false,stepTgtDeg=null;
 const DEGN={0:'do',1:'ra',2:'re',3:'me',4:'mi',5:'fa',6:'fi',7:'sol',8:'le',9:'la',10:'te',11:'ti'};
 function degName(d){return DEGN[((d%12)+12)%12]||('+'+d);}
 function medOf(a){if(!a.length)return 0;const b=a.slice().sort((x,y)=>x-y);const m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2;}
@@ -658,17 +663,22 @@ function stepCheck(l){return autoChecks(l).find(c=>c.kind==='stepSeq');}
 function lessonHasStep(){const l=curId&&lessonById(curId);return !!(l&&stepCheck(l));}
 function snapDeg(semi,allowed){const x=((semi%12)+12)%12;let best=allowed[0],bd=99;allowed.forEach(d=>{let diff=Math.abs(x-d);diff=Math.min(diff,12-diff);if(diff<bd){bd=diff;best=d;}});return{deg:best,cents:bd*100};}
 function curAllowed(){const l=curId&&lessonById(curId),c=l&&stepCheck(l);return c?[...new Set(c.pattern.map(d=>((d%12)+12)%12))]:[0,2,4];}
+/* While the step drill runs, aim the tuner needle at the nearest scale STEP the
+   singer is on (do/re/mi) rather than the root — so re and mi read "in tune" instead
+   of "sharp against unison". Scoring is unaffected: feedStep() measures against the
+   drone root directly and never reads pdTargetHz. */
+function stepRetarget(hz){if(!(hz>0))return;const d=snapDeg(12*Math.log2(hz/freq(TS.root)),curAllowed()).deg;if(d!==stepTgtDeg){stepTgtDeg=d;pdHist.length=0;}pdTargetHz=freq(TS.root+d);}
 function syncStepBtns(){document.querySelectorAll('.step-btn').forEach(b=>{b.textContent=stepArmed?'■ Stop & score':'▶ Step drill';});}
 function setStepSeq(t){const e=document.getElementById('stepSeq');if(e)e.textContent=t||'– – –';}
 function setStepRes(txt,ok){document.querySelectorAll('.step-res').forEach(e=>{e.textContent=txt||'';e.className='step-res hold-res'+(txt?(' show '+(ok?'ok':'warn')):'');});}
 function liveSeqStr(){const al=curAllowed();return stepSegs.map(s=>degName(snapDeg(s,al).deg)).join(' ');}
-function resetStep(){stepArmed=false;stepSegs=[];stepBuf=[];stepDevBuf=[];stepGap=0;stepStarted=false;}
+function resetStep(){stepArmed=false;stepSegs=[];stepBuf=[];stepDevBuf=[];stepGap=0;stepStarted=false;stepTgtDeg=null;}
 function toggleStep(){if(stepArmed)stopStep(true);else armStep();}
 function armStep(){
  if(!pdActive){showToast('Turn on the live tuner first');return;}
  if(!droneNodes.length)showToast('Tip: play or drone the root first so you can pitch from it');
  setTarget(TS.root);
- stepArmed=true;stepSegs=[];stepBuf=[];stepDevBuf=[];stepGap=0;stepStarted=false;
+ stepArmed=true;stepSegs=[];stepBuf=[];stepDevBuf=[];stepGap=0;stepStarted=false;stepTgtDeg=null;
  setStepSeq('– – –');setStepRes('Sing: '+patternNames(lessonById(curId)),true);syncStepBtns();
 }
 function flushStepSeg(){if(stepBuf.length>=6)stepSegs.push(medOf(stepBuf));stepBuf=[];stepDevBuf=[];setStepSeq(liveSeqStr());}
@@ -843,8 +853,11 @@ function setHoldRes(txt,ok){document.querySelectorAll('.hold-res').forEach(e=>{e
 const OFFNAME={2:'a whole step',3:'a minor 3rd',4:'a 3rd',5:'a 4th',7:'a 5th',9:'a 6th',12:'an octave'};
 function syncHoldTarget(){
  const el=document.getElementById('holdTarget');if(!el)return;
- const l=curId&&lessonById(curId),hc=l&&l.auto&&holdCheck(l);
- if(hc&&hc.offDrone){
+ const l=curId&&lessonById(curId),hc=l&&l.auto&&holdCheck(l),sc=l&&l.auto&&stepCheck(l);
+ if(sc){
+  el.textContent='🎯 Sing '+patternNames(l)+' — step by step. The needle follows the note you’re on, so land each step in tune; the drone stays put as your anchor.';
+  el.className='t-target show';
+ }else if(hc&&hc.offDrone){
   const off=TS.holdOff||4;
   el.textContent='🎯 Sing '+nlabel(TS.root+off)+' — '+(OFFNAME[off]||off+' semitones')+' above the drone ('+nlabel(TS.root)+'). Hold it steady; do NOT let it slide onto the drone’s own note.';
   el.className='t-target show';
@@ -1615,7 +1628,9 @@ function openLesson(id){
  curId=id;const l=lessonById(id);setSong(l.song||'row');const s=st(id);const mod=MODULES.find(m=>m.lessons.some(x=>x.id===id));
  /* Aim the tuner at the note THIS lesson wants: a 3rd above the drone for an
     off-drone hold, the root itself otherwise. Persisted so drone/tuner toggles keep it. */
- const _hc=l.auto?holdCheck(l):null;TS.holdOff=(_hc&&_hc.offDrone)?4:null;setTarget(holdTargetSemi());
+ const _hc=l.auto?holdCheck(l):null;
+ if(l.tool==='row'||l.tool==='improv'){TS.holdOff=null;clearTarget();}   /* moving line → free chromatic tuner, never pinned to the root */
+ else{TS.holdOff=(_hc&&_hc.offDrone)?4:null;setTarget(holdTargetSemi());}
  document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+id);
  const meta=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'');
  let h='<div class="d-title">'+l.t+'</div><div class="d-focus">'+l.f+'</div><div class="d-meta">'+meta+'</div>';

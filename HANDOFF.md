@@ -6,7 +6,7 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-07-18 · **Build: v34 / harmony-v34** — staged locally (Tug-of-War target fix), not yet committed/deployed. v33 (SONGS melody fix) committed `15cad1e` and deployed live. Previous: v32, commit `2843612`.
+**Last updated:** 2026-07-18 · **Build: v36 / harmony-v36** — staged locally (tuner-target audit sweep), not yet committed/deployed. Live: v34 (Tug-of-War) `eee3853`, v33 (SONGS melody) `15cad1e`. v35 (Steps Away) staged but folded into the v36 commit. Previous: v32 `2843612`.
 
 ---
 
@@ -37,6 +37,32 @@ Covers: `classifyMemory` / `classifyHarmony` / `classifyImprov`, `checkMet` acro
 kind, `evaluateAuto` std-ticking, `rowRunOk` run-type cross-count guards, the drone-relationship
 hold guards (below), and a guard that Modules 4 / 5.3 / 5.4 stay unscored. Mutation-tested — it
 was confirmed to fail when the scoring logic is deliberately broken, so green means something.
+
+## Tuner-target audit — every mic lesson swept (v36)
+Checked all lessons for the "needle aimed at the wrong note" family. Findings + fixes:
+- **hold8** (1.1 plain, 1.2 onDrone, 1.3/cpA/2.3 offDrone) — fixed v34 (holdOff/holdTargetSemi).
+- **stepSeq** (1.4, 2.1) — fixed v35 (stepRetarget tracks the sung step). 2.1 gets it free via the
+  shared loopPitch path; its textual guidance comes from the step drill's own "Sing: do re mi".
+- **rowRun / duet** (3.1, 3.2, 3.3, cpC, S1, S2, S3) and **improv** (5.1, 5.2, cpFinal) — FIXED v36:
+  these are scored offline from a whole recorded run, but the tuner was pinned to the root, so a
+  moving harmony line read "sharp" throughout. openLesson now calls clearTarget() for tool 'row'
+  and 'improv' → the needle is a free chromatic tuner (intonation vs nearest note), not a fixed
+  root. New clearTarget(); +4 harness assertions (120 total).
+- **jumpN** (2.2, 2.4, cpB) — already correct: jdNext sets the target to the note you jump to
+  (root+interval), not the root. No change.
+- **earQuiz** (2.3 std[1]) — no mic; N/A.
+- **Module 0 range probe** — measures range, no target; free mode already. N/A.
+Bumped v35 → v36 (this commit folds in the v35 Steps Away change).
+
+## What changed this session (v34 → v35)
+**Steps Away (1.4) tuner fix — same "asks me to sing unison" family as Tug-of-War.** The step
+drill scores independently (`feedStep` measures the sung pitch vs the drone root and matches the
+do–re–mi–re–do *shape*), but `armStep` pinned the live-tuner needle to the root, so singing re/mi
+read as "sharp against unison". Fix: new `stepRetarget()` aims the needle at the nearest allowed
+scale degree the singer is on (do/re/mi) each frame while the drill runs, so every landed step
+reads in tune; scoring is untouched (feedStep never reads `pdTargetHz`). The 🎯 readout now also
+covers step lessons ("Sing do · re · mi · re · do — the needle follows the note you're on"). Harness
++5 assertions (116 total) driving `stepRetarget` snap-to-nearest-degree. Bumped v34 → v35.
 
 ## What changed this session (v33 → v34)
 **Tug-of-War (1.3 / cpA / 2.3) target fix.** The live tuner scores against a *target* note

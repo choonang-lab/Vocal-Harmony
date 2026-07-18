@@ -92,13 +92,14 @@ const EXPOSE = [
   'checkMet', 'evaluateAuto', 'autoChecks',
   'rowRunOk', 'rowScore', 'rowFold', 'improvScore', 'improvRunOk', 'holdScore',
   'holdOffDroneOk', 'holdOnDroneOk', 'setTarget', 'holdTargetSemi',
+  'stepRetarget', 'freq', 'clearTarget', 'centsToTarget',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
 const wrapper = new Function(
   'with(this){\n' + js +
   '\n;return {' + EXPOSE.join(',') +
-  ',getS:function(){return S;},setS:function(v){S=v;},getKey:function(){return SONGKEY;}};}'
+  ',getS:function(){return S;},setS:function(v){S=v;},getKey:function(){return SONGKEY;},getTgt:function(){return pdTargetHz;}};}'
 );
 let A;
 try { A = wrapper.call(sandbox); }
@@ -483,6 +484,42 @@ group('holdOff target drives the drone-relationship checks (Tug-of-War fix)');
   ok(A.holdOnDroneOk({ onDrone: true }), 'a unison hold satisfies the onDrone check');
 
   A.TS.root = savedRoot; A.TS.holdOff = savedOff; A.TS.droneOn = savedDrone;
+}
+
+/* ---- Step drill: the tuner tracks the sung STEP, not the root ----
+   Regression guard for the Steps Away (1.4) fix. armStep used to pin the tuner
+   target to the root, so singing re/mi read as "sharp against unison". stepRetarget
+   now aims pdTargetHz at the nearest allowed scale degree (default do/re/mi), so each
+   landed step reads in tune. curId is null in the harness → curAllowed() = [0,2,4]. */
+group('step drill retargets the tuner to the nearest step (Steps Away fix)');
+{
+  const savedRoot = A.TS.root;
+  const near = (hz, semi, msg) => eq(Math.round(hz), Math.round(A.freq(semi)), msg);
+
+  A.TS.root = 0;
+  A.stepRetarget(A.freq(0));  near(A.getTgt(), 0, 'on do → target is the root (do)');
+  A.stepRetarget(A.freq(2));  near(A.getTgt(), 2, 'on re → target moves to re (not the root)');
+  A.stepRetarget(A.freq(4));  near(A.getTgt(), 4, 'on mi → target moves to mi');
+  A.stepRetarget(A.freq(4.3)); near(A.getTgt(), 4, 'a slightly sharp mi still snaps to mi');
+  A.stepRetarget(A.freq(1.1)); near(A.getTgt(), 2, 'between do and re, nearer re → snaps to re');
+
+  A.TS.root = savedRoot;
+}
+
+/* ---- Free-mode tuner for moving-line lessons (rows / improv) ----
+   Regression guard for the audit sweep. Song/harmony rows and improv are scored
+   offline from a whole recorded run; a single fixed target would pin the needle to
+   the root and read "sharp" for every non-tonic note. clearTarget() drops the tuner
+   into free mode (pdTargetHz = 0 → centsToTarget returns null → paintTuner shows
+   intonation vs the nearest note instead of a fixed target). */
+group('clearTarget puts the tuner in free mode (moving-line lessons)');
+{
+  A.setTarget(4);
+  ok(A.getTgt() > 0, 'setTarget arms a fixed target');
+  ok(A.centsToTarget(A.freq(4)) !== null, 'with a target, cents are measured against it');
+  A.clearTarget();
+  eq(A.getTgt(), 0, 'clearTarget drops the fixed target (free mode)');
+  eq(A.centsToTarget(A.freq(4)), null, 'free mode → no fixed-target cents (needle reads nearest note)');
 }
 
 /* ================================================================ */
