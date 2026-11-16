@@ -93,6 +93,8 @@ const EXPOSE = [
   'rowRunOk', 'rowScore', 'rowFold', 'improvScore', 'improvRunOk', 'holdScore',
   'holdOffDroneOk', 'holdOnDroneOk', 'setTarget', 'holdTargetSemi',
   'stepRetarget', 'freq', 'clearTarget', 'centsToTarget',
+  'keyThirdAbove', 'KEY_DEGS', 'cpAutoCovers', 'canChallenge', 'passCheckpoint',
+  'nextLessonId', 'moduleOf', 'droneLesson', 'renderToday',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -520,6 +522,71 @@ group('clearTarget puts the tuner in free mode (moving-line lessons)');
   A.clearTarget();
   eq(A.getTgt(), 0, 'clearTarget drops the fixed target (free mode)');
   eq(A.centsToTarget(A.freq(4)), null, 'free mode → no fixed-target cents (needle reads nearest note)');
+}
+
+/* ---- 2.5 Thirds in a Key: the diatonic third above each scale degree ----
+   Module 2 used to drill only the major third up from "do", but the song harmonies
+   are ~40–60% minor thirds. The in-key drill asks for the third above a random
+   degree, staying in the major key. */
+group('in-key thirds (2.5): diatonic third above each degree');
+{
+  const MAJOR = new Set([0, 2, 4, 5, 7, 9, 11]);
+  eq(A.keyThirdAbove(0), 4, 'do → mi is a major 3rd');
+  eq(A.keyThirdAbove(2), 3, 're → fa is a minor 3rd');
+  eq(A.keyThirdAbove(4), 3, 'mi → sol is a minor 3rd');
+  eq(A.keyThirdAbove(5), 4, 'fa → la is a major 3rd');
+  eq(A.keyThirdAbove(7), 4, 'sol → ti is a major 3rd');
+  eq(A.keyThirdAbove(9), 3, 'la → do is a minor 3rd');
+  ok(A.KEY_DEGS.every((d) => MAJOR.has((d + A.keyThirdAbove(d)) % 12)),
+    'every drilled third lands on a note of the key');
+  ok(A.KEY_DEGS.some((d) => A.keyThirdAbove(d) === 3) && A.KEY_DEGS.some((d) => A.keyThirdAbove(d) === 4),
+    'the drill mixes major and minor thirds');
+  eq(A.checkMet({ kind: 'jumpN', interval: 'key3', need: 8 }, { jump: { key3: { bestPasses: 8 } } }), true,
+    'in-key jumpN reads its own key3 score');
+  eq(A.checkMet({ kind: 'jumpN', interval: 'key3', need: 8 }, { jump: { '4': { bestPasses: 10 } } }), false,
+    'a major-third score cannot satisfy the in-key check');
+
+  const L = A.lessonById('2.5'), F = A.FLAT;
+  ok(!!L && L.tool === 'interval' && L.auto.checks.some((c) => c.inKey), '2.5 exists and carries the in-key drill');
+  ok(F.indexOf('2.4') < F.indexOf('2.5') && F.indexOf('2.5') < F.indexOf('cpB'), '2.5 sits after 2.4, before cpB');
+  const cpB = A.lessonById('cpB');
+  ok(cpB.auto.checks.some((c) => c.inKey && (c.stds || []).includes(2)) && cpB.stds.length === 3,
+    'cpB also tests in-key thirds (std 2), so testing out cannot skip the gap');
+}
+
+/* ---- Checkpoints: auto-scored ones pass without a recording; test-out ---- */
+group('checkpoints: auto-pass without recording, test-out masters the module');
+{
+  ['cpA', 'cpB', 'cpC'].forEach((id) => ok(A.cpAutoCovers(A.lessonById(id)), id + ' is fully auto-scored → recording optional'));
+  ['cpD', 'cpFinal'].forEach((id) => ok(!A.cpAutoCovers(A.lessonById(id)), id + ' still needs a recording (not machine-scorable)'));
+  ok(A.canChallenge('cpB') && !A.canChallenge('2.2') && !A.canChallenge('cpD'),
+    'only auto-scored checkpoints can be taken as a test-out');
+
+  const saved = A.getS();
+  A.setS({});
+  eq(A.statusOf('cpB'), 'locked', 'fresh user: cpB is locked…');
+  ok(A.canChallenge('cpB'), '…but can still be attempted as a test-out');
+  eq(A.nextLessonId(), '1.1', 'fresh user: next lesson is 1.1');
+  A.passCheckpoint('cpB');
+  ok(A.moduleOf('cpB').lessons.every((l) => A.isMastered(l.id)), 'passing cpB masters every Module 2 lesson');
+  ok(!A.isMastered('1.1'), 'a test-out does not touch other modules');
+  eq(A.statusOf('3.1'), 'available', 'Module 3 unlocks after the test-out');
+  eq(A.nextLessonId(), '3.1', 'next lesson jumps forward to 3.1, not back to Module 1');
+  A.setS(saved);
+}
+
+/* ---- Today screen: one tap into the next lesson ---- */
+group('Today screen and one-tap session start');
+{
+  const saved = A.getS();
+  A.setS({});
+  const h = A.renderToday();
+  ok(h.includes('Land the Note') && h.includes("startSession('1.1')"), 'Today offers the next lesson with a one-tap start');
+  ok(h.includes('range check'), 'with no voice profile, Today offers the range check');
+  A.setS(saved);
+  const drone = (id) => A.droneLesson(A.lessonById(id));
+  ok(drone('1.2') && drone('1.3') && drone('1.4') && drone('2.3') && drone('cpA'), 'drone lessons auto-start the drone');
+  ok(!drone('1.1') && !drone('2.2') && !drone('3.1') && !drone('2.5'), 'non-drone lessons start only the tuner');
 }
 
 /* ================================================================ */

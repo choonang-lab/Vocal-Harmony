@@ -6,7 +6,40 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-07-18 · **Build: v36 / harmony-v36** — staged locally (tuner-target audit sweep), not yet committed/deployed. Live: v34 (Tug-of-War) `eee3853`, v33 (SONGS melody) `15cad1e`. v35 (Steps Away) staged but folded into the v36 commit. Previous: v32 `2843612`.
+**Last updated:** 2026-11-16 · **Build: v37 / harmony-v37** — staged locally (pedagogy upgrades), not yet committed/deployed. Live: v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v36 → v37) — pedagogy review, items 1/2/3/5
+User hadn't been using the app; a full curriculum review found the spine sound but the app
+hard to START and one real content gap. Four upgrades shipped (items 4/6/7/8 deferred — see Open tasks):
+1. **Today landing screen** (`view='today'`, new first nav tab; startup IIFE + setup save/skip now
+   land there). Shows the next lesson (`nextLessonId()` = first unmastered lesson after the
+   furthest mastered one, so a test-out moves you forward) with ONE tap: `startSession(id)` opens
+   it, starts the live tuner, then the drone for drone lessons (`droneLesson()`: tone-tool holds
+   with onDrone/offDrone, or tone-tool step drills). Tuner FIRST so the drone is built on the
+   capture-mode context and no later rebuild silences it. Also: range-check card if no profile,
+   test-out offer, daily-drill fallback, streak line.
+2. **Test out via checkpoint.** `canChallenge(id)`: any fully auto-scored checkpoint (cpA, cpB,
+   cpC) opens even while locked, with a test-out banner; module header + Today offer it.
+   `passCheckpoint(id)` (called from markMastered for any cp) masters every lesson in that module.
+3. **Auto-scored checkpoints pass without a recording.** `cpAutoCovers(l)` = every std is ticked
+   by an auto check → recording becomes "Optional: record a take"; no "recorded" gate. cpD and
+   cpFinal (not machine-scorable) still require the recording, by design.
+5. **New lesson 2.5 "Thirds in a Key"** (after 2.4, before cpB) — fills the gap that Module 2
+   drilled only the MAJOR third up from "do" while the song harmonies are 37–58% MINOR thirds
+   (row 10/27, grace 7/14, auralee 7/12). Reuses the jump drill: a jumpN check with
+   `inKey:true, interval:'key3'` (also its s.jump storage key). Each trial plays "do" then a
+   random degree (do re mi fa sol la); you sing the diatonic third above it (`keyThirdAbove`:
+   major over do/fa/sol, minor over re/mi/la); then the cue+answer pair is played back. `jdTgt`
+   now holds every trial's target. **cpB gained std[2]** (8/10 in-key thirds) so a cpB test-out
+   can't skip the gap.
+- Harness +30 (150 total), all mutation-tested (each new rule broken → harness fails).
+- Browser-verified on localhost (phone viewport): Today render, test-out → Module 2 mastered →
+  Today advances to 3.1; one-tap start on 1.1 (tuner only), 1.2 (unison target + drone), 1.3
+  (3rd target + drone; ctx play-and-record, drone alive); in-key judging right/right/wrong-
+  quality/walked-up all correct; finishJump stores key3 + ticks std.
+- **Not verifiable in the pane (needs iPhone):** real mic capture (pane mic is denied) and live
+  pitch-loop timing (hidden pane throttles rAF to ~2 fps). The in-key drill's acoustic path is
+  the existing shared detector; only its targeting/judging is new.
 
 ---
 
@@ -130,6 +163,16 @@ are intentionally manual/unscored by design (can't be machine-scored); a harness
 protects that from a stray auto-check.
 
 ## Open tasks / next steps
+- **On-device check of v37:** Today → one tap → tuner (and drone on 1.2/1.3/1.4/cpA/2.3) comes on
+  with ONE mic prompt; drone stays audible in wired headphones. Then try 2.5's in-key drill.
+- **Deferred pedagogy items from the v37 review** (user picked 1/2/3/5 first):
+  4. A song taste earlier — 10 drill-only lessons before any music (e.g. Row Your Boat melody
+     over the drone in M1; its first phrase in thirds right after 2.2).
+  6. Daily drill as spaced review — rotate mastered skills (hold, 3rd, other intervals, in-key
+     3rds) instead of always major thirds.
+  7. Progressive tuning tolerance — lock lamp grabs at ±24¢ everywhere; loosen to ~±35¢ in M1,
+     keep tight for 2.3 / checkpoints. Needs an on-device feel check.
+  8. Harmony below the melody available in the songs (needs a second harmony line per song).
 - **[Task B] — DONE this session** (grace/auralee corrected + pinned in the harness; see above).
   Only optional extension left: the fix keeps each song at its current phrase length (grace =
   lines 1–2, auralee = first two phrases). Extend to the full verse later if desired.

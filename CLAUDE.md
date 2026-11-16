@@ -33,7 +33,8 @@ only as an offline validation harness (see Testing), never at runtime.
 
 ## Architecture (mental model)
 - **Rendering:** view-based. Global `view` selects what `render()` paints into `#main` via
-  innerHTML. Views: `setup`, `room`, `ref`, `prog`, or a module number.
+  innerHTML. Views: `today` (the landing view — next lesson + one-tap `startSession`), `setup`,
+  `room`, `ref`, `prog`, or a module number.
 - **Content:** `MODULES` array, each `{n, t, g, lessons:[...]}`. `n` is the module number —
   note the interlude module is `n:3.5` (a float) between 3 and 4. `FLAT` is the flattened lesson
   list; lessons unlock sequentially along it (`statusOf`).
@@ -43,9 +44,16 @@ only as an offline validation harness (see Testing), never at runtime.
   specific `stds` when met (`checkMet`/`evaluateAuto`). `paintLessonLog` renders live progress.
   All standards ticked → mastery. Scored paths are ALWAYS optional, added *beside* the manual
   version, never replacing it.
+- **Checkpoints:** a checkpoint whose every std is auto-ticked (`cpAutoCovers` — cpA, cpB, cpC)
+  passes without a recording and can be taken early as a **test-out** (`canChallenge`, opens even
+  while locked). Passing ANY checkpoint masters its whole module (`passCheckpoint`). cpD/cpFinal
+  can't be machine-scored and still require the recording. If you add a std to cpA–cpC, give it
+  an auto check too, or it silently stops being test-out-able.
 
 ## Check kinds (the scoring engine)
-`hold8`, `driftReturn`, `stepSeq`, `jumpN`, `earQuiz` (no mic), `rowRun` (with `memory:true` =
+`hold8`, `driftReturn`, `stepSeq`, `jumpN` (with `inKey:true, interval:'key3'` = the 2.5/cpB
+in-key drill: third above a random degree of a key, major or minor per `keyThirdAbove`; `'key3'`
+is also its `s.jump` key), `earQuiz` (no mic), `rowRun` (with `memory:true` =
 transpose-invariant sing-from-memory; else harmony-over-melody), `duet` (two-phase self-duet:
 record melody, then harmonize over your own voice), `improv` (sight-harmonize over a generated
 melody), plus the Module-0 range probe.

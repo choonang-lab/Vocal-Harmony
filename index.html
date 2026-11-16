@@ -55,6 +55,11 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .lesson:hover{box-shadow:var(--shadow);}
 .lesson:active{transform:scale(.997);}
 .lesson.locked{cursor:not-allowed;opacity:0.6;background:var(--surface2);}
+.lesson.locked.challenge{cursor:pointer;opacity:0.85;}
+.lesson.locked.challenge .l-status{color:var(--purple);}
+.today-p{font-size:0.82rem;color:var(--text2);line-height:1.5;margin:4px 0 8px;}
+.today-streak{text-align:center;font-size:0.74rem;color:var(--muted);margin-top:16px;}
+.challenge-note{background:var(--purple-bg);color:var(--purple);border:1px solid #C4A8DC;border-radius:var(--radius-sm);padding:10px 12px;font-size:0.76rem;line-height:1.5;margin-top:10px;}
 .lesson.mastered{border-left-color:var(--accent);}
 .lesson.available{border-left-color:var(--amber);}
 .lesson.cp{border-left-color:var(--purple);background:linear-gradient(0deg,var(--purple-bg),var(--surface) 60%);}
@@ -258,7 +263,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 <header class="site-header"><div class="header-inner">
   <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
   <div class="header-btns">
-    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v36</span>
+    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v37</span>
     <button class="hbtn" onclick="doExport()">Backup</button>
     <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
     <button class="hbtn" onclick="doReset()">Reset</button>
@@ -321,10 +326,14 @@ const MODULES=[
    {kind:'jumpN',interval:5,intName:'4th',trials:10,need:7,stds:[1]},
    {kind:'jumpN',interval:3,intName:'minor 3rd',trials:10,need:5,stds:[2]}
   ]}},
+ {id:'2.5',t:'Thirds in a Key',f:'The melody won’t always sit on “do” — find the third above ANY note of the key.',time:'~15 min',covers:'Major & minor thirds in context',tool:'interval',
+  tasks:['So far you jumped a major third up from “do”. A real harmony line moves through the whole key, and above some notes the third is a smaller, minor third: above re you sing fa, above mi you sing sol, above la you sing do. About half the thirds in the songs ahead are minor.','Run the in-key drill: each trial plays “do” to set the key, then a melody note. Sing the third above that note, staying in the key — then you hear the pair played together.','Don’t count semitones. Think in the scale: the third above any note is two scale-steps up, skipping one. Say it in your head — re (mi) FA, la (ti) DO.'],
+  stds:['8 out of 10: the third above a random note of the key, sung straight away.'],
+  auto:{checks:[{kind:'jumpN',interval:'key3',inKey:true,intName:'3rd in the key',trials:10,need:8,stds:[0]}]}},
  {id:'cpB',cp:true,t:'Checkpoint — Ten Random Thirds',f:'The gate into real harmony singing.',covers:'Module 2',tool:'interval',
-  rec:['Record one full session of the jump drill: ten random roots, singing the major third above each, with the reveal played after each attempt so the recording shows right/wrong.'],
-  stds:['At least 8 of 10 correct.','Every attempt jumps straight to the note — no walking up do–re–mi.'],
-  auto:{checks:[{kind:'jumpN',interval:4,intName:'3rd',trials:10,need:8,stds:[0,1]}]}},
+  rec:['Run one full session of the jump drill (ten random roots, the major third above each) and one of the in-key drill (the third above ten notes of a key).'],
+  stds:['At least 8 of 10 correct.','Every attempt jumps straight to the note — no walking up do–re–mi.','At least 8 of 10 thirds in the key, major and minor.'],
+  auto:{checks:[{kind:'jumpN',interval:4,intName:'3rd',trials:10,need:8,stds:[0,1]},{kind:'jumpN',interval:'key3',inKey:true,intName:'3rd in the key',trials:10,need:8,stds:[2]}]}},
 ]},
 {n:3,t:'A Moving Line',g:'Now the third has to move. In parallel-thirds harmony your line copies the shape of the melody, staying a third above it the whole way. The practice song is Row, Row, Row Your Boat — simple enough that you know it cold, so all your attention goes to staying on your line.',lessons:[
  {id:'3.1',t:'Your Part Is a Song',f:'Learn the harmony line until it stands alone.',time:'~15 min',covers:'The golden rule',tool:'row',
@@ -966,10 +975,10 @@ function saveProfile(){
  S.__profile={low:p.low,high:p.high,voice:voice,root:rootOff,ts:Date.now()};
  TS.root=rootOff;persist();stopPitch();
  showToast('Voice profile saved — drone set to '+nlabel(rootOff));
- view=1;render();window.scrollTo({top:0});
+ view='today';render();window.scrollTo({top:0});
 }
 function rerunSetup(){profileDraft={low:null,high:null};voiceOverride=null;setRangeMsg('');render();}
-function skipSetup(){stopPitch();view=1;render();window.scrollTo({top:0});}
+function skipSetup(){stopPitch();view='today';render();window.scrollTo({top:0});}
 function renderSetup(){
  const pr=profile();
  if(pr&&profileDraft.low==null&&profileDraft.high==null){profileDraft.low=pr.low;profileDraft.high=pr.high;if(pr.voice)voiceOverride=pr.voice;}
@@ -993,6 +1002,15 @@ function renderSetup(){
    each trial scored for (a) pitch in tune and (b) jumping straight to it (onset already
    near the target, not climbing up from the root). Powers any lesson with a jumpN check. */
 let jdActive=false,jdState='idle',jdInterval=4,jdIntName='3rd',jdTrials=10,jdTrial=0,jdRoot=99,jdResults=[],jdCap=[],jdArmed=false,jdSil=0,jdT1=null,jdT2=null;
+let jdInKey=false,jdKey=0,jdDeg=-1,jdTgt=0;   // in-key mode (2.5): jdRoot = the cue note, jdTgt = the third above it in the key
+/* In-key thirds (2.5 / cpB): a harmony line a third above the melody stays IN the key,
+   so the third is major over do/fa/sol and minor over re/mi/la/ti — the mix the songs
+   in Modules 3–3.5 actually use. A check carries inKey:true and the string interval
+   'key3', which is also its storage key in s.jump. */
+const KEY_DEGS=[0,2,4,5,7,9];
+function keyThirdAbove(deg){return ({0:4,2:3,4:3,5:4,7:4,9:3,11:3})[((deg%12)+12)%12];}
+function pickKey(){let lo=-9,hi=0;const p=profile();if(p){lo=Math.max(-17,(p.low-60)+1);hi=Math.min(9,(p.high-60)-13);if(hi<lo)hi=lo;}return lo+Math.floor(Math.random()*(hi-lo+1));}   // highest target = do + la + a minor 3rd = an octave up
+function keyName(semi){return nlabel(semi).replace(/-?\d+$/,'');}
 function jumpCheck(l){return autoChecks(l).find(c=>c.kind==='jumpN');}
 function jumpChecks(l){return autoChecks(l).filter(c=>c.kind==='jumpN');}
 function lessonHasJump(){const l=curId&&lessonById(curId);return !!(l&&jumpCheck(l));}
@@ -1014,6 +1032,7 @@ function startJump(idx){
  if(!pdActive){showToast('Turn on the live tuner first');return;}
  const cs=jumpChecks(lessonById(curId)),c=cs[idx||0];if(!c)return;
  jdInterval=c.interval;jdIntName=c.intName||intervalName(c.interval);jdTrials=c.trials||10;
+ jdInKey=!!c.inKey;if(jdInKey){jdKey=pickKey();jdDeg=-1;}
  jdActive=true;jdTrial=0;jdResults=[];jdState='idle';jdRoot=99;
  syncJumpBtns();nextTrial();
 }
@@ -1021,9 +1040,11 @@ function stopJump(){jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers(
 function jumpDrillHTML(){
  const l=curId&&lessonById(curId),jcs=jumpChecks(l);if(!jcs.length)return '';
  const tot=jcs[0].trials||10;let btns,label;
+ const anyKey=jcs.some(c=>c.inKey),onlyKey=jcs.length===1&&jcs[0].inKey;
  if(jcs.length===1){
-  btns='<button class="tbtn jd-btn" data-jdint="'+jcs[0].interval+'" data-jdlabel="▶ Start jump-drill" onclick="toggleJump(0)">▶ Start jump-drill</button>';
-  label='Auto jump-drill — scored, '+tot+' random roots';
+  const lab=onlyKey?'▶ Start in-key drill':'▶ Start jump-drill';
+  btns='<button class="tbtn jd-btn" data-jdint="'+jcs[0].interval+'" data-jdlabel="'+lab+'" onclick="toggleJump(0)">'+lab+'</button>';
+  label=onlyKey?('Auto in-key drill — scored, '+tot+' notes of a random key'):('Auto jump-drill — scored, '+tot+' random roots');
  }else{
   btns=jcs.map((c,i)=>{const lab='▶ '+(c.intName||intervalName(c.interval));return '<button class="tbtn jd-btn" data-jdint="'+c.interval+'" data-jdlabel="'+lab+'" onclick="toggleJump('+i+')">'+lab+'</button>';}).join('');
   label='Auto jump-drill — pick an interval, '+tot+' random roots each';
@@ -1031,21 +1052,30 @@ function jumpDrillHTML(){
  return '<div class="t-label">'+label+'</div>'+
   '<div class="hold" style="flex-wrap:wrap;gap:8px">'+btns+'<div class="hold-meter"><div id="jdTrial" style="font-size:13px;opacity:.8">—</div><div id="jdScore" style="font:700 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace">0 / '+tot+'</div></div></div>'+
   '<div id="jdState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
-  '<div class="t-hint">Hear the root, then sing the interval straight away — don’t walk up. Each session is '+tot+' random roots, scored for pitch and for jumping cleanly; your best session per interval counts. Headphones required so the played root doesn’t leak into the mic.</div>';
+  '<div class="t-hint">'+(onlyKey?'':'Hear the root, then sing the interval straight away — don’t walk up. ')+(anyKey?'In-key trials play “do” to set the key, then a melody note: sing the third above that note, staying in the key (major or minor — the key decides), and you hear the pair played together after each try. ':'')+'Each session is '+tot+' trials, scored for pitch and for jumping cleanly; your best session counts. Headphones required so the played notes don’t leak into the mic.</div>';
 }
 function nextTrial(){
  clearJumpTimers();
  if(jdTrial>=jdTrials){finishJump();return;}
  jdTrial++;
- jdRoot=pickRoot();setTarget(jdRoot+jdInterval);
  jdState='root';setJumpScore(jdResults.filter(r=>r.pass).length,jdTrials);
+ if(jdInKey){
+  /* "do" sets the key, then the melody note; you sing the third above it, in the key */
+  let d=0;for(let i=0;i<8;i++){d=KEY_DEGS[Math.floor(Math.random()*KEY_DEGS.length)];if(d!==jdDeg)break;}
+  jdDeg=d;jdRoot=jdKey+d;jdTgt=jdRoot+keyThirdAbove(d);setTarget(jdTgt);
+  paintJump('Trial '+jdTrial+' — key of '+keyName(jdKey)+': “do”, then '+degName(d)+'…');
+  tone(jdKey,0.45,0,0.2);tone(jdRoot,0.9,0.55,0.24);
+  jdT1=setTimeout(beginListen,1700);
+  return;
+ }
+ jdRoot=pickRoot();jdTgt=jdRoot+jdInterval;setTarget(jdTgt);
  paintJump('Trial '+jdTrial+' — playing root, listen…');
  tone(jdRoot,0.9,0,0.24);
  jdT1=setTimeout(beginListen,1150);
 }
 function beginListen(){
  jdState='listen';jdCap=[];jdArmed=true;jdSil=0;
- paintJump('Trial '+jdTrial+' — sing the '+jdIntName+' now');
+ paintJump('Trial '+jdTrial+' — '+(jdInKey?('sing the 3rd above '+degName(jdDeg)+' now'):('sing the '+jdIntName+' now')));
  jdT2=setTimeout(()=>{if(jdState==='listen')judgeTrial(true);},6000);
 }
 function feedJump(hz,voiced){
@@ -1066,7 +1096,7 @@ function judgeTrial(noAttempt){
   const sk=jdCap.length>=8?1:0;
   const onsetHz=jdMed(jdCap.slice(sk,sk+3));
   const settleHz=jdMed(jdCap.slice(Math.max(sk+3,jdCap.length-6)));
-  const tgtHz=freq(jdRoot+jdInterval);
+  const tgtHz=freq(jdTgt);
   const settleC=jdFold(settleHz,tgtHz),onsetC=jdFold(onsetHz,tgtHz);
   inTune=Math.abs(settleC)<=50;                 // settled within ~half a semitone of the interval
   jumped=Math.abs(onsetC)<=200;                 // arrived within ~2 semitones at the onset (didn't climb)
@@ -1077,8 +1107,10 @@ function judgeTrial(noAttempt){
  jdState='judge';
  const passes=jdResults.filter(r=>r.pass).length;
  setJumpScore(passes,jdTrials);
- paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?' — you walked up to it':' — off pitch'))))+'   ·   '+passes+'/'+jdResults.length+' so far');
- jdT1=setTimeout(nextTrial,1300);
+ const ans=jdInKey?('   ·   '+degName(jdDeg)+' → '+degName(jdDeg+keyThirdAbove(jdDeg))+' ('+(keyThirdAbove(jdDeg)===3?'minor':'major')+' 3rd)'):'';
+ paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?' — you walked up to it':' — off pitch'))))+ans+'   ·   '+passes+'/'+jdResults.length+' so far');
+ if(jdInKey){tone(jdRoot,1.0,0.15,0.17);tone(jdTgt,1.0,0.15,0.17);}   // hear the melody+harmony pair you were aiming for
+ jdT1=setTimeout(nextTrial,jdInKey?2300:1300);
 }
 function finishJump(){
  jdActive=false;jdState='done';jdArmed=false;clearJumpTimers();
@@ -1473,7 +1505,7 @@ function paintLessonLog(){
  jumpChecks(l).forEach(c=>{
   const j=(s.jump&&s.jump[String(c.interval)])||{};const best=j.bestPasses||0,need=c.need||8,tot=c.trials||10;
   h+='<div class="ll-prog" style="margin-top:14px">'+(c.intName||intervalName(c.interval))+' jump-drill — best <b>'+Math.min(best,tot)+' / '+tot+'</b> (need '+need+')'+(best>=need?' <span class="ll-pass">passed ✓</span>':'')+'</div>';
-  h+='<div class="ll-empty">'+(j.lastPasses!=null?('Last session '+j.lastPasses+'/'+(j.lastTotal||tot)+'. '):'')+'Run the scored jump-drill in the tool above — hear the root, sing the '+(c.intName||intervalName(c.interval))+' straight away (don’t walk up). Your best session counts.</div>';
+  h+='<div class="ll-empty">'+(j.lastPasses!=null?('Last session '+j.lastPasses+'/'+(j.lastTotal||tot)+'. '):'')+(c.inKey?'Run the in-key drill in the tool above — hear “do” and a melody note, then sing the third above that note in the key, straight away. Your best session counts.':('Run the scored jump-drill in the tool above — hear the root, sing the '+(c.intName||intervalName(c.interval))+' straight away (don’t walk up). Your best session counts.'))+'</div>';
  });
  const ec=earCheck(l);
  if(ec){const e=s.ear||{};const best=e.bestCorrect||0,need=ec.need||6,tot=ec.rounds||8;
@@ -1590,10 +1622,11 @@ function isMastered(id){return !!(S[id]&&S[id].mastered);}
 function statusOf(id){if(isMastered(id))return 'mastered';const i=FLAT.indexOf(id);if(i===0)return 'available';return isMastered(FLAT[i-1])?'available':'locked';}
 function lessonById(id){for(const m of MODULES)for(const l of m.lessons)if(l.id===id)return l;}
 function moduleProgress(m){const tot=m.lessons.length;const done=m.lessons.filter(l=>isMastered(l.id)).length;return {done,tot};}
-let view=1;
+let view='today';
 function renderNav(){
  const pset=!!profile();
- let h='<button class="ntab '+(view==='setup'?'active':'')+'" onclick="go(\'setup\')"><span class="mod-dot '+(pset?'done':'')+'"></span>M0</button>';
+ let h='<button class="ntab '+(view==='today'?'active':'')+'" onclick="go(\'today\')">★ Today</button>';
+ h+='<button class="ntab '+(view==='setup'?'active':'')+'" onclick="go(\'setup\')"><span class="mod-dot '+(pset?'done':'')+'"></span>M0</button>';
  h+=MODULES.map(m=>{const p=moduleProgress(m);const cls=p.done===p.tot?'done':(p.done>0?'part':'');const firstLocked=statusOf(m.lessons[0].id)==='locked';
   return '<button class="ntab '+(view===m.n?'active':'')+'" onclick="go('+m.n+')"><span class="mod-dot '+cls+'"></span>M'+m.n+(firstLocked?' <span class="lock">🔒</span>':'')+'</button>';}).join('');
  h+='<button class="ntab '+(view==='room'?'active':'')+'" onclick="go(\'room\')" style="color:'+(view==='room'?'var(--accent)':'var(--purple)')+'">♪ Practice Room</button>';
@@ -1604,12 +1637,15 @@ function renderNav(){
 function go(v){stopDrone();stopPitch();stopMetro();stopHold();view=v;render();window.scrollTo({top:0});}
 function render(){
  renderNav();const main=document.getElementById('main');
+ if(view==='today'){main.innerHTML=renderToday();return;}
  if(view==='setup'){main.innerHTML=renderSetup();return;}
  if(view==='room'){main.innerHTML=renderRoom();return;}
  if(view==='ref'){main.innerHTML=renderRef();return;}
  if(view==='prog'){main.innerHTML=renderProg();return;}
  const m=MODULES.find(x=>x.n===view);const p=moduleProgress(m);const pct=Math.round(p.done/p.tot*100);
  let h='<div class="mod-head"><div class="mtag">Module '+m.n+'</div><h2>'+m.t+'</h2><p>'+m.g+'</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+p.done+'/'+p.tot+'</span></div></div>';
+ const mcp=moduleCp(m);
+ if(mcp&&canChallenge(mcp.id)&&!isMastered(mcp.id)&&p.done<p.tot)h+='<button class="qd-cta sec" onclick="openLesson(\''+mcp.id+'\')">⚡ Already comfortable with this? Test out — pass the checkpoint to skip Module '+m.n+'</button>';
  h+=m.lessons.map(l=>renderLesson(l)).join('');
  main.innerHTML=h;
 }
@@ -1617,13 +1653,16 @@ function renderLesson(l){
  const s=statusOf(l.id);const cp=l.cp?'cp':'';
  const badge=l.cp?'◆':(s==='mastered'?'✓':(l.id.split('.')[1]||'★'));
  const statusTxt=s==='mastered'?'Mastered':s==='available'?(l.cp?'Ready':'Available'):'Locked';
- const chips=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'')+(l.tool?'<span class="chip">♪ built-in tool</span>':'')+(l.cp?'<span class="chip cp">recording</span>':'');
- const onclick=s==='locked'?'':'onclick="openLesson(\''+l.id+'\')"';
- return '<div class="lesson '+s+' '+cp+'" '+onclick+'><div class="l-badge '+s+' '+cp+'">'+badge+'</div><div class="l-main"><div class="l-title">'+l.t+'</div><div class="l-focus">'+l.f+'</div><div class="l-chips">'+chips+'</div></div><div class="l-status '+s+'">'+(s==='locked'?'🔒 '+statusTxt:statusTxt)+'</div></div>';
+ const chips=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'')+(l.tool?'<span class="chip">♪ built-in tool</span>':'')+(l.cp?'<span class="chip cp">'+(cpAutoCovers(l)?'auto-scored':'recording')+'</span>':'');
+ const chal=s==='locked'&&canChallenge(l.id);
+ const onclick=(s==='locked'&&!chal)?'':'onclick="openLesson(\''+l.id+'\')"';
+ const stat=chal?'⚡ Test out':(s==='locked'?'🔒 '+statusTxt:statusTxt);
+ return '<div class="lesson '+s+' '+cp+(chal?' challenge':'')+'" '+onclick+'><div class="l-badge '+s+' '+cp+'">'+badge+'</div><div class="l-main"><div class="l-title">'+l.t+'</div><div class="l-focus">'+l.f+'</div><div class="l-chips">'+chips+'</div></div><div class="l-status '+s+'">'+stat+'</div></div>';
 }
 let curId=null;
 function openLesson(id){
- if(statusOf(id)==='locked')return;
+ const challenge=statusOf(id)==='locked';
+ if(challenge&&!canChallenge(id))return;
  stopPitch();if(recOwner&&recOwner!==id){if(recURL)URL.revokeObjectURL(recURL);recURL=null;recOwner=null;}
  curId=id;const l=lessonById(id);setSong(l.song||'row');const s=st(id);const mod=MODULES.find(m=>m.lessons.some(x=>x.id===id));
  /* Aim the tuner at the note THIS lesson wants: a 3rd above the drone for an
@@ -1634,9 +1673,15 @@ function openLesson(id){
  document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+id);
  const meta=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'');
  let h='<div class="d-title">'+l.t+'</div><div class="d-focus">'+l.f+'</div><div class="d-meta">'+meta+'</div>';
+ if(challenge)h+='<div class="challenge-note">⚡ <b>Test-out attempt.</b> Pass this checkpoint and every lesson in Module '+mod.n+' is marked mastered, so you skip straight ahead. Miss it and nothing changes — just work through the lessons.</div>';
  if(l.tool)h+=toolHTML(l.tool);
  if(l.auto)h+='<div class="d-section"><div class="d-h">Live test log <span class="ll-auto">auto-scored</span></div><div class="lesson-log" id="lessonLog"></div></div>';
- if(l.cp){
+ const cpAuto=cpAutoCovers(l);
+ if(l.cp&&cpAuto){
+  /* auto-scored checkpoint: the scored runs ARE the test; recording is optional review */
+  h+='<div class="d-section"><div class="d-h cp">What to do</div>'+l.rec.map(r=>'<div class="item"><div class="item-text">'+r+'</div></div>').join('')+'<div class="item"><div class="item-text">The app scores these runs itself — when every standard below is ticked, tap Pass. No recording needed.</div></div></div>';
+  h+='<div class="d-section"><div class="d-h cp">Optional: record a take</div>'+recorderHTML()+'<div class="cp-note" style="margin-top:8px">Listening back to yourself is the fastest way to hear scooping and drift. Want specific feedback? Send the recording to Claude in chat.</div></div>';
+ } else if(l.cp){
   h+='<div class="d-section"><div class="d-h cp">What to record</div>'+l.rec.map(r=>'<div class="item"><div class="item-text">'+r+'</div></div>').join('')+'</div>';
   h+='<div class="d-section"><div class="d-h cp">Record it here</div>'+recorderHTML()+'</div>';
   h+='<div class="d-section"><div class="cp-note">📤 <b>Send the recording to Claude in chat.</b> I will listen for pitch accuracy, drift, scooping, and whether your line holds against the other voice — then give specific feedback. Paste the key points below so this checkpoint keeps a record.</div></div>';
@@ -1646,12 +1691,12 @@ function openLesson(id){
  }
  h+='<div class="d-section"><div class="d-h std">Standard to pass'+(l.cp?'':' — tick when true')+'</div>'+l.stds.map((t,i)=>'<div class="item std"><div class="check std '+(s.stds[i]?'on':'')+'" onclick="toggleStd('+i+')"></div><div class="item-text">'+t+'</div></div>').join('')+'</div>';
  h+='<div class="d-section"><div class="d-h">'+(l.cp?'Review notes / self-assessment':'Practice log')+'</div><textarea class="notes" placeholder="'+(l.cp?'Paste Claude feedback or your own assessment...':'What locked in, your jump-drill score, what to chase next time...')+'" onchange="saveNotes(this.value)">'+((l.cp?s.review:s.notes)||'')+'</textarea></div>';
- const allStd=l.stds.every((_,i)=>s.stds[i]);const recOk=l.cp?s.recorded:true;const ready=allStd&&recOk;
+ const allStd=l.stds.every((_,i)=>s.stds[i]);const recOk=l.cp?(s.recorded||cpAuto):true;const ready=allStd&&recOk;
  if(s.mastered){
   h+='<button class="master-btn done">✓ '+(l.cp?'Checkpoint passed':'Mastered')+' — next unlocked</button><button class="unmark" onclick="unmark()">un-mark this</button>';
  } else {
-  h+='<button class="master-btn '+(ready?'ready':'notready')+'" '+(ready?'onclick="markMastered()"':'')+'>'+(l.cp?'Pass checkpoint':'Mark mastered')+' → unlock next</button>';
-  if(!ready)h+='<div class="gate-hint">'+(l.cp&&!s.recorded?'Mark the recording done, and tick':'Tick')+' all standards above to unlock this.</div>';
+  h+='<button class="master-btn '+(ready?'ready':'notready')+'" '+(ready?'onclick="markMastered()"':'')+'>'+(l.cp?(challenge?'Pass — skip Module '+mod.n:'Pass checkpoint'):'Mark mastered')+' → unlock next</button>';
+  if(!ready)h+='<div class="gate-hint">'+(l.cp&&!s.recorded&&!cpAuto?'Mark the recording done, and tick':'Tick')+' all standards above to unlock this.</div>';
  }
  document.getElementById('dBody').innerHTML=h;
  if(l.auto)paintLessonLog();syncHoldTarget();
@@ -1662,8 +1707,56 @@ function toggleTask(i){const s=st(curId);s.tasks[i]=!s.tasks[i];persist();openLe
 function toggleStd(i){const s=st(curId);s.stds[i]=!s.stds[i];persist();openLesson(curId);}
 function toggleRec(){const s=st(curId);s.recorded=!s.recorded;persist();openLesson(curId);}
 function saveNotes(v){const s=st(curId);const l=lessonById(curId);if(l.cp)s.review=v;else s.notes=v;persist();}
-function markMastered(){const s=st(curId);s.mastered=true;markDayActive();persist();const l=lessonById(curId);showToast((l.cp?'Checkpoint passed':'Mastered')+' — next unlocked');openLesson(curId);}
+/* Checkpoints the app fully auto-scores (every standard is ticked by an auto check:
+   cpA, cpB, cpC) pass on the score alone; the recording becomes optional self-review.
+   cpD and cpFinal can't be machine-scored, so they still need the recording. */
+function cpAutoCovers(l){if(!l||!l.cp)return false;const t=new Set();autoChecks(l).forEach(c=>(c.stds||[]).forEach(i=>t.add(i)));return l.stds.every((_,i)=>t.has(i));}
+/* Test out: an auto-scored checkpoint can be attempted at any time, even while locked. */
+function canChallenge(id){const l=lessonById(id);return !!(l&&l.cp&&cpAutoCovers(l));}
+function moduleOf(id){return MODULES.find(m=>m.lessons.some(x=>x.id===id));}
+function moduleCp(m){return m&&m.lessons.find(x=>x.cp);}
+/* Passing a checkpoint masters every lesson in its module, so a test-out skips them. */
+function passCheckpoint(id){const m=moduleOf(id);if(m)m.lessons.forEach(x=>{st(x.id).mastered=true;});}
+/* The lesson to do next: the first unmastered lesson after your furthest mastered one
+   (so a test-out moves you forward, not back to Module 1), else the first open one. */
+function nextLessonId(){
+ let last=-1;FLAT.forEach((id,i)=>{if(isMastered(id))last=i;});
+ for(let i=last+1;i<FLAT.length;i++)if(!isMastered(FLAT[i])&&statusOf(FLAT[i])!=='locked')return FLAT[i];
+ return FLAT.find(id=>!isMastered(id)&&statusOf(id)!=='locked')||null;
+}
+function markMastered(){const s=st(curId);s.mastered=true;const l=lessonById(curId);if(l.cp)passCheckpoint(curId);markDayActive();persist();showToast(l.cp?('Checkpoint passed — Module '+moduleOf(curId).n+' complete'):'Mastered — next unlocked');openLesson(curId);}
 function unmark(){const s=st(curId);s.mastered=false;persist();openLesson(curId);}
+/* ---- Today: the landing screen. One tap opens the next lesson with the live tuner (and
+   the drone, for drone lessons) already running — replacing the 5–6 taps of setup that
+   stood between opening the app and singing the first note. ---- */
+function droneLesson(l){const h=holdCheck(l);return !!(l&&l.tool==='tone'&&((h&&(h.onDrone||h.offDrone))||stepCheck(l)));}
+async function startSession(id){
+ openLesson(id);
+ const l=lessonById(id);if(!l||!l.tool||curId!==id)return;
+ const host='tuner_'+l.tool;
+ /* tuner FIRST: it switches iOS into capture mode, so the drone is then built on that
+    context and no later context rebuild can silence it */
+ if(document.getElementById(host)&&!pdActive)await togglePitch(host);
+ if(droneLesson(l)&&!droneNodes.length)toggleDrone();
+}
+function renderToday(){
+ const id=nextLessonId(),M=meta();
+ let h='<div class="mod-head"><div class="mtag">Today</div><h2>Your next step</h2><p>Headphones in, a minute of humming or lip trills to warm up, then one tap — your lesson opens with the tools already running.</p></div>';
+ if(!profile())h+='<div class="bcard"><div class="bcard-title">First time? Find your range</div><div class="bcard-sub">one minute · optional</div><p class="today-p">The range check centres the drone in your voice, so every exercise sits where you can sing it relaxed.</p><button class="qd-cta sec" onclick="go(\'setup\')">Do the range check (Module 0)</button></div>';
+ if(!id){
+  h+='<div class="bcard"><div class="bcard-title">You’ve finished the path</div><p class="today-p">Keep it alive: the 5-minute drill a few times a week, and lesson 5.4 — sing with humans.</p></div>';
+ }else{
+  const l=lessonById(id),m=moduleOf(id),live=l.tool?(droneLesson(l)?'drone and tuner':'tuner'):'';
+  h+='<div class="bcard"><div class="bcard-sub">Module '+m.n+' · '+m.t+' · '+(l.cp?'Checkpoint':'Lesson '+id)+'</div><div class="bcard-title">'+l.t+'</div><p class="today-p">'+l.f+'</p>'+
+   '<div class="l-chips">'+(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip covers">'+l.covers+'</span>':'')+'</div>'+
+   '<button class="qd-cta" onclick="startSession(\''+id+'\')">▶ '+(live?'Start — '+live+' on':'Open lesson')+'</button></div>';
+  const cp=moduleCp(m);
+  if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="qd-cta sec" onclick="openLesson(\''+cp.id+'\')">⚡ Already comfortable with Module '+m.n+'? Test out</button>';
+ }
+ h+='<button class="qd-cta sec" onclick="openQuick()">⏱ Only 5 minutes? Do the daily drill instead</button>';
+ h+='<div class="today-streak">🔥 '+(M.streak||0)+'-day streak · best '+(M.best||0)+' · '+FLAT.filter(isMastered).length+' of '+FLAT.length+' lessons mastered</div>';
+ return h;
+}
 /* ---- Practice Room ---- */
 function renderRoom(){
  return '<div class="mod-head"><div class="mtag">Practice Room</div><h2>All the Tools</h2><p>The sound tools from the lessons, in one place — for warm-ups and free practice once you know the drills. Always warm up first: gentle humming, lip trills, sirens low to high.</p></div>'+
@@ -1727,7 +1820,7 @@ function renderProg(){
  h+='<button class="qd-cta sec" onclick="openQuick()">⚡ Do today\u2019s 5-minute drill</button>';
  h+='<div class="bcard" style="margin-top:14px"><div class="bcard-title">Modules</div><div class="bcard-sub">tap a module tab to open its lessons</div>';
  MODULES.forEach(m=>{const p=moduleProgress(m);const locked=statusOf(m.lessons[0].id)==='locked';h+='<div class="pmod"><div class="pmod-n">M'+m.n+'</div><div class="pmod-t">'+m.t+(locked?' 🔒':'')+'</div><div class="pmod-c">'+p.done+'/'+p.tot+'</div></div>';});
- h+='</div><div class="bcard"><div class="bcard-title">Recording checkpoints</div><div class="bcard-sub">upload these to Claude for review</div>';
+ h+='</div><div class="bcard"><div class="bcard-title">Checkpoints</div><div class="bcard-sub">M1–M3 are auto-scored and can be taken early to test out · M4 and the final need a recording</div>';
  cps.forEach(l=>{const done=isMastered(l.id);const open=statusOf(l.id)!=='locked';h+='<div class="pmod"><div class="pmod-n">'+(done?'✓':(open?'◆':'🔒'))+'</div><div class="pmod-t">'+l.t.replace('Checkpoint — ','')+'</div><div class="pmod-c">'+(done?'passed':(open?'ready':'locked'))+'</div></div>';});
  h+='</div>';
  return h;
@@ -1737,7 +1830,7 @@ function doExport(){const blob=new Blob([JSON.stringify({lessons:S,exported:new 
 function doImport(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.lessons){S=d.lessons;persist();render();showToast('Progress restored');}}catch(e){showToast('Could not read that file');}};r.readAsText(f);ev.target.value='';}
 function doReset(){if(!confirm('Erase all progress and start the path fresh? Export a backup first if unsure.'))return;S={};persist();render();showToast('Progress reset');}
 init();
-(function(){if(!profile()){view='setup';return;}for(const m of MODULES){if(m.lessons.some(l=>!isMastered(l.id))){view=m.n;break;}}})();
+view='today';   /* always land on Today — it shows the range-check card itself when there is no profile yet */
 render();
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail();});
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
