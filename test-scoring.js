@@ -97,6 +97,7 @@ const EXPOSE = [
   'nextLessonId', 'moduleOf', 'droneLesson', 'renderToday',
   'LOCK_TIERS', 'lockTierFor', 'lockWindow',
   'REVIEW_SKILLS', 'reviewPool', 'reviewWeight', 'planReview', 'recordReview',
+  'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -654,6 +655,68 @@ group('daily review: pool grows with mastery, plan leans on weak/stale skills');
   const s2 = { M3: { hist: Array(10).fill(true), n: 10, ok: 10 } };
   A.recordReview(s2, [{ skill: 'M3', pass: false }], today);
   ok(s2.M3.hist.length === 10 && s2.M3.hist[9] === false, 'history keeps only the last 10 attempts');
+}
+
+/* ---- Songs earlier (item 4): 1.5 First Song, 2.6 First Thirds in a Song ----
+   Modules 1–2 used to be 11 drill-only lessons before any music. */
+group('songs earlier: 1.5 sings the melody, 2.6 harmonizes the first phrase');
+{
+  const F = A.FLAT, L15 = A.lessonById('1.5'), L26 = A.lessonById('2.6');
+  ok(F.indexOf('1.4') < F.indexOf('1.5') && F.indexOf('1.5') < F.indexOf('cpA'), '1.5 sits at the end of Module 1, before cpA');
+  ok(F.indexOf('2.5') < F.indexOf('2.6') && F.indexOf('2.6') < F.indexOf('cpB'), '2.6 sits at the end of Module 2, before cpB');
+  const c15 = L15.auto.checks[0];
+  ok(L15.tool === 'row' && L15.song === 'row' && c15.kind === 'rowRun' && c15.memory && c15.target === 'mel', '1.5 is a from-memory MELODY run');
+  ok(L26.tool === 'row' && L26.song === 'row1' && L26.auto.checks.every((c) => c.kind === 'rowRun' && !c.memory), '2.6 is a harmony-over-melody run');
+  eq(JSON.stringify(A.SONGS.row1.notes), JSON.stringify(A.SONGS.row.notes.slice(0, 10)), 'row1 = the first phrase of Row Your Boat');
+
+  // the longest drill-only stretch before Module 3 (lessons without a song)
+  let run = 0, longest = 0;
+  F.slice(0, F.indexOf('3.1')).forEach((id) => { if (A.lessonById(id).tool === 'row') run = 0; else longest = Math.max(longest, ++run); });
+  ok(longest <= 6, 'no more than 6 drill lessons in a row before Module 3 (was 11) — got ' + longest);
+
+  // melody-from-memory scoring: right in any key; singing the harmony instead fails
+  const wins = buildWins(A.SONGS.row.notes, 96);
+  ok(A.classifyMemory(wins, makeSamples(wins, (w) => semiToHz(w.mel)), 'mel', 0.7).clean, 'singing the melody passes the 1.5 run');
+  ok(A.classifyMemory(wins, makeSamples(wins, (w) => semiToHz(w.mel + 3)), 'mel', 0.7).clean, '…in any key (transposed up 3)');
+  ok(!A.classifyMemory(wins, makeSamples(wins, (w) => semiToHz(w.harm)), 'mel', 0.7).clean, 'singing the harmony instead does not pass');
+  ok(A.rowRunOk(c15, { clean: true, mem: true }) && !A.rowRunOk(c15, { clean: true, mem: false }), 'only a from-memory run counts for 1.5');
+}
+
+/* ---- Harmony below the melody (item 8) ----
+   A third below, dropping to "sol" under "do"; per-song bfix hand fixes for
+   singability. Must be a DIFFERENT line from the high part (scorers fold octaves). */
+group('harmony below: rule, singability, and the scorers tell it apart');
+{
+  eq(JSON.stringify([0, 2, 4, 5, 7, 9, 11, 12].map(A.belowOf)), JSON.stringify([-5, -1, 0, 2, 4, 5, 7, 7]),
+    'do→sol(4th), re→ti, mi→do, fa→re, sol→mi, la→fa, ti→sol (thirds below), high do→sol');
+  ['row', 'row1', 'grace', 'auralee', 'lang'].forEach((k) => {
+    const S = A.SONGS[k], b = A.belowLine(S), m = S.notes.map((n) => n[0]);
+    const gaps = m.map((x, i) => x - b[i]), leaps = b.slice(1).map((x, i) => Math.abs(x - b[i]));
+    ok(gaps.every((g) => g >= 3 && g <= 7), k + ': every below note is a 3rd, 4th or 5th under the melody');
+    ok(leaps.every((l) => l <= 5 && l !== 6), k + ': below line moves by a 4th at most, never a tritone (max ' + Math.max(...leaps) + ')');
+    const shared = S.notes.filter((n, i) => ((n[1] - b[i]) % 12 + 12) % 12 === 0).length;
+    ok(shared / S.notes.length <= 0.1, k + ': below line is a different line from the high part, not an octave copy (' + shared + ' shared note' + (shared === 1 ? '' : 's') + ')');
+    if (((m[m.length - 1] % 12) + 12) % 12 === 0) eq(((b[b.length - 1] % 12) + 12) % 12, 7, k + ': ends on sol under the final do');
+  });
+  eq(A.belowLine(A.SONGS.auralee)[4], -5, 'Aura Lee hand fix: G under re (not the B–F–B tritone)');
+
+  const savedPart = A.TS.part; A.setSong('auralee');
+  A.TS.part = 'below'; eq(A.harmOf(A.SONGS.auralee.notes[4], 4), -5, 'part = below → harmony notes come from the below line');
+  A.TS.part = 'above'; eq(A.harmOf(A.SONGS.auralee.notes[4], 4), 5, 'part = above → the written high line');
+  A.TS.part = savedPart; A.setSong('row');
+  const sv = A.getS(); A.setS({}); A.setPart('below');
+  ok(A.getS().__meta && A.getS().__meta.part === 'below', 'the chosen part is saved with your progress');
+  A.setPart('above'); A.setS(sv); A.TS.part = savedPart;
+
+  // windows as startRowRun builds them in below mode
+  const notes = A.SONGS.grace.notes, bl = A.belowLine(A.SONGS.grace);
+  const bw = buildWins(notes.map((n, i) => [n[0], bl[i], n[2]]), 84);
+  ok(A.classifyHarmony(bw, makeSamples(bw, (w) => semiToHz(w.harm)), 0.62, 0.18).clean, 'singing the below line over the melody passes');
+  const hiNotes = notes.map((n) => n[1]);
+  ok(!A.classifyHarmony(bw, makeSamples(bw, (w, i) => semiToHz(hiNotes[i])), 0.62, 0.18).clean, 'singing the HIGH line in below mode does not pass');
+  ok(!A.classifyHarmony(bw, makeSamples(bw, (w) => semiToHz(w.mel)), 0.62, 0.18).clean, 'falling onto the melody does not pass');
+  ok(A.classifyMemory(bw, makeSamples(bw, (w) => semiToHz(w.harm)), 'harm', 0.7).clean, 'the below line can be sung from memory and scored');
+  ok(!A.classifyMemory(bw, makeSamples(bw, (w, i) => semiToHz(hiNotes[i])), 'harm', 0.7).clean, '…and the high line from memory does not count as it');
 }
 
 /* ================================================================ */

@@ -73,7 +73,13 @@ melody), plus the Module-0 range probe.
 ## Songs
 `SONGS` registry; each note is `[melodySemi, harmonySemi, beats]` (semitones from C4).
 `SONGKEY` + `curNotes()` + `setSong()` select the active song, applied per-lesson via a `song`
-field. `row` = Module 3; `grace` / `auralee` / `lang` = interlude module (3.5).
+field. `row` = Module 3 (and 1.5, which sings its MELODY via a rowRun with `target:'mel'`);
+`row1` = row's first phrase, derived (2.6); `grace` / `auralee` / `lang` = interlude module (3.5).
+- `harmonySemi` is the HIGH part. The LOW part (▲/▼ switch, `TS.part`) is derived, never stored:
+  `belowOf` (third below; "sol" under "do") + per-song `bfix` hand fixes, via `belowLine(song)`.
+  **Always read harmony through `harmOf(n,i)`** — reading `n[1]` directly silently ignores the
+  part switch. If you add or edit a song, check its below line still passes the harness
+  singability guards (3rd–5th under, no leap over a 4th, no tritone); fix spots with `bfix`.
 
 ## Pitch engine
 `autoCorrelate(buf, sr, minClarity)`: mic → AnalyserNode(fftSize 4096) → bounded autocorrelation,

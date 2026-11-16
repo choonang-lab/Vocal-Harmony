@@ -6,9 +6,36 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v38 / harmony-v38** — live on GitHub Pages (pedagogy items 6 + 7; the commit after 452d66c). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5). Earlier: v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v39 / harmony-v39** — live on GitHub Pages (pedagogy items 4 + 8; the commit after d81c694). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
-## What changed this session (v37 → v38) — pedagogy items 6 + 7
+## What changed this session (v38 → v39) — pedagogy items 4 + 8 (the last two)
+4. **Songs earlier.** Modules 1–2 were 11 drill-only lessons before any music. Two new song
+   lessons, placed at each module's END (not mid-module: lesson ids are the progress keys, so
+   inserting after 2.2 would have meant renumbering): **1.5 First Song** — Row Your Boat MELODY
+   from memory, scored by the existing memory run with `target:'mel'` (panel hides harmony
+   controls via `melodyOnlyLesson()`); **2.6 First Thirds in a Song** — harmony over the first
+   phrase (`SONGS.row1` = row.notes.slice(0,10)), right after 2.5's in-key thirds. Longest
+   drill-only stretch before Module 3 is now 6 (cpA + 2.1–2.5).
+8. **Harmony below.** Song panel has a ▲ Above / ▼ Below part switch (`TS.part`, saved in
+   meta().part). Below line is DERIVED, not stored: `belowOf` = diatonic third below, except
+   under "do" → "sol" (4th below; the third below, "la", would change the chord and leave the
+   final note unresolved), plus per-song `bfix` hand fixes for singability (row: C4 under
+   "life" instead of a 9-semitone leap; auralee: G–F–G under re–la–re instead of a B–F–B
+   tritone). Playback, scored runs and the self-duet all read harmony via `harmOf(n,i)`. It is
+   a genuinely different line on purpose — the scorers fold octaves, so the high part an
+   octave down would already score as correct and would add nothing. Runs record their part.
+- Also fixed in passing: every song panel was titled "Row Your Boat — in thirds"; it now
+  shows the current song.
+- Harness +38 (210 total), mutation-tested (7 breaks, all caught); singability guards on every
+  song's below line (3rd–5th under the melody, no leap over a 4th, no tritone).
+- Browser-verified: 1.5 panel + a scored melody run (harmony-instead fails with melody advice;
+  melody in another key passes; std ticks); S1 with ▼ Below — playback, run windows and duet
+  grid are all the below line, a below run scores clean and is tagged; 2.6 opens on row1;
+  part choice survives a reload.
+- **Not verified:** how the below lines SOUND — they are rule-generated plus two hand fixes, so
+  an ear check is worth doing, like any arrangement.
+
+## What changed earlier this session (v37 → v38) — pedagogy items 6 + 7
 6. **Daily drill → daily review** (openQuick rewritten; old manual root/reveal/self-score drill
    removed). An auto-scored 10-trial mix on the jump engine (`jdReview`, one REVIEW_SKILLS id per
    trial: unison, step, M3, m3, P4, P5, key3). Pool (`reviewPool`) = skills whose teaching lesson
@@ -185,10 +212,8 @@ protects that from a stray auto-check.
 ## Open tasks / next steps
 - **On-device check of v37:** Today → one tap → tuner (and drone on 1.2/1.3/1.4/cpA/2.3) comes on
   with ONE mic prompt; drone stays audible in wired headphones. Then try 2.5's in-key drill.
-- **Deferred pedagogy items from the v37 review** (1/2/3/5 shipped v37, 6/7 shipped v38):
-  4. A song taste earlier — 10 drill-only lessons before any music (e.g. Row Your Boat melody
-     over the drone in M1; its first phrase in thirds right after 2.2).
-  8. Harmony below the melody available in the songs (needs a second harmony line per song).
+- **Pedagogy review backlog: empty.** 1/2/3/5 shipped v37, 6/7 v38, 4/8 v39. What's left are
+  feel checks on the phone: the ±35¢ Module 1 lock window, and how the below lines sound.
 - **[Task B] — DONE this session** (grace/auralee corrected + pinned in the harness; see above).
   Only optional extension left: the fix keeps each song at its current phrase length (grace =
   lines 1–2, auralee = first two phrases). Extend to the full verse later if desired.

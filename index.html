@@ -263,7 +263,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 <header class="site-header"><div class="header-inner">
   <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
   <div class="header-btns">
-    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v38</span>
+    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v39</span>
     <button class="hbtn" onclick="doExport()">Backup</button>
     <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
     <button class="hbtn" onclick="doReset()">Reset</button>
@@ -300,6 +300,10 @@ const MODULES=[
    {kind:'stepSeq',pattern:[0,2,4,2,0],stepTol:45,lockTol:25,need:2,require:'inTune',stds:[0]},
    {kind:'stepSeq',pattern:[0,2,4,2,0],stepTol:45,lockTol:25,need:2,require:'lock',stds:[1]}
   ]}},
+ {id:'1.5',t:'First Song',f:'Sing a whole tune in tune — Row, Row, Row Your Boat, the song you’ll harmonize in Module 3.',time:'~10 min',covers:'Pitch accuracy in a real song',tool:'row',song:'row',
+  tasks:['Press “Melody only” and sing along on “loo”. Lower the tempo until every note lands cleanly — no sliding up into them.','Now sing it from memory with just the click. The app checks that each note lands in tune, in whatever key you choose.','Know this melody cold: in Module 3 you sing a harmony line against it, and it will try to pull you onto it.'],
+  stds:['You can sing the Row Your Boat melody in tune from memory.'],
+  auto:{checks:[{kind:'rowRun',memory:true,target:'mel',onPct:0.7,need:1,stds:[0]}]}},
  {id:'cpA',cp:true,t:'Checkpoint — The Drone Hold',f:'Prove the foundation holds before building on it.',covers:'Module 1',tool:'tone',
   rec:['Record ~45 seconds: with the drone on one note, sing and hold a different note (a 3rd or 5th) for 8 counts, three separate times.'],
   stds:['No audible drift on any of the three holds.','Each note is landed instantly, no scooping.'],
@@ -330,6 +334,10 @@ const MODULES=[
   tasks:['So far you jumped a major third up from “do”. A real harmony line moves through the whole key, and above some notes the third is a smaller, minor third: above re you sing fa, above mi you sing sol, above la you sing do. About half the thirds in the songs ahead are minor.','Run the in-key drill: each trial plays “do” to set the key, then a melody note. Sing the third above that note, staying in the key — then you hear the pair played together.','Don’t count semitones. Think in the scale: the third above any note is two scale-steps up, skipping one. Say it in your head — re (mi) FA, la (ti) DO.'],
   stds:['8 out of 10: the third above a random note of the key, sung straight away.'],
   auto:{checks:[{kind:'jumpN',interval:'key3',inKey:true,intName:'3rd in the key',trials:10,need:8,stds:[0]}]}},
+ {id:'2.6',t:'First Thirds in a Song',f:'Your first real harmony: the opening line of Row Your Boat, a third above the tune.',time:'~10 min',covers:'Thirds in a real song',tool:'row',song:'row1',
+  tasks:['Press “Harmony only” and sing that line until you can hum it on its own — it’s “Row, row, row your boat, gently down the stream”, moved up a third.','Press “Both together” and sing the harmony with both voices playing; then “Melody only”, and hold your line against the tune.','Listen for the mix: some of these thirds are major and some are minor — exactly what you drilled in 2.5. In Module 3 you sing the whole song.'],
+  stds:['You hold the harmony over the melody for the first phrase without falling onto it.'],
+  auto:{checks:[{kind:'rowRun',onPct:0.62,collapseMax:0.18,need:1,stds:[0]}]}},
  {id:'cpB',cp:true,t:'Checkpoint — Ten Random Thirds',f:'The gate into real harmony singing.',covers:'Module 2',tool:'interval',
   rec:['Run one full session of the jump drill (ten random roots, the major third above each) and one of the in-key drill (the third above ten notes of a key).'],
   stds:['At least 8 of 10 correct.','Every attempt jumps straight to the note — no walking up do–re–mi.','At least 8 of 10 thirds in the key, major and minor.'],
@@ -410,7 +418,7 @@ const MODULES=[
 ];
 /* ===================== AUDIO ENGINE ===================== */
 let actx=null,droneNodes=[],sessionMode='playback',actxMode='playback';
-const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true,holdOff:null};
+const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true,holdOff:null,part:'above'};
 /* holdOff = the "second note" offset (semitones above root) the live tuner is aimed
    at and the hold scorer locks to. null → the root itself (unison). It PERSISTS across
    drone/root toggles so enabling the tuner (which rebuilds the context and restarts the
@@ -508,14 +516,29 @@ function setRoot(v){TS.root=parseInt(v,10);setTarget(holdTargetSemi());reTuneDro
 function randRoot(){TS.root=-12+Math.floor(Math.random()*20);document.querySelectorAll('.rootSel').forEach(s=>{s.value=TS.root;});reTuneDrone();playRoot();}
 /* Row Row Row Your Boat — [semitones from C4, beats] */
 /* ===== SONG REGISTRY — each note is [melodySemi, harmonySemi, beats] (semitones from C4).
-   Row Your Boat (Module 3) plus three public-domain bridge songs (the interlude module).
-   Harmony = diatonic third above unless noted. ===== */
+   Row Your Boat (1.5 sings its melody; Module 3 harmonizes it; row1 = its first phrase, for 2.6)
+   plus three public-domain bridge songs (the interlude module). harmonySemi is the HIGH part:
+   diatonic third above unless noted. The LOW part is derived — belowOf()/belowLine(), with
+   per-song bfix hand fixes — so it is not stored here. ===== */
 const SONGS={
- row:{name:'Row Your Boat',bpm:96,notes:[[0,4,3],[0,4,3],[0,4,2],[2,5,1],[4,7,3],[4,7,2],[2,5,1],[4,7,2],[5,9,1],[7,11,6],[12,16,1],[12,16,1],[12,16,1],[7,11,1],[7,11,1],[7,11,1],[4,7,1],[4,7,1],[4,7,1],[0,4,1],[0,4,1],[0,4,1],[7,11,2],[5,9,1],[4,7,2],[2,5,1],[0,4,6]]},
+ row:{name:'Row Your Boat',bpm:96,notes:[[0,4,3],[0,4,3],[0,4,2],[2,5,1],[4,7,3],[4,7,2],[2,5,1],[4,7,2],[5,9,1],[7,11,6],[12,16,1],[12,16,1],[12,16,1],[7,11,1],[7,11,1],[7,11,1],[4,7,1],[4,7,1],[4,7,1],[0,4,1],[0,4,1],[0,4,1],[7,11,2],[5,9,1],[4,7,2],[2,5,1],[0,4,6]],bfix:{22:0}},   // bfix: below-line hand fixes — “life” C4 under G4 (a 5th) instead of a 9-semitone leap
  grace:{name:'Amazing Grace',bpm:84,notes:[[-5,-1,1],[0,4,2],[4,7,1],[4,7,2],[2,5,1],[0,4,2],[-3,0,1],[-5,-1,3],[-5,-1,1],[0,4,2],[4,7,1],[4,7,2],[2,5,1],[7,11,3]]},
- auralee:{name:'Aura Lee',bpm:92,notes:[[-5,-1,1],[0,4,1],[-1,2,1],[0,4,1],[2,5,1],[-3,0,1],[2,5,2],[0,4,1],[-1,2,1],[-3,0,1],[-1,2,1],[0,4,4]]},
+ auralee:{name:'Aura Lee',bpm:92,bfix:{4:-5,6:-5},notes:[[-5,-1,1],[0,4,1],[-1,2,1],[0,4,1],[2,5,1],[-3,0,1],[2,5,2],[0,4,1],[-1,2,1],[-3,0,1],[-1,2,1],[0,4,4]]},
  lang:{name:'Auld Lang Syne',bpm:96,notes:[[-5,4,1],[0,4,2],[0,4,1],[4,7,2],[2,7,1],[4,7,2],[0,4,1],[0,4,1],[4,7,2],[7,12,1],[9,12,2],[7,12,1],[4,7,2],[2,7,1],[0,4,4]]}
 };
+SONGS.row1={name:'Row Your Boat — first phrase',bpm:84,notes:SONGS.row.notes.slice(0,10)};   // 2.6: “Row, row, row your boat, gently down the stream”
+/* Harmony BELOW the melody. A genuinely different line from the high part — not the same
+   notes an octave down (the scorers fold octaves, so that would add nothing). Rule: the
+   diatonic third below the melody, except under “do”, where the third below (“la”) would
+   change the chord and leave the final note unresolved — there the line drops to “sol”
+   (a 4th below), a tone of the tonic chord. Songs are written in C, so it works on the
+   melody's pitch class; TS.key transposes both lines together. */
+const BELOW_DROP={0:5,2:3,4:4,5:3,7:3,9:4,11:4};
+function belowOf(mel){const d=BELOW_DROP[((mel%12)+12)%12];return mel-(d==null?3:d);}
+/* bfix = per-song hand fixes for singability (note index → below semitone), like lang's tuned high line */
+function belowLine(song){const fx=song.bfix||{};return song.notes.map((n,i)=>fx[i]!=null?fx[i]:belowOf(n[0]));}
+function harmOf(n,i){return TS.part==='below'?belowLine(curSong())[i]:n[1];}
+function setPart(p){TS.part=(p==='below')?'below':'above';meta().part=TS.part;persist();document.querySelectorAll('.part-chip').forEach(b=>b.classList.toggle('on',b.dataset.part===TS.part));}
 let SONGKEY='row';
 function curSong(){return SONGS[SONGKEY]||SONGS.row;}
 function curNotes(){return curSong().notes;}
@@ -525,7 +548,7 @@ function toggleCountin(el){TS.countin=!TS.countin;if(el)el.classList.toggle('on'
 function playSeq(part,both){
  const a=ac();const beat=60/TS.bpm;let t=0.12;
  if(TS.countin){for(let i=0;i<4;i++)metroClick(i===0,t+i*beat);t+=4*beat;}
- curNotes().forEach(n=>{const d=n[2]*beat;if(part!=='harm')tone(n[0]+TS.key,d*0.95,t,0.2);if(part==='harm'||both)tone(n[1]+TS.key,d*0.95,t,part==='harm'?0.2:0.13);t+=d;});
+ curNotes().forEach((n,i)=>{const d=n[2]*beat;if(part!=='harm')tone(n[0]+TS.key,d*0.95,t,0.2);if(part==='harm'||both)tone(harmOf(n,i)+TS.key,d*0.95,t,part==='harm'?0.2:0.13);t+=d;});
 }
 /* ===================== LIVE PITCH ENGINE ===================== */
 let micStream=null,pdSource=null,pdAnalyser=null,pdSink=null,pdBuf=null,pdActive=false,pdHost=null,pdRAF=null,pdSmooth=0,pdFrame=0,pdTargetHz=0,pdHold=0,pdHist=[],pdLocked=false,pdArmed=true,pdCap=null,pdSilCount=99;
@@ -655,7 +678,7 @@ const LOCK_TIERS={
  standard:{name:'standard',grab:30,keep:40,drLock:28,drDrift:55},
  tight:{name:'tight',grab:24,keep:34,drLock:22,drDrift:50}
 };
-function lockTierFor(id){if(['1.1','1.2','1.3','1.4'].includes(id))return LOCK_TIERS.gentle;if(id==='cpA')return LOCK_TIERS.standard;return LOCK_TIERS.tight;}
+function lockTierFor(id){if(['1.1','1.2','1.3','1.4','1.5'].includes(id))return LOCK_TIERS.gentle;if(id==='cpA')return LOCK_TIERS.standard;return LOCK_TIERS.tight;}
 function lockWindow(){return lockTierFor(curId||nextLessonId());}
 function resetDrift(){drPhase='idle';drLockF=0;drDriftF=0;drVoidF=0;}
 function updateDrift(voiced,cAbs){
@@ -1208,6 +1231,8 @@ function earQuizHTML(){
 let rowActive=false,rowState='idle',rowSamples=[],rowWindows=[],rowFirst=0,rowEnd=0,rowTimer=null,rowProg=null,rowMem=false;
 let duetPhase='idle',duetBlob=null,duetBuf=null,duetMelOk=false,duetHarmOk=false,duetLead=0,duetWins=[],duetSamples=[],duetActive=false,duetMode=null,duetTimer=null,duetProg=null,duetRecorder=null,duetChunks=[],duetFirst=0,duetEnd=0,duetSrc=null;
 function rowCheck(l){return autoChecks(l).find(c=>c.kind==='rowRun');}
+/* 1.5 sings the MELODY (target 'mel'), so its panel hides the harmony controls */
+function melodyOnlyLesson(){const l=curId&&lessonById(curId),rc=l?autoChecks(l).filter(c=>c.kind==='rowRun'):[];return rc.length>0&&rc.every(c=>c.target==='mel');}
 function rowChecks(l){return autoChecks(l).filter(c=>c.kind==='rowRun');}
 function lessonHasRow(){const l=curId&&lessonById(curId);return !!(l&&rowCheck(l));}
 function rowRunOk(c,r){return r.clean&&(!!c.memory===!!r.mem)&&(!c.lock||(r.avgHarm!=null&&r.avgHarm<=(c.lockCents||20)));}
@@ -1227,7 +1252,7 @@ function startRowRun(forceMem){
  const a=ac(),beat=60/TS.bpm,base=a.currentTime+0.2;let t=base;
  if(TS.countin){for(let i=0;i<4;i++)metroClick(i===0,(base-a.currentTime)+i*beat);t+=4*beat;}
  rowFirst=t;rowWindows=[];let beats=0;
- curNotes().forEach(n=>{const d=n[2]*beat;if(!mem)tone(n[0]+TS.key,d*0.95,t-a.currentTime,0.2);rowWindows.push({start:t,end:t+d,mel:n[0]+TS.key,harm:n[1]+TS.key});t+=d;beats+=n[2];});
+ curNotes().forEach((n,i)=>{const d=n[2]*beat;if(!mem)tone(n[0]+TS.key,d*0.95,t-a.currentTime,0.2);rowWindows.push({start:t,end:t+d,mel:n[0]+TS.key,harm:harmOf(n,i)+TS.key});t+=d;beats+=n[2];});
  rowEnd=t;
  if(mem){for(let b=0;b<beats;b++)metroClick(b%4===0,(rowFirst-a.currentTime)+b*beat);}   // steady click grid, no pitches
  rowMem=mem;rowActive=true;rowSamples=[];rowState='run';setRowBar(0);
@@ -1259,7 +1284,7 @@ function buildDuetGrid(){   // fresh click pulse + per-note windows; returns {fi
  const a=ac(),beat=60/TS.bpm,base=a.currentTime+0.2;let t=base;
  if(TS.countin){for(let i=0;i<4;i++)metroClick(i===0,(base-a.currentTime)+i*beat);t+=4*beat;}
  const first=t;duetWins=[];let beats=0;
- curNotes().forEach(n=>{const d=n[2]*beat;duetWins.push({start:t,end:t+d,mel:n[0]+TS.key,harm:n[1]+TS.key});t+=d;beats+=n[2];});
+ curNotes().forEach((n,i)=>{const d=n[2]*beat;duetWins.push({start:t,end:t+d,mel:n[0]+TS.key,harm:harmOf(n,i)+TS.key});t+=d;beats+=n[2];});
  for(let b=0;b<beats;b++)metroClick(b%4===0,(first-a.currentTime)+b*beat);
  return{first:first,end:t};
 }
@@ -1431,12 +1456,13 @@ function scoreRowRun(){
  const c=rowCheckFor(rowMem)||rowCheck(lessonById(curId));
  const res=rowMem?classifyMemory(rowWindows,rowSamples,(c&&c.target)||'harm',c&&c.onPct)
                  :classifyHarmony(rowWindows,rowSamples,c&&c.onPct,c&&c.collapseMax);
+ res.part=rowMem&&(c&&c.target)==='mel'?'mel':TS.part;
  const s=st(curId);if(!s.rows)s.rows={runs:[]};
  s.rows.runs.push(res);
  if(s.rows.runs.length>10)s.rows.runs.shift();
  if(!s.mastered)evaluateAuto(lessonById(curId),s);persist();paintLessonLog();
  setRowBar(100);
- if(rowMem)paintRow(res.clean?('✓ '+res.pct+'% of the line correct from memory'):('✗ '+res.pct+'% correct — sing “Harmony only” a few more times, then retry'));
+ if(rowMem)paintRow(res.clean?('✓ '+res.pct+'% of the line correct from memory'):('✗ '+res.pct+'% correct — sing along with “'+(((c&&c.target)==='mel')?'Melody':'Harmony')+' only” a few more times, then retry'));
  else{const colMax=(c&&c.collapseMax)||0.18;paintRow(res.clean?('✓ Clean run — '+res.pct+'% on the harmony'+(res.collapse?(' · '+res.collapse+' slip'+(res.collapse>1?'s':'')):'')):(res.collapse>Math.floor(res.total*colMax)?('✗ Collapsed onto the melody on '+res.collapse+' notes — play “Harmony only”, then retry'):('✗ '+res.pct+'% on harmony — sing out and hold your line')));}
  rowState='done';syncRowBtns();
 }
@@ -1448,8 +1474,8 @@ function rowDrillHTML(){
  let btns='';
  if(memC)btns+='<button class="tbtn row-btn" data-mem="1" data-lbl="▶ '+(both?'From memory':'Scored run')+'" onclick="startRowRun(true)">▶ '+(both?'From memory':'Scored run')+'</button>';
  if(harmC)btns+='<button class="tbtn '+(both?'sec ':'')+'row-btn" data-mem="0" data-lbl="▶ '+(both?'Over melody':'Scored run')+'" onclick="startRowRun(false)">▶ '+(both?'Over melody':'Scored run')+'</button>';
- const label=both?'Scored runs — sing it from memory, then over the melody':(memC?'Sing-from-memory run — clicks only, no playback':'Scored harmony run — sing the third above the melody');
- const hint=both?'Two scored drills: <b>From memory</b> plays clicks only — sing the harmony line from memory, any key. <b>Over melody</b> plays the tune — sing your harmony a third above without falling onto it. Headphones essential for the second.':(memC?'Turn on the tuner, press the run, then sing your harmony line from memory in time with the clicks — no melody is played. The app checks you sang the right line, in any key. Headphones recommended.':'Turn on the tuner, press the run, then sing your harmony line (a third above) over the melody. The app scores how much you stay on the harmony and flags any notes where you fall onto the melody. Headphones essential — the melody must not leak into the mic.');
+ const label=both?'Scored runs — sing it from memory, then over the melody':(memC?(memC.target==='mel'?'Sing-from-memory run — the melody, clicks only':'Sing-from-memory run — clicks only, no playback'):'Scored harmony run — sing your part over the melody');
+ const hint=both?'Two scored drills: <b>From memory</b> plays clicks only — sing the harmony line from memory, any key. <b>Over melody</b> plays the tune — sing your harmony part (above or below, as picked) without falling onto it. Headphones essential for the second.':(memC?(memC.target==='mel'?'Turn on the tuner, press the run, then sing the melody from memory in time with the clicks — nothing is played but the click. The app checks each note lands in tune, in any key.':'Turn on the tuner, press the run, then sing your harmony line from memory in time with the clicks — no melody is played. The app checks you sang the right line, in any key. Headphones recommended.'):'Turn on the tuner, press the run, then sing your harmony line (above or below, as picked) over the melody. The app scores how much you stay on the harmony and flags any notes where you fall onto the melody. Headphones essential — the melody must not leak into the mic.');
  return '<div class="t-label">'+label+'</div>'+
   '<div class="hold" style="flex-wrap:wrap;gap:10px">'+btns+'<div style="flex:1;min-width:120px;height:7px;background:var(--border2,#e3e0d8);border-radius:4px;overflow:hidden"><i id="rowBar" style="display:block;height:100%;width:0%;background:var(--accent);transition:width .12s"></i></div></div>'+
   '<div id="rowState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
@@ -1540,8 +1566,8 @@ function paintLessonLog(){
   const runs=(s.rows&&s.rows.runs)||[];
   rcs.forEach(c=>{const n=rowScore(c,s),need=c.need||1;const label=c.memory?'Sang the full line from memory':c.lock?'Thirds stay locked (ringing)':c.consecutive?'Clean runs in a row':'A clean run (no collapse)';h+='<div class="ll-prog" style="margin-top:14px">'+label+' <b>'+Math.min(n,need)+' / '+need+'</b>'+(n>=need?' <span class="ll-pass">passed ✓</span>':'')+'</div>';});
   const memMode=rcs[0]&&rcs[0].memory;
-  if(!runs.length)h+='<div class="ll-empty">'+(memMode?'Turn on the tuner and press Scored run — sing the harmony line from memory in time with the clicks. No melody is played; you can sing it in any key.':'Turn on the tuner and press Scored run — sing your harmony a third above the melody. Each run is scored for staying on the harmony without collapsing onto the melody.')+'</div>';
-  else h+='<div class="ll-list">'+runs.slice(-5).reverse().map(r=>{const pct=Math.round(r.on/r.total*100);const lead=r.mem?(pct+'% correct'):(pct+'% on');const mid=r.mem?(r.off?'<span class="ll-b warn">'+r.off+' off</span>':'<span class="ll-b ok">clean</span>'):(r.collapse?'<span class="ll-b warn">'+r.collapse+' slip'+(r.collapse>1?'s':'')+'</span>':'<span class="ll-b ok">no collapse</span>');const lock=(r.avgHarm!=null&&r.avgHarm<900)?('<span class="ll-b '+(r.avgHarm<=20?'ok':'')+'">±'+r.avgHarm+'¢</span>'):'';return '<div class="ll-row"><span class="ll-note" style="min-width:72px">'+lead+'</span>'+mid+lock+'<span class="ll-res '+(r.clean?'p':'f')+'">'+(r.clean?'✓':'·')+'</span></div>';}).join('')+'</div>';
+  if(!runs.length)h+='<div class="ll-empty">'+(memMode?('Turn on the tuner and press Scored run — sing the '+(rcs[0].target==='mel'?'melody':'harmony line')+' from memory in time with the clicks. Nothing is played but the click; you can sing it in any key.'):'Turn on the tuner and press Scored run — sing your harmony part (above or below the melody, as picked). Each run is scored for staying on the harmony without collapsing onto the melody.')+'</div>';
+  else h+='<div class="ll-list">'+runs.slice(-5).reverse().map(r=>{const pct=Math.round(r.on/r.total*100);const lead=r.mem?(pct+'% correct'):(pct+'% on');const mid=r.mem?(r.off?'<span class="ll-b warn">'+r.off+' off</span>':'<span class="ll-b ok">clean</span>'):(r.collapse?'<span class="ll-b warn">'+r.collapse+' slip'+(r.collapse>1?'s':'')+'</span>':'<span class="ll-b ok">no collapse</span>');const lock=(r.avgHarm!=null&&r.avgHarm<900)?('<span class="ll-b '+(r.avgHarm<=20?'ok':'')+'">±'+r.avgHarm+'¢</span>'):'';const prt=r.part==='below'?'<span class="ll-b">▼ below</span>':'';return '<div class="ll-row"><span class="ll-note" style="min-width:72px">'+lead+'</span>'+mid+lock+prt+'<span class="ll-res '+(r.clean?'p':'f')+'">'+(r.clean?'✓':'·')+'</span></div>';}).join('')+'</div>';
  }
  const dtc=duetCheck(l);
  if(dtc){
@@ -1682,14 +1708,15 @@ function toolHTML(type){
   (lessonHasStep()?stepDrillHTML():'')+
   (lessonHasJump()?jumpDrillHTML():'')+
   '<div class="t-hint">Step 2 is you: sing the interval before pressing reveal. Turn on the tuner and watch for the LOCK as you hold it.</div></div>';
- if(type==='row')return '<div class="tool-panel"><div class="t-title">♪ Row Your Boat — in thirds</div>'+
+ if(type==='row'){const mo=melodyOnlyLesson();return '<div class="tool-panel"><div class="t-title">♪ '+curSong().name+(mo?'':' — in harmony')+'</div>'+
   '<div class="t-row">'+keySelHTML()+'<span class="toggle-chip'+(TS.countin?' on':'')+'" onclick="toggleCountin(this)"><span class="tg"></span>Count-in</span></div>'+
   '<div class="slider-row"><label>Tempo</label><input type="range" min="60" max="200" value="'+TS.bpm+'" oninput="setBpm(this.value)"><span class="slider-val" id="bpmVal">'+TS.bpm+' bpm</span></div>'+
-  '<div class="t-row"><button class="tbtn" onclick="playSeq(\'mel\')">▶ Melody only</button><button class="tbtn" onclick="playSeq(\'harm\')">▶ Harmony only</button><button class="tbtn sec" onclick="playSeq(\'mel\',true)">▶ Both together</button></div>'+
+  (mo?'':'<div class="t-label">Your harmony part</div><div class="t-row"><span class="toggle-chip part-chip'+(TS.part!=='below'?' on':'')+'" data-part="above" onclick="setPart(\'above\')"><span class="tg"></span>▲ Above the melody</span><span class="toggle-chip part-chip'+(TS.part==='below'?' on':'')+'" data-part="below" onclick="setPart(\'below\')"><span class="tg"></span>▼ Below the melody</span></div>')+
+  '<div class="t-row"><button class="tbtn" onclick="playSeq(\'mel\')">▶ Melody only</button>'+(mo?'':'<button class="tbtn" onclick="playSeq(\'harm\')">▶ Harmony only</button><button class="tbtn sec" onclick="playSeq(\'mel\',true)">▶ Both together</button>')+'</div>'+
   tunerHTML('tuner_row')+
   (lessonHasRow()?rowDrillHTML():'')+
   (lessonHasDuet()?duetHTML():'')+
-  '<div class="t-hint">Start slow and raise the tempo as the line locks in. Count-in gives you four clicks before the melody enters. Pick the key where both lines sit comfortably.</div></div>';
+  '<div class="t-hint">Start slow and raise the tempo as the line locks in. Count-in gives you four clicks before the melody enters. Pick the key where '+(mo?'the melody sits':'both lines sit')+' comfortably.'+(mo?'':' If the high part sits too high for your voice, switch to <b>▼ Below</b>: you sing a third under the tune, dropping to “sol” whenever the melody is on “do”. Playback, scored runs and the self-duet all follow the part you pick.')+'</div></div>';}
  if(type==='improv')return '<div class="tool-panel"><div class="t-title">♪ Sight-Harmonize</div>'+improvHTML()+'</div>';
  return '';
 }
@@ -1700,6 +1727,7 @@ function init(){
  try{localStorage.setItem('_t','1');localStorage.removeItem('_t');OK=true;}catch(e){OK=false;document.getElementById('sb').style.display='block';}
  if(OK){try{S=JSON.parse(localStorage.getItem('harmony_lessons_v1')||'{}');}catch(e){S={};}}
  if(S.__profile&&typeof S.__profile.root==='number')TS.root=S.__profile.root;
+ if(S.__meta&&S.__meta.part==='below')TS.part='below';   // remember a low voice's harmony part across visits
 }
 function persist(){if(OK)try{localStorage.setItem('harmony_lessons_v1',JSON.stringify(S));}catch(e){}}
 function st(id){if(!S[id])S[id]={mastered:false,tasks:{},stds:{},notes:'',recorded:false,review:''};return S[id];}
