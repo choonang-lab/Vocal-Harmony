@@ -472,6 +472,8 @@ div.ls{cursor:default;}
 .pd-leak{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--amber-bg);color:var(--amber);font-size:0.82rem;line-height:1.45;}
 .pd-leak.show{display:block;}
 .pd-leak b{display:block;margin-bottom:2px;}
+.ls-part{font-family:var(--f-mono);font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:12px 0 6px;border-top:1px solid var(--border);}
+.ls-part + .ls{border-top:0;}
 @media(min-width:769px){.tabbar{max-width:760px;margin:0 auto;border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;}}
 </style>
 <script id="theme-boot">
@@ -487,7 +489,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v42</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v43</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -542,35 +544,51 @@ const MODULES=[
   stds:['No audible drift on any of the three holds.','Each note is landed instantly, no scooping.'],
   auto:{checks:[{kind:'hold8',requireClean:true,minLock:7,need:3,consecutive:true,offDrone:true,stds:[0,1]}]}},
 ]},
-{n:2,t:'Find the Third',g:'Roughly 80% of pop and folk harmony is singing a third above or below the melody — the warm sound in every Everly Brothers and Simon & Garfunkel record. A third is “do” up to “mi”. If you can find a third on demand, you can already harmonize simple songs.',lessons:[
- {id:'2.1',t:'Walk Up to It',f:'Find the third by stepping: do–re–mi, hold the mi.',time:'~10 min',covers:'Interval: major 3rd',tool:'interval',
+{n:2,t:'Find the Third',g:'Roughly 80% of pop and folk harmony is singing a third above or below the melody — the warm sound in every Everly Brothers and Simon & Garfunkel record. A third is “do” up to “mi”. Part 1 builds it in small steps — hear it, echo it, half-walk to it, then jump to it — and ends with your first harmony in a song. Part 2 adds the 5th, the 4th and the minor thirds, each with a tune you already know as an anchor.',lessons:[
+ {id:'2.1',part:'Part 1 · Find the third',t:'Walk Up to It',f:'Find the third by stepping: do–re–mi, hold the mi.',time:'~10 min',covers:'Interval: major 3rd',tool:'interval',intv:4,anchor:4,
   tasks:['Play a root. Sing do–re–mi up from it and hold the “mi”.','Press “Reveal answer” to check yourself. Then “Both together” to hear the third ringing against the root.','Repeat across ten different roots.'],
   stds:['You can land the third by walking up, from any root in your range.'],
   auto:{checks:[{kind:'stepSeq',pattern:[0,2,4],lockDeg:4,stepTol:45,lockTol:25,need:2,require:'both',stds:[0]}]}},
- {id:'2.2',t:'Jump to It',f:'Hear the root, sing the third directly — no walking.',time:'~15 min',covers:'The core skill',tool:'interval',
-  tasks:['Use “Random root” so you cannot memorize. Hear the root, jump straight to the third, then reveal.','Score yourself out of 10 every session and log it in the practice notes below — watch the number climb.','This is the highest-value drill in the whole program. When short on time, do this.'],
-  stds:['8 out of 10 random roots: third sung correctly, jumping straight to it.'],
-  auto:{checks:[{kind:'jumpN',interval:4,intName:'3rd',trials:10,need:8,stds:[0]}]}},
+ {id:'2.hear',t:'Hear the Third',f:'Before you sing it, learn to recognise it: was that jump a 3rd?',time:'~5 min',covers:'Ear training',tool:'interval',intv:4,anchor:4,
+  tasks:['Press “Hear the anchor” — “Oh when the saints”. Its first two notes, “Oh when”, go do up to mi: a major 3rd. That is the sound you are learning.','Start the listening quiz: the app plays two notes and you tap what the jump was — a step, a 3rd or a 5th. Nothing to sing yet.','A wrong answer replays the right one, so every round teaches. One quiz a day until you pass.'],
+  stds:['8 of 10: you can tell a 3rd from a step and a 5th by ear.'],
+  auto:{checks:[{kind:'intervalQuiz',choices:[2,4,7],target:4,rounds:10,need:8,stds:[0]}]}},
+ {id:'2.echo',t:'Echo the Third',f:'Hear do, then mi — sing the mi straight back. Copying comes before finding.',time:'~10 min',covers:'Imitation',tool:'interval',intv:4,anchor:4,
+  tasks:['Start the echo drill. Each trial plays do, then mi; you sing mi straight back, on “ooh”.','The root stays the same all session, so the key settles in your ear.','Hear the two notes as one shape — a bright, open lift. That shape is what you will soon produce on your own.'],
+  stds:['8 of 10: you echo the third in tune.'],
+  auto:{checks:[{kind:'jumpN',interval:'e3',iv:4,cue:'echo',steady:true,intName:'3rd · echo',trials:10,need:8,stds:[0]}]}},
+ {id:'2.half',t:'Half a Walk',f:'Hear do–re, then sing mi on your own — the last step of the walk, unassisted.',time:'~10 min',covers:'Fading the help',tool:'interval',intv:4,anchor:4,
+  tasks:['Start the drill. Each trial plays do, then re; you sing the next step — mi — without hearing it.','Same root all session. Stuck? Sing “do–re–mi” quietly once, then try again.','When it feels easy, think “do–re” in your head instead of listening for it — that inner walk is how the jump becomes instant.'],
+  stds:['8 of 10: you sing mi after hearing do–re.'],
+  auto:{checks:[{kind:'jumpN',interval:'h3',iv:4,cue:'half',steady:true,intName:'3rd · after do–re',trials:10,need:8,stds:[0]}]}},
+ {id:'2.2',t:'Jump to It',f:'Hear do, sing mi directly — first with a steady root, then with random roots.',time:'~15 min',covers:'The core skill',tool:'interval',intv:4,anchor:4,
+  tasks:['Start with “steady root”: the same do every trial. Hear it, think “Oh when”, and sing the second note.','Then “random roots”: a new do every time, so you cannot lean on memory — this is the real skill.','This is the highest-value drill in the program. When short on time, do this.'],
+  stds:['8 of 10 with a steady root.','8 of 10 random roots: the third sung correctly, jumping straight to it.'],
+  auto:{checks:[{kind:'jumpN',interval:'s3',iv:4,cue:'root',steady:true,intName:'3rd · steady root',trials:10,need:8,stds:[0]},{kind:'jumpN',interval:4,intName:'3rd · random roots',trials:10,need:8,stds:[1]}]}},
+ {id:'2.6',t:'First Thirds in a Song',f:'Your first real harmony: the opening line of Row Your Boat, a third above the tune.',time:'~10 min',covers:'Thirds in a real song',tool:'row',song:'row1',
+  tasks:['Press “Harmony only” and sing that line until you can hum it on its own — it’s “Row, row, row your boat, gently down the stream”, moved up a third.','Press “Both together” and sing the harmony with both voices playing; then “Melody only”, and hold your line against the tune.','Listen for the mix: a few of these thirds are a little smaller (minor) — Part 2 shows you where those come from. In Module 3 you sing the whole song.'],
+  stds:['You hold the harmony over the melody for the first phrase without falling onto it.'],
+  auto:{checks:[{kind:'rowRun',onPct:0.62,collapseMax:0.18,need:1,stds:[0]}]}},
  {id:'2.3',t:'The Lock',f:'Hold the third against the drone and learn its “ring”.',time:'~10 min',covers:'Tuning by ear',tool:'tone',
   tasks:['Drone on a root. Sing the third above and hold it.','When a third locks in, the combined sound goes smooth and sweet. Bend your note slightly off and back, until you can feel the lock engage.','This lock feeling is the tuning instinct you will rely on forever — it tells you you are right without thinking.'],
   stds:['You hold a locked third for 8 counts.','You can reliably tell a locked third from a slightly-off one.'],
   auto:{checks:[{kind:'hold8',requireClean:false,minLock:7,need:3,offDrone:true,stds:[0]},{kind:'earQuiz',rounds:8,need:6,stds:[1]}]}},
- {id:'2.4',t:'The Other Intervals',f:'The 5th, the 4th and the 6th — harmony’s supporting cast.',time:'~10 min',covers:'Intervals: 4th, 5th, 6th',tool:'interval',
-  tasks:['Same jump game with the perfect 5th — think the first two notes of “Twinkle Twinkle”.','Then the perfect 4th — “Here Comes the Bride” — and the major 6th — the “My Bon-” of “My Bonnie”.','Mix all intervals with random roots once each feels stable.'],
-  stds:['7 out of 10 on the 5th.','7 out of 10 on the 4th.','You can sing a minor 3rd when asked (use the selector to compare it with major).'],
-  auto:{checks:[
-   {kind:'jumpN',interval:7,intName:'5th',trials:10,need:7,stds:[0]},
-   {kind:'jumpN',interval:5,intName:'4th',trials:10,need:7,stds:[1]},
-   {kind:'jumpN',interval:3,intName:'minor 3rd',trials:10,need:5,stds:[2]}
-  ]}},
+ {id:'2.4',part:'Part 2 · More intervals',t:'The 5th',f:'Do up to sol — the most stable sound after the octave.',time:'~10 min',covers:'Interval: perfect 5th',tool:'interval',intv:7,anchor:7,
+  tasks:['Hear the anchor: “Twinkle, twinkle” — the leap from the second note to the third is do up to sol.','Echo it first: hear do and sol, sing sol back. Then the jump drill with random roots.','Before each jump, think “Twin-kle” under your breath, then sing.'],
+  stds:['8 of 10 echoing the 5th.','7 of 10 jumping to the 5th, random roots.'],
+  auto:{checks:[{kind:'jumpN',interval:'e7',iv:7,cue:'echo',steady:true,intName:'5th · echo',trials:10,need:8,stds:[0]},{kind:'jumpN',interval:7,intName:'5th · jump',trials:10,need:7,stds:[1]}]}},
+ {id:'2.4th',t:'The 4th',f:'Sol up to do — the opening of Amazing Grace.',time:'~10 min',covers:'Interval: perfect 4th',tool:'interval',intv:5,anchor:5,
+  tasks:['Hear the anchor: “Here comes the bride” — “Here comes” is a 4th. So is “A-ma-” in Amazing Grace.','A 4th sounds like arriving home: the low note is sol, the high one is do. Echo it first, then jump.','If it keeps landing on a 3rd or a 5th, sing the anchor first, then hold its second note.'],
+  stds:['8 of 10 echoing the 4th.','7 of 10 jumping to the 4th, random roots.'],
+  auto:{checks:[{kind:'jumpN',interval:'e5',iv:5,cue:'echo',steady:true,intName:'4th · echo',trials:10,need:8,stds:[0]},{kind:'jumpN',interval:5,intName:'4th · jump',trials:10,need:7,stds:[1]}]}},
+ {id:'2.min',t:'Minor Thirds, Where They Live',f:'The smaller third, learned inside a key — the way harmony actually uses it.',time:'~15 min',covers:'Interval: minor 3rd in a key',tool:'interval',anchor:'m3',
+  tasks:['Hear the anchor: the playground “nyah-nyah” — sol down to mi is a minor 3rd. Narrower and darker than do–mi.','Minor thirds live above re, mi and la: re→fa, mi→sol, la→do. Each trial plays do to set the key, then the lower note.','Echo first (you hear the answer, then sing it), then find it yourself.'],
+  stds:['8 of 10 echoing a minor third in the key.','7 of 10 finding the minor third above re, mi or la.'],
+  auto:{checks:[{kind:'jumpN',interval:'m3e',inKey:true,degs:[2,4,9],cue:'echo',intName:'minor 3rd · echo',trials:10,need:8,stds:[0]},{kind:'jumpN',interval:'m3k',inKey:true,degs:[2,4,9],intName:'minor 3rd · find it',trials:10,need:7,stds:[1]}]}},
  {id:'2.5',t:'Thirds in a Key',f:'The melody won’t always sit on “do” — find the third above ANY note of the key.',time:'~15 min',covers:'Major & minor thirds in context',tool:'interval',
   tasks:['So far you jumped a major third up from “do”. A real harmony line moves through the whole key, and above some notes the third is a smaller, minor third: above re you sing fa, above mi you sing sol, above la you sing do. About half the thirds in the songs ahead are minor.','Run the in-key drill: each trial plays “do” to set the key, then a melody note. Sing the third above that note, staying in the key — then you hear the pair played together.','Don’t count semitones. Think in the scale: the third above any note is two scale-steps up, skipping one. Say it in your head — re (mi) FA, la (ti) DO.'],
   stds:['8 out of 10: the third above a random note of the key, sung straight away.'],
   auto:{checks:[{kind:'jumpN',interval:'key3',inKey:true,intName:'3rd in the key',trials:10,need:8,stds:[0]}]}},
- {id:'2.6',t:'First Thirds in a Song',f:'Your first real harmony: the opening line of Row Your Boat, a third above the tune.',time:'~10 min',covers:'Thirds in a real song',tool:'row',song:'row1',
-  tasks:['Press “Harmony only” and sing that line until you can hum it on its own — it’s “Row, row, row your boat, gently down the stream”, moved up a third.','Press “Both together” and sing the harmony with both voices playing; then “Melody only”, and hold your line against the tune.','Listen for the mix: some of these thirds are major and some are minor — exactly what you drilled in 2.5. In Module 3 you sing the whole song.'],
-  stds:['You hold the harmony over the melody for the first phrase without falling onto it.'],
-  auto:{checks:[{kind:'rowRun',onPct:0.62,collapseMax:0.18,need:1,stds:[0]}]}},
  {id:'cpB',cp:true,t:'Checkpoint — Ten Random Thirds',f:'The gate into real harmony singing.',covers:'Module 2',tool:'interval',
   rec:['Run one full session of the jump drill (ten random roots, the major third above each) and one of the in-key drill (the third above ten notes of a key).'],
   stds:['At least 8 of 10 correct.','Every attempt jumps straight to the note — no walking up do–re–mi.','At least 8 of 10 thirds in the key, major and minor.'],
@@ -867,7 +885,7 @@ async function togglePitch(hostId){
 }
 function pdError(host,msg){const h=document.getElementById(host);if(h){const c=h.querySelector('.pd-cents');if(c)c.textContent='mic blocked';let box=h.querySelector('.pd-msg');if(box){box.textContent=msg;box.classList.add('show');}}showToast('Mic blocked — see the tuner panel');}
 function clearPdMsg(){const h=pdHost&&document.getElementById(pdHost);if(h){const box=h.querySelector('.pd-msg');if(box){box.classList.remove('show');box.textContent='';}}}
-function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
+function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetIQ();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
 function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.innerHTML=ico('mic')+(on?'Tuner on — tap to stop':'Start tuner');b.classList.toggle('on',on);});}
 function autoCorrelate(buf,sr,minClarity){
  const SIZE=buf.length;
@@ -1333,7 +1351,8 @@ function renderSetup(){
    near the target, not climbing up from the root). Powers any lesson with a jumpN check. */
 let jdActive=false,jdState='idle',jdInterval=4,jdIntName='3rd',jdTrials=10,jdTrial=0,jdRoot=99,jdResults=[],jdCap=[],jdArmed=false,jdSil=0,jdT1=null,jdT2=null;
 let jdInKey=false,jdKey=0,jdDeg=-1,jdTgt=0;   // in-key mode (2.5): jdRoot = the cue note, jdTgt = the third above it in the key
-let jdReview=false,jdPlan=[];                  // daily-review mode: one REVIEW_SKILLS id per trial
+let jdReview=false,jdPlan=[];
+let jdIv=4,jdCue='root',jdSteady=false,jdSteadyRoot=0,jdDegs=null;   // jdInterval = storage key; jdIv = semitones; cue: root | echo | half | key                  // daily-review mode: one REVIEW_SKILLS id per trial
 /* In-key thirds (2.5 / cpB): a harmony line a third above the melody stays IN the key,
    so the third is major over do/fa/sol and minor over re/mi/la/ti — the mix the songs
    in Modules 3–3.5 actually use. A check carries inKey:true and the string interval
@@ -1354,7 +1373,7 @@ function paintJump(t){const e=document.getElementById('jdState');if(e)e.textCont
 function setJumpScore(p,t){const a=document.getElementById('jdScore');if(a)a.textContent=p+' / '+t;const b=document.getElementById('jdTrial');if(b)b.textContent=jdActive?('Trial '+jdTrial+' / '+t):'—';}
 function pickRoot(){
  let lo=-9,hi=3;const p=profile();
- if(p){lo=Math.max(-17,(p.low-60)+1);hi=Math.min(9,(p.high-60)-jdInterval-1);if(hi<lo)hi=lo;}
+ if(p){lo=Math.max(-17,(p.low-60)+1);hi=Math.min(9,(p.high-60)-(jdIv||0)-1);if(hi<lo)hi=lo;}
  let r=lo;for(let i=0;i<8;i++){r=lo+Math.floor(Math.random()*(hi-lo+1));if(r!==jdRoot)break;}
  return r;
 }
@@ -1362,52 +1381,56 @@ function toggleJump(idx){if(jdActive)stopJump();else startJump(idx);}
 function startJump(idx){
  if(!pdActive){showToast('Turn on the live tuner first');return;}
  const cs=jumpChecks(lessonById(curId)),c=cs[idx||0];if(!c)return;
- jdInterval=c.interval;jdIntName=c.intName||intervalName(c.interval);jdTrials=c.trials||10;
+ jdInterval=c.interval;jdIv=(c.iv!=null)?c.iv:(typeof c.interval==='number'?c.interval:4);jdIntName=c.intName||intervalName(jdIv);jdTrials=c.trials||10;
+ jdCue=c.cue||(c.inKey?'key':'root');jdSteady=!!c.steady;jdDegs=c.degs||null;
  jdReview=false;jdInKey=!!c.inKey;if(jdInKey){jdKey=pickKey();jdDeg=-1;}
+ if(jdSteady&&!jdInKey){jdRoot=99;jdSteadyRoot=pickRoot();}
  jdActive=true;jdTrial=0;jdResults=[];jdState='idle';jdRoot=99;
  syncJumpBtns();nextTrial();
 }
 function stopJump(){const wasReview=jdReview;jdActive=false;jdReview=false;jdState='idle';jdArmed=false;clearJumpTimers();paintJump(wasReview?'Review stopped — not logged':'Drill stopped');setJumpScore(0,jdTrials);syncJumpBtns();syncReviewBtn();}
+function jumpHow(c){return c.cue==='echo'?(c.inKey?'hear “do”, the lower note and the answer, then sing the answer back':'hear the root and the '+intervalName(c.iv!=null?c.iv:c.interval)+', then sing it straight back'):(c.cue==='half'?'hear do–re, then sing mi':(c.inKey?'hear “do” and a melody note, then sing the third above it in the key':'hear the root, then sing the '+intervalName(c.iv!=null?c.iv:c.interval)+' straight away (don’t walk up)'));}
 function jumpDrillHTML(){
  const l=curId&&lessonById(curId),jcs=jumpChecks(l);if(!jcs.length)return '';
  const tot=jcs[0].trials||10;let btns,label;
- const anyKey=jcs.some(c=>c.inKey),onlyKey=jcs.length===1&&jcs[0].inKey;
  if(jcs.length===1){
-  const lab=onlyKey?'▶ Start in-key drill':'▶ Start jump-drill';
-  btns='<button class="tbtn jd-btn" data-jdint="'+jcs[0].interval+'" data-jdlabel="'+lab+'" onclick="toggleJump(0)">'+lab+'</button>';
-  label=onlyKey?('Auto in-key drill — scored, '+tot+' notes of a random key'):('Auto jump-drill — scored, '+tot+' random roots');
+  const c=jcs[0],lab=c.cue==='echo'?'▶ Start echo drill':(c.cue==='half'?'▶ Start drill':(c.inKey?'▶ Start in-key drill':'▶ Start jump-drill'));
+  btns='<button class="tbtn jd-btn" data-jdint="'+c.interval+'" data-jdlabel="'+lab+'" onclick="toggleJump(0)">'+lab+'</button>';
+  label='Scored drill — '+tot+' trials'+(c.steady?', same root throughout':'');
  }else{
   btns=jcs.map((c,i)=>{const lab='▶ '+(c.intName||intervalName(c.interval));return '<button class="tbtn jd-btn" data-jdint="'+c.interval+'" data-jdlabel="'+lab+'" onclick="toggleJump('+i+')">'+lab+'</button>';}).join('');
-  label='Auto jump-drill — pick an interval, '+tot+' random roots each';
+  label='Scored drills — pick one, '+tot+' trials each';
  }
+ const how=[...new Set(jcs.map(c=>{const t=jumpHow(c);return t.charAt(0).toUpperCase()+t.slice(1)+'.';}))].join(' ');
  return '<div class="t-label">'+label+'</div>'+
   '<div class="hold" style="flex-wrap:wrap;gap:8px">'+btns+'<div class="hold-meter"><div id="jdTrial" style="font-size:13px;opacity:.8">—</div><div id="jdScore" style="font:700 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace">0 / '+tot+'</div></div></div>'+
   '<div id="jdState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
-  '<div class="t-hint">'+(onlyKey?'':'Hear the root, then sing the interval straight away — don’t walk up. ')+(anyKey?'In-key trials play “do” to set the key, then a melody note: sing the third above that note, staying in the key (major or minor — the key decides), and you hear the pair played together after each try. ':'')+'Each session is '+tot+' trials, scored for pitch and for jumping cleanly; your best session counts. Headphones required so the played notes don’t leak into the mic.</div>';
+  '<div class="t-hint">'+how+' A miss plays the right answer. Your best session counts. Headphones keep the played notes out of the mic.</div>';
 }
 function nextTrial(){
  clearJumpTimers();
  if(jdTrial>=jdTrials){finishJump();return;}
  jdTrial++;
- if(jdReview){const k=reviewSkill(jdPlan[jdTrial-1]);jdInKey=!!k.inKey;jdInterval=k.inKey?'key3':k.iv;jdIntName=k.name;}   // this trial's skill
+ if(jdReview){const k=reviewSkill(jdPlan[jdTrial-1]);jdInKey=!!k.inKey;jdInterval=k.inKey?'key3':k.iv;jdIv=k.inKey?null:k.iv;jdCue=k.inKey?'key':'root';jdSteady=false;jdDegs=null;jdIntName=k.name;}   // this trial's skill
  jdState='root';setJumpScore(jdResults.filter(r=>r.pass).length,jdTrials);
  if(jdInKey){
   /* "do" sets the key, then the melody note; you sing the third above it, in the key */
-  let d=0;for(let i=0;i<8;i++){d=KEY_DEGS[Math.floor(Math.random()*KEY_DEGS.length)];if(d!==jdDeg)break;}
+  const DG=jdDegs||KEY_DEGS;let d=0;for(let i=0;i<8;i++){d=DG[Math.floor(Math.random()*DG.length)];if(d!==jdDeg)break;}
   jdDeg=d;jdRoot=jdKey+d;jdTgt=jdRoot+keyThirdAbove(d);setTarget(jdTgt);
-  paintJump('Trial '+jdTrial+' — key of '+keyName(jdKey)+': “do”, then '+degName(d)+'…');
-  tone(jdKey,0.45,0,0.2);tone(jdRoot,0.9,0.55,0.24);
-  jdT1=setTimeout(beginListen,1700);
+  const echo=jdCue==='echo';
+  paintJump('Trial '+jdTrial+' — key of '+keyName(jdKey)+': “do”, then '+degName(d)+(echo?', then '+degName(d+keyThirdAbove(d)):'')+'…');
+  tone(jdKey,0.45,0,0.2);tone(jdRoot,0.9,0.55,0.24);if(echo)tone(jdTgt,0.9,1.55,0.24);
+  jdT1=setTimeout(beginListen,echo?2600:1700);
   return;
  }
- jdRoot=pickRoot();jdTgt=jdRoot+jdInterval;setTarget(jdTgt);
- paintJump('Trial '+jdTrial+' — playing root, listen…');
- tone(jdRoot,0.9,0,0.24);
- jdT1=setTimeout(beginListen,1150);
+ jdRoot=jdSteady?jdSteadyRoot:pickRoot();jdTgt=jdRoot+jdIv;setTarget(jdTgt);
+ if(jdCue==='echo'){paintJump('Trial '+jdTrial+' — listen: do, then the '+intervalName(jdIv)+'…');tone(jdRoot,0.7,0,0.24);tone(jdTgt,0.9,0.8,0.24);jdT1=setTimeout(beginListen,1900);}
+ else if(jdCue==='half'){paintJump('Trial '+jdTrial+' — listen: do, re…');tone(jdRoot,0.6,0,0.24);tone(jdRoot+2,0.6,0.7,0.24);jdT1=setTimeout(beginListen,1500);}
+ else{paintJump('Trial '+jdTrial+' — playing '+(jdSteady?'do':'the root')+', listen…');tone(jdRoot,0.9,0,0.24);jdT1=setTimeout(beginListen,1150);}
 }
 function beginListen(){
  jdState='listen';jdCap=[];jdArmed=true;jdSil=0;
- paintJump('Trial '+jdTrial+' — '+(jdInKey?('sing the 3rd above '+degName(jdDeg)+' now'):('sing '+(jdReview?jdIntName:'the '+jdIntName)+' now')));
+ paintJump('Trial '+jdTrial+' — '+(jdCue==='echo'?'sing it back now':(jdCue==='half'?'now sing mi':(jdInKey?('sing the 3rd above '+degName(jdDeg)+' now'):('sing '+(jdReview?jdIntName:'the '+intervalName(jdIv))+' now'))))); 
  jdT2=setTimeout(()=>{if(jdState==='listen')judgeTrial(true);},6000);
 }
 function feedJump(hz,voiced){
@@ -1431,7 +1454,7 @@ function judgeTrial(noAttempt){
   const tgtHz=freq(jdTgt);
   const settleC=jdFold(settleHz,tgtHz),onsetC=jdFold(onsetHz,tgtHz);
   inTune=Math.abs(settleC)<=50;                 // settled within ~half a semitone of the interval
-  jumped=Math.abs(onsetC)<=200;                 // arrived within ~2 semitones at the onset (didn't climb)
+  jumped=jdCue==='half'||Math.abs(onsetC)<=200;   // after do–re, stepping up to mi is the point                 // arrived within ~2 semitones at the onset (didn't climb)
   note=hzToNote(settleHz).name;
  }
  const pass=inTune&&jumped;
@@ -1441,9 +1464,9 @@ function judgeTrial(noAttempt){
  setJumpScore(passes,jdTrials);
  const ans=jdInKey?('   ·   '+degName(jdDeg)+' → '+degName(jdDeg+keyThirdAbove(jdDeg))+' ('+(keyThirdAbove(jdDeg)===3?'minor':'major')+' 3rd)'):'';
  const want=jdReview&&!pass&&!jdInKey?('   ·   wanted '+nlabel(jdTgt)):'';
- paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?(jdInterval===0?' — you slid into it':' — you walked up to it'):' — off pitch'))))+ans+want+'   ·   '+passes+'/'+jdResults.length+' so far');
+ paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?(jdIv===0?' — you slid into it':' — you walked up to it'):' — off pitch'))))+ans+want+'   ·   '+passes+'/'+jdResults.length+' so far');
  /* hear the answer: always for in-key (the melody+harmony pair), and after a miss in review */
- const reveal=jdInKey||(jdReview&&!pass);
+ const reveal=jdInKey||!pass;   // a miss always replays the right answer, so every trial teaches
  if(reveal){tone(jdRoot,1.0,0.15,0.17);if(jdTgt!==jdRoot)tone(jdTgt,1.0,0.15,0.17);}
  jdT1=setTimeout(nextTrial,reveal?2300:1300);
 }
@@ -1464,6 +1487,34 @@ function finishJump(){
  paintJump('Drill complete — '+passes+' / '+jdTrials+(passes>=need?'   ✓ passed':'   · need '+need+' to pass'));
  setJumpScore(passes,jdTrials);syncJumpBtns();
 }
+/* ===================== M2 · LISTENING QUIZ (2.hear, no mic) =====================
+   Recognise before you produce: two notes, low then high, and you tap the jump. A wrong answer
+   replays the right one. One root per session so the key settles. */
+let iqActive=false,iqState='idle',iqRound=0,iqRounds=10,iqCorrect=0,iqIv=4,iqRoot=0,iqTimer=null,iqChoices=[2,4,7],iqDeckArr=[];
+/* a session is a shuffled deck: the target interval in half the rounds, every other choice at least once */
+function iqDeck(choices,target,rounds,rnd){rnd=rnd||Math.random;const t=(target!=null)?target:choices[0],deck=[];for(let i=0;i<Math.ceil(rounds/2);i++)deck.push(t);const others=choices.filter(v=>v!==t);for(let i=0;deck.length<rounds;i++)deck.push(others[i%others.length]);for(let i=deck.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));const x=deck[i];deck[i]=deck[j];deck[j]=x;}return deck;}
+const IQ_NAMES={0:'the same note',2:'a step (do–re)',3:'a minor 3rd',4:'a 3rd (do–mi)',5:'a 4th (do–fa)',7:'a 5th (do–sol)',9:'a 6th',12:'an octave'};
+const IQ_SHORT={0:'Same',2:'Step',3:'Minor 3rd',4:'3rd',5:'4th',7:'5th',9:'6th',12:'Octave'};
+function iqCheck(l){return autoChecks(l).find(c=>c.kind==='intervalQuiz');}
+function lessonHasIQ(){const l=curId&&lessonById(curId);return !!(l&&iqCheck(l));}
+function iqPlay(){tone(iqRoot,0.7,0,0.22);tone(iqRoot+iqIv,0.9,0.8,0.22);}
+function syncIQ(){const b=document.querySelector('.iq-btn');if(b)b.innerHTML=iqActive?ico('stop')+'Stop quiz':ico('play')+'Start listening quiz';const r=document.getElementById('iqRound');if(r)r.textContent=iqActive?('Round '+iqRound+' / '+iqRounds):'—';const sc=document.getElementById('iqScore');if(sc)sc.textContent=iqCorrect+' / '+iqRounds;const c=document.getElementById('iqControls');if(c)c.style.display=(iqActive&&iqState==='answer')?'block':'none';}
+function paintIQ(t){const e=document.getElementById('iqState');if(e)e.textContent=t||'';}
+function resetIQ(){if(iqTimer)clearTimeout(iqTimer);iqTimer=null;iqActive=false;iqState='idle';}
+function toggleIQ(){if(iqActive){resetIQ();paintIQ('Quiz stopped');syncIQ();return;}const c=iqCheck(lessonById(curId));if(!c)return;iqChoices=c.choices||[2,4,7];iqRounds=c.rounds||10;iqDeckArr=iqDeck(iqChoices,c.target,iqRounds);iqActive=true;iqRound=0;iqCorrect=0;iqIv=-1;iqRoot=pickEarRoot();nextIQ();}
+function nextIQ(){if(iqTimer)clearTimeout(iqTimer);iqTimer=null;if(iqRound>=iqRounds){finishIQ();return;}iqRound++;iqIv=iqDeckArr[iqRound-1];iqState='answer';syncIQ();paintIQ('Round '+iqRound+' — what was that jump?');iqPlay();}
+function answerIQ(v){if(!iqActive||iqState!=='answer')return;const ok=v===iqIv;if(ok)iqCorrect++;iqState='reveal';syncIQ();paintIQ((ok?'✓ Yes — '+IQ_NAMES[iqIv]:'✗ That was '+IQ_NAMES[iqIv]+' — listen again')+'   ·   '+iqCorrect+'/'+iqRound);if(ok)iqTimer=setTimeout(nextIQ,1300);else iqTimer=setTimeout(()=>{iqPlay();iqTimer=setTimeout(nextIQ,2100);},500);}
+function finishIQ(){iqActive=false;iqState='done';const l=lessonById(curId),c=iqCheck(l);if(c){const s=st(curId);if(!s.iq)s.iq={bestCorrect:0,sessions:0};s.iq.bestCorrect=Math.max(s.iq.bestCorrect||0,iqCorrect);s.iq.lastCorrect=iqCorrect;s.iq.lastTotal=iqRounds;s.iq.sessions=(s.iq.sessions||0)+1;if(!s.mastered)evaluateAuto(l,s);markDayActive();persist();paintLessonLog();}const need=c?(c.need||8):8;paintIQ('Quiz complete — '+iqCorrect+' / '+iqRounds+(iqCorrect>=need?'   ✓ passed':'   · need '+need+' to pass'));syncIQ();}
+function intervalQuizHTML(){const l=curId&&lessonById(curId),c=l&&iqCheck(l);if(!c)return '';const tot=c.rounds||10,ch=c.choices||[2,4,7];
+ return '<div class="t-label">Listening quiz — what was the jump?</div>'+
+ '<div class="hold" style="flex-wrap:wrap;gap:8px"><button class="tbtn iq-btn" onclick="toggleIQ()">'+ico('play')+'Start listening quiz</button><div class="hold-meter"><div id="iqRound" style="font-size:13px;opacity:.8">—</div><div id="iqScore" style="font:700 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace">0 / '+tot+'</div></div></div>'+
+ '<div id="iqControls" style="display:none"><div class="seg" role="group" aria-label="Your answer" style="margin-top:8px">'+ch.map(v=>'<button class="seg-b" onclick="answerIQ('+v+')">'+IQ_SHORT[v]+'</button>').join('')+'</div><div class="t-row" style="margin-top:8px"><button class="tbtn tog" onclick="iqPlay()">'+ico('play')+'Replay</button></div></div>'+
+ '<div id="iqState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
+ '<div class="t-hint">Listening only — no singing, no mic. Each round plays two notes, low then high; tap the jump. A wrong answer replays the right one. '+tot+' rounds; your best session counts.</div>';}
+/* anchor tunes: a song you already know, played from the current root */
+const ANCHORS={4:{label:'“Oh when the saints”',notes:[[0,0.35],[4,0.35],[5,0.35],[7,1.1]]},7:{label:'“Twinkle, twinkle”',notes:[[0,0.4],[0,0.4],[7,0.4],[7,0.9]]},5:{label:'“Here comes the bride”',notes:[[0,0.55],[5,0.4],[5,0.25],[5,1.0]]},m3:{label:'the “nyah-nyah” chant',notes:[[7,0.45],[4,0.45],[9,0.45],[7,0.45],[4,0.9]]}};
+function anchorHTML(){const l=curId&&lessonById(curId);if(!l||l.anchor==null||!ANCHORS[l.anchor])return '';return '<div class="t-row"><button class="tbtn tog" onclick="playAnchor()">'+ico('play')+'Hear the anchor — '+ANCHORS[l.anchor].label+'</button></div>';}
+function playAnchor(){const l=curId&&lessonById(curId),a=l&&ANCHORS[l.anchor];if(!a)return;const r=(jdActive&&jdSteady&&!jdInKey)?jdSteadyRoot:TS.root;let t=0;a.notes.forEach(n=>{tone(r+n[0],n[1]*0.95,t,0.22);t+=n[1];});}
 /* ===================== M2 · EAR TEST (2.3 — locked vs off) =====================
    A listening quiz (no mic): plays a root + a third together — either a beatless
    just-intonation third or one detuned ~20–40¢ — and you say which you hear. */
@@ -1777,7 +1828,7 @@ function holdCheck(l){return autoChecks(l).find(c=>c.kind==='hold8');}
 function driftCheck(l){return autoChecks(l).find(c=>c.kind==='driftReturn');}
 function holdPasses(s){return (s.attempts||[]).filter(a=>a.pass).length;}
 function holdScore(c,s){const att=s.attempts||[];if(c&&c.consecutive){let k=0;for(let i=att.length-1;i>=0;i--){if(att[i].pass)k++;else break;}return k;}return att.filter(a=>a.pass).length;}
-function checkMet(c,s){if(c.kind==='hold8')return holdScore(c,s)>=(c.need||3);if(c.kind==='driftReturn')return (s.drReps||0)>=(c.need||2);if(c.kind==='stepSeq'){const reps=(s.steps&&s.steps.reps)||[];const f=c.require;const n=reps.filter(r=>r.shape&&(f==='lock'?r.lock:f==='both'?(r.inTune&&r.lock):r.inTune)).length;return n>=(c.need||2);}if(c.kind==='jumpN'){const j=s.jump&&s.jump[String(c.interval)];return !!(j&&(j.bestPasses||0)>=(c.need||8));}if(c.kind==='earQuiz'){return !!(s.ear&&(s.ear.bestCorrect||0)>=(c.need||6));}if(c.kind==='rowRun')return rowScore(c,s)>=(c.need||1);if(c.kind==='duet')return !!(s.duet&&s.duet.melOk&&s.duet.harmOk);if(c.kind==='improv')return improvScore(c,s)>=(c.need||1);return false;}
+function checkMet(c,s){if(c.kind==='hold8')return holdScore(c,s)>=(c.need||3);if(c.kind==='driftReturn')return (s.drReps||0)>=(c.need||2);if(c.kind==='stepSeq'){const reps=(s.steps&&s.steps.reps)||[];const f=c.require;const n=reps.filter(r=>r.shape&&(f==='lock'?r.lock:f==='both'?(r.inTune&&r.lock):r.inTune)).length;return n>=(c.need||2);}if(c.kind==='jumpN'){const j=s.jump&&s.jump[String(c.interval)];return !!(j&&(j.bestPasses||0)>=(c.need||8));}if(c.kind==='intervalQuiz'){return !!(s.iq&&(s.iq.bestCorrect||0)>=(c.need||8));}if(c.kind==='earQuiz'){return !!(s.ear&&(s.ear.bestCorrect||0)>=(c.need||6));}if(c.kind==='rowRun')return rowScore(c,s)>=(c.need||1);if(c.kind==='duet')return !!(s.duet&&s.duet.melOk&&s.duet.harmOk);if(c.kind==='improv')return improvScore(c,s)>=(c.need||1);return false;}
 function evaluateAuto(l,s){autoChecks(l).forEach(c=>{if(checkMet(c,s))(c.stds||[]).forEach(i=>{s.stds[i]=true;});});}
 function inAutoLesson(){const det=document.getElementById('detail');return curId&&det&&det.classList.contains('open')&&lessonById(curId)&&lessonById(curId).auto;}
 /* Drone-relationship guards for hold lessons. Both require the drone actually ON.
@@ -1843,9 +1894,13 @@ function paintLessonLog(){
  }
  jumpChecks(l).forEach(c=>{
   const j=(s.jump&&s.jump[String(c.interval)])||{};const best=j.bestPasses||0,need=c.need||8,tot=c.trials||10;
-  h+='<div class="ll-prog" style="margin-top:14px">'+(c.intName||intervalName(c.interval))+' jump-drill — best <b>'+Math.min(best,tot)+' / '+tot+'</b> (need '+need+')'+(best>=need?' <span class="ll-pass">passed ✓</span>':'')+'</div>';
-  h+='<div class="ll-empty">'+(j.lastPasses!=null?('Last session '+j.lastPasses+'/'+(j.lastTotal||tot)+'. '):'')+(c.inKey?'Run the in-key drill in the tool above — hear “do” and a melody note, then sing the third above that note in the key, straight away. Your best session counts.':('Run the scored jump-drill in the tool above — hear the root, sing the '+(c.intName||intervalName(c.interval))+' straight away (don’t walk up). Your best session counts.'))+'</div>';
+  h+='<div class="ll-prog" style="margin-top:14px">'+(c.intName||intervalName(c.interval))+' — best <b>'+Math.min(best,tot)+' / '+tot+'</b> (need '+need+')'+(best>=need?' <span class="ll-pass">passed ✓</span>':'')+'</div>';
+  h+='<div class="ll-empty">'+(j.lastPasses!=null?('Last session '+j.lastPasses+'/'+(j.lastTotal||tot)+'. '):'')+('Run “'+(c.intName||intervalName(c.interval))+'” in the tool above — '+jumpHow(c)+'. Your best session counts.')+'</div>';
  });
+ const qc=iqCheck(l);
+ if(qc){const q=s.iq||{};const best=q.bestCorrect||0,need=qc.need||8,tot=qc.rounds||10;
+  h+='<div class="ll-prog" style="margin-top:14px">Listening quiz — best <b>'+Math.min(best,tot)+' / '+tot+'</b> (need '+need+')'+(best>=need?' <span class="ll-pass">passed ✓</span>':'')+'</div>';
+  h+='<div class="ll-empty">'+(q.lastCorrect!=null?('Last session '+q.lastCorrect+'/'+(q.lastTotal||tot)+'. '):'')+'Run the listening quiz in the tool above — hear two notes, tap the jump. Your best session counts.</div>';}
  const ec=earCheck(l);
  if(ec){const e=s.ear||{};const best=e.bestCorrect||0,need=ec.need||6,tot=ec.rounds||8;
   h+='<div class="ll-prog" style="margin-top:14px">Ear test — locked vs off — best <b>'+Math.min(best,tot)+' / '+tot+'</b> (need '+need+')'+(best>=need?' <span class="ll-pass">passed ✓</span>':'')+'</div>';
@@ -1886,7 +1941,7 @@ function autoFinalize(){
  l.stds.forEach((_,i)=>s.stds[i]=true);
  if(l.cp)s.recorded=true;                       // the live test is the verification
  s.mastered=true;markDayActive();persist();
- showToast((l.cp?'Checkpoint':'Lesson '+curId)+' passed by live test — next unlocked');
+ showToast((l.cp?'Checkpoint':'Lesson '+lessonNo(curId))+' passed by live test — next unlocked');
  openLesson(curId);
 }
 /* ===================== STREAK / META ===================== */
@@ -1917,13 +1972,12 @@ function markDayActive(){const M=meta();const t=todayStr();if(!M.days.includes(t
 const REVIEW_SKILLS=[
  {id:'unison',iv:0,name:'the same note',short:'Same note',from:['1.1','1.2']},
  {id:'step',iv:2,name:'one step up (re)',short:'Step up',from:['1.4']},
- {id:'M3',iv:4,name:'the 3rd above it',short:'3rd',from:['2.1','2.2','2.3']},
- {id:'m3',iv:3,name:'the minor 3rd above it',short:'Minor 3rd',from:['2.4']},
- {id:'P4',iv:5,name:'the 4th above it',short:'4th',from:['2.4']},
+ {id:'M3',iv:4,name:'the 3rd above it',short:'3rd',from:['2.2','2.3']},
+ {id:'P4',iv:5,name:'the 4th above it',short:'4th',from:['2.4th']},
  {id:'P5',iv:7,name:'the 5th above it',short:'5th',from:['2.4']},
- {id:'key3',inKey:true,name:'3rd in the key',short:'3rd in key',from:['2.5']}
+ {id:'key3',inKey:true,name:'3rd in the key',short:'3rd in key',from:['2.min','2.5']}
 ];
-const REVIEW_FRONT={'1.1':'unison','1.2':'unison','1.3':'unison','1.4':'step','cpA':'step','2.1':'M3','2.2':'M3','2.3':'M3','2.4':'P5','2.5':'key3','cpB':'key3'};
+const REVIEW_FRONT={'1.1':'unison','1.2':'unison','1.3':'unison','1.4':'step','cpA':'step','2.1':'step','2.hear':'step','2.echo':'step','2.half':'step','2.2':'M3','2.6':'M3','2.3':'M3','2.4':'P5','2.4th':'P4','2.min':'key3','2.5':'key3','cpB':'key3'};
 const REVIEW_N=10;
 function reviewSkill(id){return REVIEW_SKILLS.find(k=>k.id===id);}
 function reviewStats(){const M=meta();if(!M.review)M.review={};return M.review;}
@@ -2006,13 +2060,15 @@ function toolHTML(type){
   (lessonHasStep()?stepDrillHTML():'')+
   (lessonHasEar()?earQuizHTML():'')+
   '<div class="t-hint">Play or drone a note, sing it on “ooh”, then hold steady. With <b>Auto-start</b> on and the live tuner running, the 8-count begins on its own once you’re holding the note and scores itself — a long silence resets it. Tap the button to run a count by hand, or switch Auto-start off. Use headphones so playback does not bleed into the mic.</div></div>';
- if(type==='interval')return '<div class="tool-panel"><div class="t-title">♪ Interval Trainer</div>'+
+ if(type==='interval'){const lq=curId&&lessonById(curId),mic=!lq||micLesson(lq);return '<div class="tool-panel"><div class="t-title">♪ Interval Trainer</div>'+
   '<div class="t-row">'+rootSelHTML()+'<button class="tbtn sec" onclick="randRoot()">↻ Random root</button>'+intSelHTML()+'</div>'+
   '<div class="t-row"><button class="tbtn" onclick="playRoot();setTarget(TS.root+TS.intv)">1 · Play root</button><button class="tbtn sec" onclick="setTarget(TS.root+TS.intv);playOff(TS.intv)">3 · Reveal answer</button><button class="tbtn sec" onclick="playBoth(TS.intv)">Both together</button></div>'+
-  tunerHTML('tuner_interval')+
+  anchorHTML()+
+  (mic?tunerHTML('tuner_interval'):'')+
+  (lessonHasIQ()?intervalQuizHTML():'')+
   (lessonHasStep()?stepDrillHTML():'')+
   (lessonHasJump()?jumpDrillHTML():'')+
-  '<div class="t-hint">Step 2 is you: sing the interval before pressing reveal. Turn on the tuner and watch for the LOCK as you hold it.</div></div>';
+  '<div class="t-hint">'+(mic?'Step 2 is you: sing the interval before pressing reveal. Turn on the tuner and watch for the LOCK as you hold it.':'Use “Play root” and “Reveal answer” to hear the interval any time, or “Both together” to hear it as harmony.')+'</div></div>';}
  if(type==='row'){const mo=melodyOnlyLesson();return '<div class="tool-panel"><div class="t-title">♪ '+curSong().name+(mo?'':' — in harmony')+'</div>'+
   '<div class="t-row">'+keySelHTML()+'<span class="toggle-chip'+(TS.countin?' on':'')+'" onclick="toggleCountin(this)"><span class="tg"></span>Count-in</span></div>'+
   '<div class="slider-row"><label>Tempo</label><input type="range" min="60" max="200" value="'+TS.bpm+'" oninput="setBpm(this.value)"><span class="slider-val" id="bpmVal">'+TS.bpm+' bpm</span></div>'+
@@ -2081,7 +2137,7 @@ function renderPath(){
   const state=p.done===p.tot?'done':(locked?'lock':'ring'),cp=moduleCp(m),testOut=locked&&cp&&canChallenge(cp.id)&&!isMastered(cp.id);
   const eb='Module '+m.n+' · '+(p.done===p.tot?'complete':(locked?p.tot+' lessons':p.done+' of '+p.tot));
   h+='<div class="rm'+(locked?' locked':'')+(open?' open':'')+'"><div class="rm-row"><button class="rm-main" aria-expanded="'+open+'" onclick="togglePath('+m.n+')">'+rmNode(state,String(m.n),p.done,p.tot)+'<span class="rm-text"><span class="rm-eyebrow">'+eb+'</span><span class="rm-title">'+m.t+'</span></span><span class="rm-chev">'+ico('chevd')+'</span></button>'+(testOut?'<button class="pill-btn" onclick="openLesson(\''+cp.id+'\')">Test out</button>':'')+'</div>';
-  if(open)h+='<div class="rm-card"><p class="rm-goal">'+m.g+'</p>'+m.lessons.map(l=>pathLesson(l,next)).join('')+'</div>';
+  if(open)h+='<div class="rm-card"><p class="rm-goal">'+m.g+'</p>'+m.lessons.map(l=>(l.part?'<div class="ls-part">'+l.part+'</div>':'')+pathLesson(l,next)).join('')+'</div>';
   h+='</div>';
  });
  return h+'</div>';
@@ -2104,7 +2160,7 @@ function render(){
 }
 function renderLesson(l){
  const s=statusOf(l.id);const cp=l.cp?'cp':'';
- const badge=l.cp?'◆':(s==='mastered'?'✓':(l.id.split('.')[1]||'★'));
+ const badge=l.cp?'◆':(s==='mastered'?'✓':(lessonNo(l.id).split('.').pop()||'★'));
  const statusTxt=s==='mastered'?'Mastered':s==='available'?(l.cp?'Ready':'Available'):'Locked';
  const chips=(l.time?'<span class="chip tempo">'+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'')+(l.tool?'<span class="chip">♪ built-in tool</span>':'')+(l.cp?'<span class="chip cp">'+(cpAutoCovers(l)?'auto-scored':'recording')+'</span>':'');
  const chal=s==='locked'&&canChallenge(l.id);
@@ -2123,8 +2179,8 @@ function openLesson(id){
  const _hc=l.auto?holdCheck(l):null;
  if(l.tool==='row'||l.tool==='improv'){TS.holdOff=null;clearTarget();}   /* moving line → free chromatic tuner, never pinned to the root */
  else{TS.holdOff=(_hc&&_hc.offDrone)?4:null;setTarget(holdTargetSemi());}
- curChallenge=challenge;
- document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+id);
+ curChallenge=challenge;if(l.intv)TS.intv=l.intv;
+ document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+lessonNo(id));
  const meta=(l.time?'<span class="chip2">'+ico('clock')+l.time+'</span>':'')+(l.covers?'<span class="chip2">'+l.covers+'</span>':'');
  let h='<h1 class="d-title">'+l.t+'</h1><div class="d-focus">'+l.f+'</div><div class="d-meta chips-row">'+meta+'</div>';
  if(challenge)h+='<div class="challenge-note"><b>Test-out attempt.</b> Pass this checkpoint and every lesson in Module '+mod.n+' is marked mastered, so you skip straight ahead. Miss it and nothing changes — just work through the lessons.</div>';
@@ -2173,6 +2229,9 @@ function saveNotes(v){const s=st(curId);const l=lessonById(curId);if(l.cp)s.revi
 /* Checkpoints the app fully auto-scores (every standard is ticked by an auto check:
    cpA, cpB, cpC) pass on the score alone; the recording becomes optional self-review.
    cpD and cpFinal can't be machine-scored, so they still need the recording. */
+function lessonNo(id){const m=moduleOf(id);if(!m||!Number.isInteger(m.n))return id;const i=m.lessons.filter(x=>!x.cp).findIndex(x=>x.id===id);return i<0?id:m.n+'.'+(i+1);}
+/* a lesson needs the mic unless its only scored work is listening */
+function micLesson(l){return !!(l&&l.tool)&&(!l.auto||autoChecks(l).some(c=>c.kind!=='intervalQuiz'&&c.kind!=='earQuiz'));}
 function cpAutoCovers(l){if(!l||!l.cp)return false;const t=new Set();autoChecks(l).forEach(c=>(c.stds||[]).forEach(i=>t.add(i)));return l.stds.every((_,i)=>t.has(i));}
 /* Test out: an auto-scored checkpoint can be attempted at any time, even while locked. */
 function canChallenge(id){const l=lessonById(id);return !!(l&&l.cp&&cpAutoCovers(l));}
@@ -2210,8 +2269,8 @@ function renderToday(){
  if(!id){
   h+='<div class="hero"><div class="eyebrow">All done</div><h1 class="display">You’ve finished the path</h1><p class="hero-focus">Keep it alive: the 5-minute daily review a few times a week, and lesson 5.4 — sing with humans.</p></div>';
  }else{
-  const l=lessonById(id),m=moduleOf(id),live=l.tool?(droneLesson(l)?'drone and tuner':'tuner'):'';
-  h+='<div class="hero"><div class="eyebrow">Up next · '+(l.cp?'Checkpoint':'Lesson '+id)+'</div><h1 class="display">'+l.t+'</h1><p class="hero-focus">'+l.f+'</p><div class="chips-row">'+(l.time?'<span class="chip2">'+ico('clock')+l.time+'</span>':'')+(live?'<span class="chip2">'+(live==='tuner'?'Tuner':'Drone + tuner')+'</span>':'')+(l.covers?'<span class="chip2">'+l.covers+'</span>':'')+'</div></div>';
+  const l=lessonById(id),m=moduleOf(id),live=l.tool?(droneLesson(l)?'drone and tuner':(micLesson(l)?'tuner':'')):'';
+  h+='<div class="hero"><div class="eyebrow">Up next · '+(l.cp?'Checkpoint':'Lesson '+lessonNo(id))+'</div><h1 class="display">'+l.t+'</h1><p class="hero-focus">'+l.f+'</p><div class="chips-row">'+(l.time?'<span class="chip2">'+ico('clock')+l.time+'</span>':'')+(live?'<span class="chip2">'+(live==='tuner'?'Tuner':'Drone + tuner')+'</span>':'')+(l.covers?'<span class="chip2">'+l.covers+'</span>':'')+'</div></div>';
   h+='<button class="cta" onclick="startSession(\''+id+'\')">'+ico(live?'mic':'play')+(live?'Start — '+live+' on':'Open lesson')+'</button>';
   const cp=moduleCp(m);
   if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="cta-sec purple" onclick="openLesson(\''+cp.id+'\')">Already solid on Module '+m.n+'? Test out</button>';

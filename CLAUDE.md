@@ -29,7 +29,14 @@ only as an offline validation harness (see Testing), never at runtime.
 4. **Validate scoring LOGIC with a node harness before shipping.** Parse-OK is not enough; the
    check-kinds carry real logic. (No harness is committed yet — committing one is a priority task.)
 5. **Never trust green sandbox tests for anything acoustic.** See "On-device gap."
-6. The user handles the git side (commit, hard-reload, confirm the header shows the new vN).
+6. **Auto commit + deploy (standing instruction from the user, 2026-11-16).** When a build is
+   finished and verified — both version markers bumped, parse-check OK, harness ALL GREEN, and the
+   browser checks for what changed done — commit to `main` and deploy WITHOUT asking: push, poll
+   `gh api repos/choonang-lab/Vocal-Harmony/pages/builds/latest` until `built`, then confirm the live
+   site serves the new vN with a cache-busted curl. Record the version as live in HANDOFF.md inside
+   the same commit. Then report what shipped. Still stop and ask first if any check fails, if the
+   change can't be verified here and could break the app, or for anything destructive (force-push,
+   history rewrite, deleting user data). The user does the on-device hard-reload and checks.
 
 ## Architecture (mental model)
 - **Rendering:** view-based. Global `view` selects what `render()` paints into `#main` via
@@ -42,6 +49,9 @@ only as an offline validation harness (see Testing), never at runtime.
   (`ICONS`), never emoji. **Any extra `<script>` tag MUST carry an attribute** (like
   `<script id="theme-boot">`): the parse-check and the harness find the app code with the regex
   `/<script>([\s\S]*)<\/script>/`, which matches a bare `<script>` only.
+- **Lesson numbers on screen come from position** (`lessonNo(id)`); ids are progress keys and must
+  never change or be reused. Add a lesson by inserting it with a new id; refer to lessons by name
+  in prose, never by number. `part` on a lesson starts a labelled group on the Path.
 - **Speaker leak (v42):** on the phone speaker the drone leaks into the mic and makes the tuner flip
   between voice and drone. `leakCheck()` runs on every tuner start (short 3.15 kHz beep, measured with
   the analyser's frequency data — keep the beep above the 1100 Hz tracking range). Drone voices must go
@@ -76,7 +86,9 @@ only as an offline validation harness (see Testing), never at runtime.
   an auto check too, or it silently stops being test-out-able.
 
 ## Check kinds (the scoring engine)
-`hold8`, `driftReturn`, `stepSeq`, `jumpN` (with `inKey:true, interval:'key3'` = the 2.5/cpB
+`hold8`, `driftReturn`, `stepSeq`, `intervalQuiz` (listening, no mic: `choices`, `target`, `rounds`),
+`jumpN` (`interval` = storage key in `s.jump`, `iv` = semitones; `cue`: root | echo | half | key;
+`steady` = one root per session; `degs` = in-key degrees; with `inKey:true, interval:'key3'` = the 2.5/cpB
 in-key drill: third above a random degree of a key, major or minor per `keyThirdAbove`; `'key3'`
 is also its `s.jump` key), `earQuiz` (no mic), `rowRun` (with `memory:true` =
 transpose-invariant sing-from-memory; else harmony-over-melody), `duet` (two-phase self-duet:

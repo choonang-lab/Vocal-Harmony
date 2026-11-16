@@ -6,9 +6,36 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v42 / harmony-v42** — live on GitHub Pages (speaker-leak check + drone volume; the commit after cfb743e). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v43 / harmony-v43** — live on GitHub Pages (Module 2 rebuild; the commit after 2e48eec). Builds now auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
-## What changed this session (v41 → v42) — needle jitter on the phone speaker
+## What changed this session (v42 → v43) — Module 2 rebuilt as a gentler ladder
+User struggled with Module 2: after hearing the root they could neither sing nor imagine the
+harmony, and the minor 3rd and 4th were worse. Diagnosis: production was asked before recognition,
+the walk-up went straight to a cold jump, the root changed every trial (no key settles), the minor
+3rd / 4th were taught as bare jumps from the root (minor 3rd above do is not even in the key), and
+old 2.4 crammed three intervals into one lesson. New order (ids → on-screen numbers by position):
+  Part 1 · Find the third: 2.1 Walk Up (2.1) · 2.hear Hear the Third (2.2, NEW listening quiz) ·
+  2.echo Echo the Third (2.3, NEW) · 2.half Half a Walk (2.4, NEW) · 2.2 Jump to It (2.5, now
+  steady root then random) · 2.6 First Thirds in a Song (2.6, moved up) · 2.3 The Lock (2.7)
+  Part 2 · More intervals: 2.4 The 5th (2.8, repurposed) · 2.4th The 4th (2.9, NEW) · 2.min Minor
+  Thirds, Where They Live (2.10, NEW, in-key re/mi/la) · 2.5 Thirds in a Key (2.11) · cpB.
+- Ids never change (progress keys); `lessonNo(id)` numbers by position (checkpoints and the 3.5
+  songs keep their labels). Old 2.4 jump scores for the 5th (jump['7']) and 4th (jump['5']) carry
+  over. The bare "minor 3rd up from the root" drill and review skill are gone.
+- New `intervalQuiz` check (listening, no mic): two notes, tap Step/3rd/5th; a wrong answer
+  replays the right one; each session is a shuffled deck with the target in half the rounds
+  (`iqDeck` — the first version, uniform random, played the 3rd once in 10 rounds).
+- Jump engine: `interval` is the storage key, `iv` the semitones; `cue`: root | echo (hear the
+  answer, sing it back) | half (hear do–re, sing mi; stepping is allowed) | key; `steady` keeps one
+  root all session; `degs` limits in-key degrees. Every miss now replays the right answer.
+- Anchor tunes (`ANCHORS`, `playAnchor`): saints (3rd), Twinkle (5th), Here Comes the Bride (4th),
+  nyah-nyah sol→mi (minor 3rd), played from the current root. Path shows Part 1 / Part 2 labels.
+- Max drill-only stretch before Module 3 still 6 (song moved into Part 1 to keep it so).
+- Harness 260 (+35 incl. updates), mutation-tested. Browser: Today → Hear the Third opens with no
+  tuner and no mic request; quiz 8/10 passes and ticks; echo / half / steady / random / minor-echo
+  cues and scoring all as designed; misses replay; both themes pass the contrast scan.
+
+## What changed earlier this session (v41 → v42) — needle jitter on the phone speaker
 User reported a jittery needle while holding steady, practising on the **phone speaker**. Diagnosis by
 simulation (the app's own autoCorrelate, frame-by-frame at 30/s on a realistic held E3 with natural
 wobble): harmonics, vibrato, breath and room noise are all read correctly and steadily (<1¢/frame).

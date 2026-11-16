@@ -100,6 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -626,7 +627,7 @@ group('daily review: pool grows with mastery, plan leans on weak/stale skills');
   eq(JSON.stringify(A.reviewPool()), '["unison"]', 'fresh user: review is landing the note (their current skill)');
   A.passCheckpoint('cpB');
   const pool = A.reviewPool();
-  ok(['M3', 'm3', 'P4', 'P5', 'key3'].every((id) => pool.includes(id)), 'after Module 2: thirds, 4th, 5th and in-key thirds are in the pool');
+  ok(['M3', 'P4', 'P5', 'key3'].every((id) => pool.includes(id)) && !pool.includes('m3'), 'after Module 2: thirds, 4th, 5th and in-key thirds are in the pool (no bare minor-3rd-from-root)');
   ok(!pool.includes('unison'), 'skills from un-mastered lessons stay out (unless current)');
   A.setS({ '1.1': { mastered: true }, '1.2': { mastered: true }, '1.3': { mastered: true } });
   eq(JSON.stringify(A.reviewPool()), '["unison","step"]', 'on 1.4, its new skill (step up) joins the mastered ones');
@@ -665,7 +666,7 @@ group('songs earlier: 1.5 sings the melody, 2.6 harmonizes the first phrase');
 {
   const F = A.FLAT, L15 = A.lessonById('1.5'), L26 = A.lessonById('2.6');
   ok(F.indexOf('1.4') < F.indexOf('1.5') && F.indexOf('1.5') < F.indexOf('cpA'), '1.5 sits at the end of Module 1, before cpA');
-  ok(F.indexOf('2.5') < F.indexOf('2.6') && F.indexOf('2.6') < F.indexOf('cpB'), '2.6 sits at the end of Module 2, before cpB');
+  ok(F.indexOf('2.2') < F.indexOf('2.6') && F.indexOf('2.6') < F.indexOf('2.3'), '2.6 (first song thirds) ends Part 1: after Jump to It, before The Lock');
   const c15 = L15.auto.checks[0];
   ok(L15.tool === 'row' && L15.song === 'row' && c15.kind === 'rowRun' && c15.memory && c15.target === 'mel', '1.5 is a from-memory MELODY run');
   ok(L26.tool === 'row' && L26.song === 'row1' && L26.auto.checks.every((c) => c.kind === 'rowRun' && !c.memory), '2.6 is a harmony-over-melody run');
@@ -789,6 +790,55 @@ group('speaker leak verdict and drone volume');
   A.setDroneVol(5); eq(A.TS.droneVol, 0.2, 'the drone never goes below 20% (that is what Stop is for)');
   A.setDroneVol(150); eq(A.TS.droneVol, 1, 'and never above 100%');
   A.TS.droneVol = savedVol; A.setS(saved);
+}
+
+/* ---- Module 2 rebuilt (v43): recognise → echo → half-walk → jump; 5th / 4th / minor thirds ----
+   The learner could not hear or imagine the third before singing it, and the minor 3rd and 4th were
+   taught as bare jumps from the root. New order, new listening quiz, echo / half-walk / steady-root
+   drill modes, anchor tunes; ids stay fixed (they are progress keys), numbers come from position. */
+group('Module 2 rebuild: order, numbering, checks, carried-over progress');
+{
+  const M2 = A.MODULES.find((m) => m.n === 2).lessons.map((l) => l.id);
+  eq(M2.join(' '), '2.1 2.hear 2.echo 2.half 2.2 2.6 2.3 2.4 2.4th 2.min 2.5 cpB', 'Part 1 builds the third step by step; Part 2 adds the other intervals');
+  eq(A.lessonNo('2.hear'), '2.2', 'on-screen numbers follow position (Hear the Third shows as 2.2)');
+  eq(A.lessonNo('2.2'), '2.5', '…and Jump to It, id 2.2, now shows as 2.5');
+  eq(A.lessonNo('2.5'), '2.11', 'Thirds in a Key shows as 2.11');
+  eq(A.lessonNo('1.5'), '1.5', 'Module 1 numbering is unchanged');
+  eq(A.lessonNo('cpB'), 'cpB', 'checkpoints are not numbered as lessons');
+  eq(A.lessonNo('S1'), 'S1', 'the songs interlude keeps its own labels');
+  ok(A.lessonById('2.1').part && A.lessonById('2.4').part, 'Part 1 and Part 2 are labelled');
+
+  // every jump drill is runnable: a numeric interval, or an in-key drill; storage keys unique per lesson
+  const bad = [];
+  A.MODULES.forEach((m) => m.lessons.forEach((l) => { const js = A.jumpChecks(l); const keys = js.map((c) => String(c.interval));
+    if (new Set(keys).size !== keys.length) bad.push(l.id + ' duplicate keys');
+    js.forEach((c) => { const iv = c.iv != null ? c.iv : (typeof c.interval === 'number' ? c.interval : null); if (!c.inKey && typeof iv !== 'number') bad.push(l.id + ' ' + c.interval); }); }));
+  eq(bad.join(', '), '', 'every jump drill has semitones or is in-key, with unique storage keys');
+
+  // gentler ladder: echo and half-walk keep the root steady; random roots only in Jump to It
+  const cue = (id) => A.jumpChecks(A.lessonById(id)).map((c) => (c.cue || 'root') + (c.steady ? '/steady' : ''));
+  eq(cue('2.echo').join(), 'echo/steady', 'Echo the Third: echo cue, same root all session');
+  eq(cue('2.half').join(), 'half/steady', 'Half a Walk: hear do–re, sing mi, same root');
+  eq(cue('2.2').join(), 'root/steady,root', 'Jump to It: steady root first, then random roots');
+  eq(A.lessonById('2.min').auto.checks.map((c) => c.degs.join('-')).join(), '2-4-9,2-4-9', 'minor thirds are drilled above re, mi and la — inside the key');
+  ok(!A.MODULES.some((m) => m.lessons.some((l) => A.jumpChecks(l).some((c) => c.interval === 3))), 'no bare “minor 3rd up from the root” drill anywhere');
+
+  // the listening lesson needs no mic; the others do
+  ok(!A.micLesson(A.lessonById('2.hear')) && A.micLesson(A.lessonById('2.echo')) && A.micLesson(A.lessonById('2.3')), 'Hear the Third is listening-only (no tuner, no mic prompt)');
+  eq(A.checkMet({ kind: 'intervalQuiz', need: 8 }, { iq: { bestCorrect: 8 } }), true, 'listening quiz passes at 8/10');
+  { let seed = 3; const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+    const decks = Array.from({ length: 50 }, () => A.iqDeck([2, 4, 7], 4, 10, rnd));
+    ok(decks.every((d) => d.length === 10 && d.filter((v) => v === 4).length === 5), 'every quiz plays the 3rd in half its rounds');
+    ok(decks.every((d) => d.includes(2) && d.includes(7)), '…and the step and the 5th at least once each'); }
+  eq(A.checkMet({ kind: 'intervalQuiz', need: 8 }, { iq: { bestCorrect: 7 } }), false, '…not at 7/10');
+
+  // progress earned in the old “Other Intervals” lesson still counts
+  const fifthJump = A.lessonById('2.4').auto.checks.find((c) => c.interval === 7), fourthJump = A.lessonById('2.4th').auto.checks.find((c) => c.interval === 5);
+  ok(A.checkMet(fifthJump, { jump: { '7': { bestPasses: 7 } } }), 'an old 7/10 on the 5th still passes The 5th jump standard');
+  ok(A.checkMet(fourthJump, { jump: { '5': { bestPasses: 7 } } }), 'an old 7/10 on the 4th carries over to The 4th');
+  ok(['4', '7', '5', 'm3'].every((k) => A.ANCHORS[k] && A.ANCHORS[k].notes.length >= 2), 'every interval has an anchor tune');
+  eq(A.ANCHORS[5].notes[1][0] - A.ANCHORS[5].notes[0][0], 5, 'the 4th anchor opens with a 4th (“Here comes”)');
+  eq(A.ANCHORS.m3.notes[0][0] - A.ANCHORS.m3.notes[1][0], 3, 'the minor-3rd anchor opens sol→mi, a minor 3rd down');
 }
 
 /* ================================================================ */
