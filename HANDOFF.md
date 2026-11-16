@@ -6,7 +6,7 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v37 / harmony-v37** — staged locally (pedagogy upgrades), not yet committed/deployed. Live: v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v37 / harmony-v37** — live on GitHub Pages, commit `2bf0334` (pedagogy upgrades). Earlier: v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
 ## What changed this session (v36 → v37) — pedagogy review, items 1/2/3/5
 User hadn't been using the app; a full curriculum review found the spine sound but the app
