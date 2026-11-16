@@ -42,6 +42,10 @@ only as an offline validation harness (see Testing), never at runtime.
   (`ICONS`), never emoji. **Any extra `<script>` tag MUST carry an attribute** (like
   `<script id="theme-boot">`): the parse-check and the harness find the app code with the regex
   `/<script>([\s\S]*)<\/script>/`, which matches a bare `<script>` only.
+- **Practice days (v41):** `meta().days` is the dated practice history behind the calendar and
+  the streak. **Any new scoring path must call `markDayActive()`** (the existing ones do it next to
+  `persist();paintLessonLog();`) or that practice silently won't count. Show the streak with
+  `curStreak()`, never `meta().streak` directly (the stored counter goes stale after a missed day).
 - **Lesson screen:** the pinned Mark-mastered button is `#dFoot`, painted by `paintFooter()`; call
   it after anything that changes `s.stds` (`paintLessonLog` and the tick handlers already do).
 - **Content:** `MODULES` array, each `{n, t, g, lessons:[...]}`. `n` is the module number —

@@ -301,7 +301,10 @@ body{font-size:15px;}
 .tab .ico{width:24px;height:24px;stroke-width:1.8;}
 .tab[aria-current="page"]{color:var(--accent);font-weight:700;}
 .wrap{max-width:760px;padding:18px 18px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 28px);}
-.toast{bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 14px);}
+/* hidden = invisible, not just shifted: sitting above the tab bar, an 80px slide no longer
+   took the toast off-screen, so an empty pill showed over the tabs (v40 bug) */
+.toast{bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 14px);opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) translateY(16px);transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .2s,visibility .2s;}
+.toast.show{opacity:1;visibility:visible;}
 .mod-head .mtag{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;}
 .mod-head h2{font-family:var(--f-display);font-size:2rem;font-weight:800;line-height:1.05;margin-top:6px;}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;}
@@ -313,7 +316,8 @@ body{font-size:15px;}
 .card-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .card-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.25;}
 .card-sub{font-size:0.82rem;color:var(--text2);margin-top:3px;line-height:1.4;}
-.card-eyebrow{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.card-eyebrow > span:last-child{white-space:nowrap;}
+.card-eyebrow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--f-mono);font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
 .pills{display:flex;flex-wrap:wrap;gap:8px;}
 .pill{display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:0.82rem;font-weight:600;color:var(--text2);}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
@@ -435,6 +439,36 @@ div.ls{cursor:default;}
 .hold-prog{height:10px;border:0;background:var(--track);border-radius:0;-webkit-mask:repeating-linear-gradient(90deg,#000 0 calc(12.5% - 3px),transparent calc(12.5% - 3px) 12.5%);mask:repeating-linear-gradient(90deg,#000 0 calc(12.5% - 3px),transparent calc(12.5% - 3px) 12.5%);}
 .hold-prog > i{border-radius:0;}
 .hold-res{border-radius:12px;}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;}
+.kpi-v{font-size:2rem;font-weight:800;line-height:1;letter-spacing:-0.02em;color:var(--text);}
+.kpi-v span{font-size:1rem;font-weight:700;color:var(--muted);}
+.kpi-l{font-family:var(--f-mono);font-size:0.66rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+.cal{display:flex;gap:6px;margin-top:12px;}
+.cal-days{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:4px;width:12px;font-family:var(--f-mono);font-size:0.6rem;color:var(--muted);}
+.cal-days span{display:flex;align-items:center;}
+.cal-grid{flex:1;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;}
+.cal-c{aspect-ratio:1;border-radius:4px;background:var(--track);}
+.cal-c.on{background:var(--accent);}
+.cal-c.fut{background:none;}
+.cal-c.now{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent-line);}
+.cal-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:0.8rem;color:var(--text2);}
+.cal-key{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:0.75rem;}
+.cal-key .cal-c{display:inline-block;width:10px;height:10px;margin-left:6px;}
+.meter{display:block;height:8px;border-radius:4px;background:var(--accent-bg);overflow:hidden;}
+.meter i{display:block;height:100%;border-radius:4px;background:var(--accent);}
+.pm{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:6px 0;border:0;border-top:1px solid var(--border);background:none;font:inherit;text-align:left;color:var(--text);cursor:pointer;}
+.card-eyebrow + .pm{margin-top:10px;}
+.pm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.pm-name{font-size:0.92rem;font-weight:600;line-height:1.25;}
+.pm-c{flex:none;font-family:var(--f-mono);font-size:0.78rem;font-weight:600;color:var(--muted);}
+.skl{display:grid;grid-template-columns:86px minmax(0,1fr) 40px 70px;align-items:center;gap:10px;min-height:42px;border-top:1px solid var(--border);}
+.card-eyebrow + .skl{margin-top:10px;}
+.skl-n{font-size:0.86rem;font-weight:600;}
+.skl-v{font-family:var(--f-mono);font-size:0.8rem;font-weight:600;color:var(--text);text-align:right;}
+.skl-w{font-size:0.75rem;color:var(--muted);text-align:right;}
+.card-eyebrow + .ls{margin-top:10px;}
+.card-foot{font-size:0.78rem;color:var(--muted);line-height:1.45;margin-top:10px;}
 @media(min-width:769px){.tabbar{max-width:760px;margin:0 auto;border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;}}
 </style>
 <script id="theme-boot">
@@ -450,7 +484,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v40</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v41</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -981,7 +1015,7 @@ function scoreStep(){
  const s=st(curId);if(!s.steps)s.steps={reps:[]};
  s.steps.reps.push({degs:collapsed.map(o=>o.deg),shape:shape,inTune:inTune,lock:lock});
  if(s.steps.reps.length>12)s.steps.reps.shift();
- if(!s.mastered)evaluateAuto(l,s);persist();paintLessonLog();
+ if(!s.mastered)evaluateAuto(l,s);markDayActive();persist();paintLessonLog();
  const seq=collapsed.map(o=>degName(o.deg)).join(' ');setStepSeq(seq||'– – –');
  if(inTune&&lock)setStepRes('✓ Clean run — '+seq,true);
  else if(!shape)setStepRes('Heard “'+(seq||'—')+'” — aim for '+c.pattern.map(degName).join(' '),false);
@@ -1384,7 +1418,7 @@ function finishJump(){
   prev.bestPasses=Math.max(prev.bestPasses||0,passes);prev.lastPasses=passes;prev.lastTotal=jdTrials;prev.sessions=(prev.sessions||0)+1;
   s.jump[key]=prev;
   if(!s.mastered)evaluateAuto(l,s);
-  persist();paintLessonLog();
+  markDayActive();persist();paintLessonLog();
  }
  const need=c?(c.need||8):8;
  paintJump('Drill complete — '+passes+' / '+jdTrials+(passes>=need?'   ✓ passed':'   · need '+need+' to pass'));
@@ -1426,7 +1460,7 @@ function answerEar(choice){
 function finishEar(){
  eqActive=false;eqState='done';showEarControls(false);
  const l=lessonById(curId),c=earCheck(l);
- if(c){const s=st(curId);if(!s.ear)s.ear={bestCorrect:0,sessions:0};s.ear.bestCorrect=Math.max(s.ear.bestCorrect||0,eqCorrect);s.ear.lastCorrect=eqCorrect;s.ear.lastTotal=eqRounds;s.ear.sessions=(s.ear.sessions||0)+1;if(!s.mastered)evaluateAuto(l,s);persist();paintLessonLog();}
+ if(c){const s=st(curId);if(!s.ear)s.ear={bestCorrect:0,sessions:0};s.ear.bestCorrect=Math.max(s.ear.bestCorrect||0,eqCorrect);s.ear.lastCorrect=eqCorrect;s.ear.lastTotal=eqRounds;s.ear.sessions=(s.ear.sessions||0)+1;if(!s.mastered)evaluateAuto(l,s);markDayActive();persist();paintLessonLog();}
  const need=c?(c.need||6):6;
  paintEar('Ear test complete — '+eqCorrect+' / '+eqRounds+(eqCorrect>=need?'   ✓ passed':'   · need '+need+' to pass'));
  setEarScore();syncEarBtns();
@@ -1526,7 +1560,7 @@ function duetMelStopped(){
  duetActive=false;clearDuetProg();
  const res=classifyMemory(duetWins,duetSamples,'mel',0.7);
  duetMelOk=res.clean;
- const s=st(curId);if(!s.duet)s.duet={};s.duet.melOk=res.clean;s.duet.melPct=res.pct;persist();paintLessonLog();
+ const s=st(curId);if(!s.duet)s.duet={};s.duet.melOk=res.clean;s.duet.melPct=res.pct;markDayActive();persist();paintLessonLog();
  let blob=null;try{blob=new Blob(duetChunks,{type:(duetRecorder&&duetRecorder.mimeType)||'audio/webm'});}catch(e){}
  duetBlob=blob;duetBuf=null;setDuetBar(100);
  if(!res.clean){duetPhase='idle';paintDuet('✗ Melody was '+res.pct+'% accurate — sing “Melody only”, then record again');syncDuetBtns();return;}
@@ -1555,7 +1589,7 @@ function scoreDuetHarm(){
  const res=classifyHarmony(duetWins,duetSamples,c.onPctHarm,c.collapseMax);
  duetHarmOk=res.clean;
  const s=st(curId);if(!s.duet)s.duet={};s.duet.harmOk=res.clean;s.duet.harmPct=res.pct;s.duet.collapse=res.collapse;
- if(!s.mastered)evaluateAuto(lessonById(curId),s);persist();paintLessonLog();
+ if(!s.mastered)evaluateAuto(lessonById(curId),s);markDayActive();persist();paintLessonLog();
  setDuetBar(100);duetPhase='recDone';
  const colMax=(c.collapseMax==null?0.18:c.collapseMax);
  paintDuet(res.clean?('✓ Duet! '+res.pct+'% on the harmony over your own voice'+(res.collapse?(' · '+res.collapse+' slip'+(res.collapse>1?'s':'')):'')):(res.collapse>Math.floor(res.total*colMax)?('✗ Fell onto the melody on '+res.collapse+' notes — retry ②'):('✗ '+res.pct+'% on harmony — sing out and hold your line, then retry ②')));
@@ -1626,7 +1660,7 @@ function scoreImprov(){
  const res=classifyImprov(imvWins,imvSamples,imvDir);
  const s=st(curId);if(!s.improv)s.improv={runs:[]};
  s.improv.runs.push(res);if(s.improv.runs.length>10)s.improv.runs.shift();
- if(!s.mastered)evaluateAuto(lessonById(curId),s);persist();paintLessonLog();
+ if(!s.mastered)evaluateAuto(lessonById(curId),s);markDayActive();persist();paintLessonLog();
  setImvBar(100);
  let msg;
  if(res.clean)msg='✓ Passable harmony — '+res.pct+'% consonant '+(imvDir==='below'?'below':'above');
@@ -1676,7 +1710,7 @@ function scoreRowRun(){
  const s=st(curId);if(!s.rows)s.rows={runs:[]};
  s.rows.runs.push(res);
  if(s.rows.runs.length>10)s.rows.runs.shift();
- if(!s.mastered)evaluateAuto(lessonById(curId),s);persist();paintLessonLog();
+ if(!s.mastered)evaluateAuto(lessonById(curId),s);markDayActive();persist();paintLessonLog();
  setRowBar(100);
  if(rowMem)paintRow(res.clean?('✓ '+res.pct+'% of the line correct from memory'):('✗ '+res.pct+'% correct — sing along with “'+(((c&&c.target)==='mel')?'Melody':'Harmony')+' only” a few more times, then retry'));
  else{const colMax=(c&&c.collapseMax)||0.18;paintRow(res.clean?('✓ Clean run — '+res.pct+'% on the harmony'+(res.collapse?(' · '+res.collapse+' slip'+(res.collapse>1?'s':'')):'')):(res.collapse>Math.floor(res.total*colMax)?('✗ Collapsed onto the melody on '+res.collapse+' notes — play “Harmony only”, then retry'):('✗ '+res.pct+'% on harmony — sing out and hold your line')));}
@@ -1725,14 +1759,14 @@ function recordHold(tracking){
  s.attempts.push({t:Date.now(),note:note,scoop:cls||'na',locked:tracking?holdLocked:-1,pass:pass,nc:needClean});
  if(s.attempts.length>24)s.attempts.shift();
  if(!s.mastered)evaluateAuto(l,s);
- persist();paintLessonLog();
+ markDayActive();persist();paintLessonLog();
 }
 function recordDrift(){
  if(!inAutoLesson())return;
  const l=lessonById(curId),c=driftCheck(l);if(!c)return;
  const s=st(curId);s.drReps=(s.drReps||0)+1;
  if(!s.mastered)evaluateAuto(l,s);
- persist();paintLessonLog();
+ markDayActive();persist();paintLessonLog();
  showToast('Drift & return '+Math.min(s.drReps,c.need||2)+'/'+(c.need||2)+' ✓');
 }
 function paintLessonLog(){
@@ -1816,10 +1850,23 @@ function autoFinalize(){
  openLesson(curId);
 }
 /* ===================== STREAK / META ===================== */
-function meta(){if(!S.__meta)S.__meta={streak:0,best:0,last:'',quick:0};return S.__meta;}
+function meta(){if(!S.__meta)S.__meta={streak:0,best:0,last:'',quick:0};const M=S.__meta;if(!Array.isArray(M.days))M.days=backfillDays(M);return M;}
+function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+/* Practice-day history (meta().days, 'YYYY-MM-DD', last 400). Older installs had only a streak
+   counter, so on first read rebuild what we can: the current streak's run of days, every dated
+   hold attempt, and each review skill's last date. */
+function backfillDays(M){
+ const set=new Set();
+ if(M.last&&M.streak){const p=M.last.split('-').map(Number);for(let i=0;i<Math.min(M.streak,400);i++)set.add(dstr(new Date(p[0],p[1]-1,p[2]-i)));}
+ Object.keys(S).forEach(k=>{const v=S[k];if(v&&Array.isArray(v.attempts))v.attempts.forEach(a=>{if(a&&a.t)set.add(dstr(new Date(a.t)));});});
+ const R=M.review||{};Object.keys(R).forEach(k=>{if(R[k]&&R[k].last)set.add(R[k].last);});
+ return [...set].sort().slice(-400);
+}
+/* the streak as of today: a run that ended before yesterday is broken, whatever was stored */
+function curStreak(){const M=meta();return (M.last===todayStr()||M.last===yestStr())?(M.streak||0):0;}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function yestStr(){const d=new Date(Date.now()-86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function markDayActive(){const M=meta();const t=todayStr();if(M.last===t)return;M.streak=(M.last===yestStr())?(M.streak+1):1;M.last=t;if(M.streak>(M.best||0))M.best=M.streak;persist();}
+function markDayActive(){const M=meta();const t=todayStr();if(!M.days.includes(t)){M.days.push(t);if(M.days.length>400)M.days.shift();}if(M.last===t){persist();return;}M.streak=(M.last===yestStr())?(M.streak+1):1;M.last=t;if(M.streak>(M.best||0))M.best=M.streak;persist();}
 /* ===================== DAILY REVIEW =====================
    The 5-minute drill is a mixed, auto-scored review of the pitch skills you've learned,
    not always the same major third. A skill joins the pool once a lesson that teaches it is
@@ -1972,7 +2019,7 @@ function pathLesson(l,next){
  const s=statusOf(l.id),chal=s==='locked'&&canChallenge(l.id),isNext=l.id===next;
  let ic,tag='',cls='ls';
  if(s==='mastered'){ic='<span class="ls-ic done">'+ico('check')+'</span>';if(l.cp)tag='<span class="ls-tag m">Passed</span>';}
- else if(l.cp){ic='<span class="ls-ic cp"></span>';tag=chal?'<span class="ls-tag p">Test out</span>':(s==='available'?'<span class="ls-tag p">Ready</span>':'<span class="ls-tag m">Checkpoint</span>');}
+ else if(l.cp){ic='<span class="ls-ic cp"></span>';tag=chal?'<span class="ls-tag p">Test out</span>':(s==='available'?'<span class="ls-tag p">Ready</span>':'<span class="ls-tag m">Locked</span>');}
  else if(isNext){ic='<span class="ls-ic next"></span>';tag='<span class="ls-tag">Up next</span>';cls+=' next';}
  else if(s==='available'){ic='<span class="ls-ic todo"></span>';}
  else{ic='<span class="ls-ic lock">'+ico('lock')+'</span>';cls+=' locked';}
@@ -2117,7 +2164,7 @@ function reviewChipsHTML(){const RS=reviewStats(),today=todayStr();return review
 function renderToday(){
  const id=nextLessonId(),M=meta();
  let h='';
- if(id){const m0=moduleOf(id);h+='<div class="pills"><span class="pill"><span class="dot"></span>Module '+m0.n+' · '+m0.t+'</span>'+(M.streak?'<span class="pill amber">'+M.streak+'-day streak</span>':'')+'</div>';}
+ if(id){const m0=moduleOf(id);h+='<div class="pills"><span class="pill"><span class="dot"></span>Module '+m0.n+' · '+m0.t+'</span>'+(curStreak()?'<span class="pill amber">'+curStreak()+'-day streak</span>':'')+'</div>';}
  if(!id){
   h+='<div class="hero"><div class="eyebrow">All done</div><h1 class="display">You’ve finished the path</h1><p class="hero-focus">Keep it alive: the 5-minute daily review a few times a week, and lesson 5.4 — sing with humans.</p></div>';
  }else{
@@ -2131,6 +2178,33 @@ function renderToday(){
  h+='<section class="card"><div class="card-eyebrow"><span>Warm up first</span><span>1 min</span></div><div class="warm"><div><b>1</b><span>Hum</span></div><div><b>2</b><span>Lip trills</span></div><div><b>3</b><span>Sirens</span></div></div><div class="note-line">'+ico('phones')+'Headphones in — the mic must not hear the drone.</div></section>';
  h+='<section class="card"><div class="card-row"><div><div class="card-title">5-minute daily review</div><div class="card-sub">'+REVIEW_N+' scored trials, leaning on what’s shaky</div></div><button class="btn-outline" onclick="openQuick()">Start</button></div><div class="chips-row" style="margin-top:12px">'+reviewChipsHTML()+'</div></section>';
  return h;
+}
+/* Practice calendar: the last 12 weeks, Monday-first columns, one hue (practised) on a neutral
+   track. The count is the readable value; tap or hover a day for its date. */
+function calendarHTML(M){
+ const days=new Set(M.days||[]),today=new Date();today.setHours(0,0,0,0);
+ const start=new Date(today);start.setDate(today.getDate()-((today.getDay()+6)%7)-77);
+ const tk=dstr(today);let cells='',n=0;
+ for(let i=0;i<84;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=dstr(d),fut=d>today,on=!fut&&days.has(k);if(on)n++;
+  cells+='<span class="cal-c'+(fut?' fut':(on?' on':''))+(k===tk?' now':'')+'" data-d="'+k+'" title="'+k+(fut?'':(on?' · practised':' · no practice'))+'"></span>';}
+ const fmt=d=>d.toLocaleDateString(undefined,{day:'numeric',month:'short'});
+ return '<section class="card"><div class="card-eyebrow"><span>Practice · last 12 weeks</span><span>'+n+' day'+(n===1?'':'s')+'</span></div>'+
+  '<div class="cal" role="img" aria-label="'+n+' practice day'+(n===1?'':'s')+' in the last 12 weeks"><div class="cal-days" aria-hidden="true"><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span><span></span></div>'+
+  '<div class="cal-grid" aria-hidden="true" onclick="calTap(event)" onmouseover="calTap(event)">'+cells+'</div></div>'+
+  '<div class="cal-foot"><span id="calInfo">'+fmt(start)+' – today</span><span class="cal-key"><i class="cal-c"></i>none<i class="cal-c on"></i>practised</span></div></section>';
+}
+function calTap(e){const c=e.target&&e.target.closest?e.target.closest('.cal-c[data-d]'):null;if(!c)return;const el=document.getElementById('calInfo');if(!el)return;const p=c.dataset.d.split('-').map(Number);el.textContent=new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+' · '+(c.classList.contains('fut')?'ahead':(c.classList.contains('on')?'practised':'no practice'));}
+/* Daily review: recent accuracy per skill (last 10 trials), as text + a same-ramp meter */
+function reviewAccHTML(){
+ const RS=reviewStats(),today=todayStr(),pool=reviewPool();
+ const seen=id=>!!(RS[id]&&RS[id].hist&&RS[id].hist.length);
+ const ids=REVIEW_SKILLS.map(k=>k.id).filter(id=>pool.includes(id)||seen(id));
+ let h='<section class="card"><div class="card-eyebrow"><span>Review accuracy</span><span>'+(meta().quick||0)+' logged</span></div>';
+ if(!ids.some(seen))h+='<p class="card-sub" style="margin-top:10px">No reviews yet. After your first one, each skill shows how many of its last 10 trials you landed.</p>';
+ else h+=ids.map(id=>{const k=reviewSkill(id),st2=RS[id],hh=(st2&&st2.hist)||[],ok=hh.filter(Boolean).length,pct=hh.length?Math.round(ok/hh.length*100):0,d=reviewDays(st2,today);
+  const when=d==null?'not yet':(d===0?'today':(d===1?'yesterday':d+'d ago'));
+  return '<div class="skl"><span class="skl-n">'+k.short+'</span><span class="meter" role="img" aria-label="'+k.short+': '+(hh.length?ok+' of '+hh.length+' recent trials landed':'not reviewed yet')+'"><i style="width:'+pct+'%"></i></span><span class="skl-v">'+(hh.length?ok+'/'+hh.length:'—')+'</span><span class="skl-w">'+when+'</span></div>';}).join('');
+ return h+'<button class="cta-sec" onclick="openQuick()">Do today’s 5-minute review</button></section>';
 }
 /* ---- Practice Room ---- */
 function renderRoom(){
@@ -2188,17 +2262,17 @@ function renderRef(){
 }
 /* ---- Progress ---- */
 function renderProg(){
- const totL=FLAT.length;const doneL=FLAT.filter(isMastered).length;const pct=Math.round(doneL/totL*100);
- const cps=[];MODULES.forEach(m=>m.lessons.forEach(l=>{if(l.cp)cps.push(l);}));
- let h='<div class="mod-head"><div class="mtag">Progress</div><h2>Your Path</h2><p>'+doneL+' of '+totL+' lessons mastered. Each module unlocks the next as you pass its standards — no calendar, only gates.</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+pct+'%</span></div></div>';
- const M=meta();
- h+='<div class="streak"><div class="streak-box"><div class="sk-n">'+(M.streak||0)+'</div><div class="sk-l">Day streak</div></div><div class="streak-box"><div class="sk-n">'+(M.best||0)+'</div><div class="sk-l">Best streak</div></div><div class="streak-box"><div class="sk-n">'+(M.quick||0)+'</div><div class="sk-l">Drills logged</div></div></div>';
- h+='<button class="qd-cta sec" onclick="openQuick()">Do today\u2019s 5-minute review</button>';
- h+='<div class="bcard" style="margin-top:14px"><div class="bcard-title">Modules</div><div class="bcard-sub">open one on the Path tab</div>';
- MODULES.forEach(m=>{const p=moduleProgress(m);const locked=statusOf(m.lessons[0].id)==='locked';h+='<div class="pmod"><div class="pmod-n">M'+m.n+'</div><div class="pmod-t">'+m.t+(locked?' · locked':'')+'</div><div class="pmod-c">'+p.done+'/'+p.tot+'</div></div>';});
- h+='</div><div class="bcard"><div class="bcard-title">Checkpoints</div><div class="bcard-sub">M1–M3 are auto-scored and can be taken early to test out · M4 and the final need a recording</div>';
- cps.forEach(l=>{const done=isMastered(l.id);const open=statusOf(l.id)!=='locked';h+='<div class="pmod"><div class="pmod-n">'+(done?'✓':(open?'◆':'—'))+'</div><div class="pmod-t">'+l.t.replace('Checkpoint — ','')+'</div><div class="pmod-c">'+(done?'passed':(open?'ready':'locked'))+'</div></div>';});
- h+='</div>';
+ const M=meta(),totL=FLAT.length,doneL=FLAT.filter(isMastered).length,cps=[];
+ MODULES.forEach(m=>m.lessons.forEach(l=>{if(l.cp)cps.push(l);}));
+ let h='<div class="page-head"><h1 class="display">Progress</h1></div>';
+ h+='<div class="kpis"><div class="kpi"><div class="kpi-v">'+curStreak()+'</div><div class="kpi-l">Day streak</div></div><div class="kpi"><div class="kpi-v">'+(M.best||0)+'</div><div class="kpi-l">Best streak</div></div><div class="kpi"><div class="kpi-v">'+doneL+'<span>/'+totL+'</span></div><div class="kpi-l">Lessons</div></div></div>';
+ h+=calendarHTML(M);
+ h+='<section class="card"><div class="card-eyebrow"><span>Modules</span><span>'+doneL+' of '+totL+' lessons</span></div>';
+ MODULES.forEach(m=>{const p=moduleProgress(m),locked=statusOf(m.lessons[0].id)==='locked'&&p.done===0,state=p.done===p.tot?'done':(locked?'lock':'ring');
+  h+='<button class="pm" onclick="go('+m.n+')">'+rmNode(state,String(m.n),p.done,p.tot)+'<span class="pm-t"><span class="pm-name">'+m.t+'</span><span class="meter" aria-hidden="true"><i style="width:'+Math.round(p.done/p.tot*100)+'%"></i></span></span><span class="pm-c">'+p.done+'/'+p.tot+'</span></button>';});
+ h+='</section>';
+ h+=reviewAccHTML();
+ h+='<section class="card"><div class="card-eyebrow"><span>Checkpoints</span><span>'+cps.filter(l=>isMastered(l.id)).length+' of '+cps.length+' passed</span></div>'+cps.map(l=>pathLesson(Object.assign({},l,{t:l.t.replace('Checkpoint — ','')}),null)).join('')+'<p class="card-foot">Modules 1–3 are auto-scored and can be taken early to test out; Module 4 and the final need a recording.</p></section>';
  return h;
 }
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}

@@ -6,9 +6,32 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v40 / harmony-v40** — live on GitHub Pages (UI/UX redesign; the commit after d775bb0). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v41 / harmony-v41** — live on GitHub Pages (Progress redesign + toast fix; the commit after 18948de). Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
-## What changed this session (v39 → v40) — UI/UX redesign (Hyrox/"The Rebuild" family look)
+## What changed this session (v40 → v41) — Progress tab redesign (release 3) + practice days
+- **Practice days now count practice.** The streak used to tick only on mastering a lesson or
+  finishing a daily review, so a session of holds that didn't end in mastery counted for nothing,
+  and the stored streak kept showing a run that had already ended. Now: `meta().days` is a dated
+  history ('YYYY-MM-DD', last 400), backfilled once on first read (`backfillDays`: the current
+  streak's run, every dated hold attempt, each review skill's last date); every scored attempt
+  calls `markDayActive()` (all 9 scoring sites: scoreStep, finishJump, finishEar, duetMelStopped,
+  scoreDuetHarm, scoreImprov, scoreRowRun, recordHold, recordDrift); `curStreak()` shows 0 once a
+  day is missed (Today pill and Progress both use it).
+- **Progress tab:** stat tiles (day streak, best, lessons x/29); a 12-week practice calendar
+  (Monday-first, one hue on a neutral track, today outlined, tap/hover a day for its date — the
+  count is the readable value); modules as rows with ring + same-ramp meter (tap → Path with it
+  open); daily-review accuracy per skill (landed/last-10 as text + meter + "2d ago"), with an empty
+  state; checkpoints as Path-style rows (Passed / Ready / Test out / Locked).
+- Followed the dataviz guidance: stat tiles not charts, body sans (not display) for the numbers,
+  single hue, values as text so nothing depends on a tooltip, dark mode from its own tokens.
+- **Fixed a v40 bug (live in v40):** an empty dark/light pill sat over the middle of the tab bar.
+  It was the hidden toast: v40 raised its resting spot above the tab bar but kept the old 80px
+  slide-down, so ~22px stayed on screen. Hidden now = opacity 0 + visibility hidden + no taps.
+- Harness +15 (225), mutation-tested (stale streak, double-recorded day, no backfill, calendar
+  counting out-of-window days — all caught). Browser: both themes pass the contrast scan, no
+  sideways scroll, and a scored hold recorded today and extended a 4-day run to 5.
+
+## What changed earlier this session (v39 → v40) — UI/UX redesign (Hyrox/"The Rebuild" family look)
 Approved from a mockup canvas (Today / Path / Lesson, light + dark): https://claude.ai/artifact/4s8HqRf2csE73yJDH5CUeV
 - **Palette + type:** Hyrox's eucalyptus tokens (accent #2C6A5A light / #6DBFA6 dark), Archivo 800
   for headlines, purple kept for checkpoints/test-outs. **Dark mode** follows the phone; Auto/Light/
@@ -36,8 +59,7 @@ Approved from a mockup canvas (Today / Path / Lesson, light + dark): https://cla
 - Verified in the browser at phone width: every view and every lesson type in BOTH themes passed
   an automated text-contrast scan (all ≥ 3:1), no sideways scroll; tick/auto-pass/footer, Path
   fold + test-out, ⋯ menu + theme switch, one-tap Start (tuner + drone) all checked. Harness 210 green.
-- Not done (release 3): the Progress tab redesign (module rings, practice calendar, review accuracy
-  per skill) — it only got the new tokens/type.
+- Progress tab redesign followed in v41 (release 3).
 
 ## What changed earlier this session (v38 → v39) — pedagogy items 4 + 8 (the last two)
 4. **Songs earlier.** Modules 1–2 were 11 drill-only lessons before any music. Two new song

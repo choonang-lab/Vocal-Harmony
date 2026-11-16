@@ -98,6 +98,7 @@ const EXPOSE = [
   'LOCK_TIERS', 'lockTierFor', 'lockWindow',
   'REVIEW_SKILLS', 'reviewPool', 'reviewWeight', 'planReview', 'recordReview',
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
+  'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -717,6 +718,52 @@ group('harmony below: rule, singability, and the scorers tell it apart');
   ok(!A.classifyHarmony(bw, makeSamples(bw, (w) => semiToHz(w.mel)), 0.62, 0.18).clean, 'falling onto the melody does not pass');
   ok(A.classifyMemory(bw, makeSamples(bw, (w) => semiToHz(w.harm)), 'harm', 0.7).clean, 'the below line can be sung from memory and scored');
   ok(!A.classifyMemory(bw, makeSamples(bw, (w, i) => semiToHz(hiNotes[i])), 'harm', 0.7).clean, '…and the high line from memory does not count as it');
+}
+
+/* ---- Practice days, live streak, Progress tab (v41) ----
+   The streak used to count only mastering a lesson or finishing a review, and kept showing a
+   run that had already ended. meta().days is now a dated history (backfilled once), every
+   scored attempt marks the day, and curStreak() is 0 once a day has been missed. */
+group('practice days: history, backfill, live streak, calendar');
+{
+  const saved = A.getS();
+  const daysAgo = (n) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - n); return A.dstr(d); };
+
+  A.setS({});
+  A.markDayActive(); A.markDayActive();
+  eq(JSON.stringify(A.meta().days), JSON.stringify([A.todayStr()]), 'a practice day is recorded once, however many attempts');
+  eq(A.curStreak(), 1, 'first day → streak 1');
+
+  // backfill from an older install: a 3-day run ending yesterday + a dated hold attempt + a review date
+  A.setS({ __meta: { streak: 3, best: 4, last: daysAgo(1), quick: 2, review: { M3: { hist: [true], last: daysAgo(20) } } },
+           '1.2': { attempts: [{ t: new Date(daysAgo(9) + 'T12:00:00').getTime(), pass: true }] } });
+  const back = A.meta().days;
+  ok([daysAgo(1), daysAgo(2), daysAgo(3)].every((d) => back.includes(d)), 'backfill rebuilds the current streak run');
+  ok(back.includes(daysAgo(9)) && back.includes(daysAgo(20)), 'backfill picks up dated hold attempts and review dates');
+  ok(!back.includes(daysAgo(4)), 'backfill invents no days');
+  eq(A.curStreak(), 3, 'a run ending yesterday still counts');
+
+  A.setS({ __meta: { streak: 5, best: 5, last: daysAgo(4), quick: 0 } });
+  eq(A.curStreak(), 0, 'a run that ended days ago shows 0, not the stale counter');
+  A.markDayActive();
+  eq(A.curStreak(), 1, 'practising again starts a new run');
+  eq(A.meta().best, 5, 'best streak is kept');
+
+  // calendar: 84 cells (12 weeks), counts only real practice days, nothing after today
+  A.setS({ __meta: { streak: 0, best: 0, last: '', quick: 0, days: [daysAgo(0), daysAgo(3), daysAgo(200)] } });
+  const cal = A.calendarHTML(A.meta());
+  eq((cal.match(/class="cal-c[ "]/g) || []).length - 2, 84, 'calendar has 12 weeks × 7 days');
+  ok(cal.includes('2 practice days in the last 12 weeks'), 'counts the 2 days inside the window, not the one 200 days ago');
+  eq((cal.match(/cal-c on/g) || []).length - 1, 2, 'exactly the practised days are filled');
+  ok(cal.includes(' now"'), 'today is marked');
+
+  // review accuracy: empty state, then text values per skill
+  A.setS({});
+  ok(A.reviewAccHTML().includes('No reviews yet'), 'review accuracy has an empty state');
+  A.setS({ __meta: { streak: 0, best: 0, last: '', quick: 1, review: { unison: { hist: [true, true, false], n: 3, ok: 2, last: A.todayStr() } } } });
+  ok(/Same note.*2\/3.*today/.test(A.reviewAccHTML()), 'each skill shows landed/attempted as text and when it was last reviewed');
+
+  A.setS(saved);
 }
 
 /* ================================================================ */
