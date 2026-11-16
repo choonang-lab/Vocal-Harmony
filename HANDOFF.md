@@ -6,9 +6,40 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v39 / harmony-v39** — live on GitHub Pages (pedagogy items 4 + 8; the commit after d81c694). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v40 / harmony-v40** — live on GitHub Pages (UI/UX redesign; the commit after d775bb0). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
-## What changed this session (v38 → v39) — pedagogy items 4 + 8 (the last two)
+## What changed this session (v39 → v40) — UI/UX redesign (Hyrox/"The Rebuild" family look)
+Approved from a mockup canvas (Today / Path / Lesson, light + dark): https://claude.ai/artifact/4s8HqRf2csE73yJDH5CUeV
+- **Palette + type:** Hyrox's eucalyptus tokens (accent #2C6A5A light / #6DBFA6 dark), Archivo 800
+  for headlines, purple kept for checkpoints/test-outs. **Dark mode** follows the phone; Auto/Light/
+  Dark in the ⋯ menu (pref in localStorage `harmony_theme`, NOT in the backup). A small
+  `<script id="theme-boot">` in <head> sets `data-theme` before first paint.
+- **Every colour is a token now** — the apply step aborted if any hex remained in the stylesheet.
+  New tokens: --on-accent, --accent-line/hover, --amber-line, --purple-line, --red-bg, --on-red,
+  --pink(-bg), --track, --zone, --scrim, --f-display, --f-mono, --tabbar-h.
+- **Navigation:** 11 top tabs → bottom tab bar Today · Path · Practice · Progress (`renderNav`,
+  `navTab`). New **Path** view (`renderPath`, `pathOpen`, `togglePath`): vertical roadmap, ring/check/
+  lock nodes, current module expanded with its goal text + lesson rows, Test-out pills on locked
+  modules. Old numeric module views map to Path (`go(2)` opens Path with M2 expanded).
+  Backup/Restore/Reset, Range check and Reference moved into the ⋯ menu (`toggleMenu`).
+- **Today** restyled as mocked (pills, eyebrow, big title, chips, one CTA, test-out, warm-up card,
+  daily-review card with skill chips via `reviewChipsHTML`).
+- **Lesson screen:** back button + crumb; tool first; tasks / Live log / Standards / Notes in
+  `<details>` sections; **Mark mastered pinned** in `#dFoot` via `paintFooter()`, repainted from
+  `paintLessonLog` and ticks, so an auto-pass shows even with the log folded. Ticking a task or
+  standard no longer redraws the lesson (it used to stop the tuner and drone).
+- **Tuner = gauge:** semicircle SVG, needle rotated by `setNeedle()`, green arc drawn from
+  `lockWindow().grab` (`zoneArc`) so the progressive window is visible. Target line ("Sing E4")
+  replaces the emoji readout; Step/3rd/5th is a segmented switch synced in `syncHoldTarget`;
+  drone/tuner/hold buttons are icon toggles; hold count is an 8-segment bar.
+- **Emoji → line icons** (`ico()`/`ICONS`); the apply step aborted if any pictograph emoji remained.
+- Verified in the browser at phone width: every view and every lesson type in BOTH themes passed
+  an automated text-contrast scan (all ≥ 3:1), no sideways scroll; tick/auto-pass/footer, Path
+  fold + test-out, ⋯ menu + theme switch, one-tap Start (tuner + drone) all checked. Harness 210 green.
+- Not done (release 3): the Progress tab redesign (module rings, practice calendar, review accuracy
+  per skill) — it only got the new tokens/type.
+
+## What changed earlier this session (v38 → v39) — pedagogy items 4 + 8 (the last two)
 4. **Songs earlier.** Modules 1–2 were 11 drill-only lessons before any music. Two new song
    lessons, placed at each module's END (not mid-module: lesson ids are the progress keys, so
    inserting after 2.2 would have meant renumbering): **1.5 First Song** — Row Your Boat MELODY

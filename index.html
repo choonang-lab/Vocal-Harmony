@@ -5,21 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1A6B45">
+<meta name="theme-color" content="#ECEEEA">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>和声 · Harmony Path</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#EFEDE8;--surface:#FFFFFF;--surface2:#F2F1EE;--border:#E5E3DD;--border2:#D0CEC8;
-  --text:#1C1B18;--text2:#4A4845;--muted:#8C8A84;--muted2:#B8B6B0;
-  --accent:#1A6B45;--accent-bg:#E8F4EE;--amber:#92560A;--amber-bg:#FBF2E6;
-  --purple:#6B3FA0;--purple-bg:#F0E8F7;--red:#9B2C2C;--blue:#1D4E89;
-  --radius:10px;--radius-sm:6px;
-  --shadow-sm:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);
+  color-scheme:light;
+  --bg:#ECEEEA;--surface:#FFFFFF;--surface2:#F5F6F3;--border:#DCE0DB;--border2:#C9CFC9;
+  --text:#15191B;--text2:#3A4246;--muted:#61696E;--muted2:#8A9196;
+  --accent:#2C6A5A;--accent-bg:#DCEAE4;--accent-line:#B9D5C9;--accent-hover:#22564A;--on-accent:#FFFFFF;
+  --amber:#8A5510;--amber-bg:#F5E6CF;--amber-line:#E2C48F;
+  --purple:#6B3FA0;--purple-bg:#F0E8F7;--purple-line:#D5C3EA;
+  --red:#9B2C2C;--red-bg:#F8E4E2;--on-red:#FFFFFF;--blue:#1D4E89;--pink:#9B2C6B;--pink-bg:#FBEAF2;
+  --track:#E3E7E2;--zone:#CFE3DA;--scrim:rgba(17,21,20,0.45);
+  --radius:14px;--radius-sm:10px;--radius-lg:20px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
   --shadow:0 4px 16px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.05);
   --shadow-lg:0 12px 40px rgba(0,0,0,0.14);
+  --f-display:'Archivo','Helvetica Neue',Arial,sans-serif;--f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --tabbar-h:64px;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111514;--surface:#1A1F1D;--surface2:#232A27;--border:#2F3633;--border2:#434C48;
+  --text:#E7ECE9;--text2:#C4CCC8;--muted:#9AA4A0;--muted2:#7F8984;
+  --accent:#6DBFA6;--accent-bg:#1E3832;--accent-line:#2F5A4E;--accent-hover:#86CDB7;--on-accent:#0B1A15;
+  --amber:#E2AA55;--amber-bg:#33281A;--amber-line:#5A4524;
+  --purple:#C7B0EA;--purple-bg:#2A2236;--purple-line:#4A3D60;
+  --red:#EC7B74;--red-bg:#3A1F1E;--on-red:#2A0F0E;--blue:#8FB2E6;--pink:#E58ABB;--pink-bg:#3A1F2D;
+  --track:#2A322F;--zone:#24493F;--scrim:rgba(0,0,0,0.6);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.5);--shadow:0 4px 16px rgba(0,0,0,0.5);--shadow-lg:0 12px 40px rgba(0,0,0,0.6);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;overflow-x:clip;}
@@ -59,29 +76,29 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .lesson.locked.challenge .l-status{color:var(--purple);}
 .today-p{font-size:0.82rem;color:var(--text2);line-height:1.5;margin:4px 0 8px;}
 .today-streak{text-align:center;font-size:0.74rem;color:var(--muted);margin-top:16px;}
-.challenge-note{background:var(--purple-bg);color:var(--purple);border:1px solid #C4A8DC;border-radius:var(--radius-sm);padding:10px 12px;font-size:0.76rem;line-height:1.5;margin-top:10px;}
+.challenge-note{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-line);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.76rem;line-height:1.5;margin-top:10px;}
 .lesson.mastered{border-left-color:var(--accent);}
 .lesson.available{border-left-color:var(--amber);}
 .lesson.cp{border-left-color:var(--purple);background:linear-gradient(0deg,var(--purple-bg),var(--surface) 60%);}
 .lesson.cp.mastered{border-left-color:var(--accent);}
 .l-badge{width:38px;height:38px;min-width:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8rem;font-family:'JetBrains Mono',monospace;background:var(--surface2);color:var(--muted);border:1.5px solid var(--border2);}
-.l-badge.mastered{background:var(--accent);color:#fff;border-color:var(--accent);}
-.l-badge.available{background:var(--amber-bg);color:var(--amber);border-color:#E8C07A;}
-.l-badge.cp{background:var(--purple-bg);color:var(--purple);border-color:#C4A8DC;}
-.l-badge.cp.mastered{background:var(--accent);color:#fff;border-color:var(--accent);}
+.l-badge.mastered{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+.l-badge.available{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line);}
+.l-badge.cp{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-line);}
+.l-badge.cp.mastered{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
 .l-main{flex:1;min-width:0;}
 .l-title{font-size:0.92rem;font-weight:700;line-height:1.3;}
 .l-focus{font-size:0.74rem;color:var(--muted);margin-top:3px;line-height:1.45;}
 .l-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
 .chip{font-family:'JetBrains Mono',monospace;font-size:0.56rem;padding:2px 6px;border-radius:3px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);}
-.chip.tempo{background:var(--amber-bg);border-color:#E8C07A;color:var(--amber);}
-.chip.covers{background:var(--accent-bg);border-color:#A8C0DC;color:var(--blue);}
-.chip.cp{background:var(--purple-bg);border-color:#C4A8DC;color:var(--purple);}
+.chip.tempo{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber);}
+.chip.covers{background:var(--accent-bg);border-color:var(--accent-line);color:var(--blue);}
+.chip.cp{background:var(--purple-bg);border-color:var(--purple-line);color:var(--purple);}
 .l-status{font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;align-self:flex-start;white-space:nowrap;}
 .l-status.mastered{color:var(--accent);}
 .l-status.available{color:var(--amber);}
 .l-status.locked{color:var(--muted2);}
-.scrim{display:none;position:fixed;inset:0;background:rgba(28,27,24,.45);z-index:899;}
+.scrim{display:none;position:fixed;inset:0;background:var(--scrim);z-index:899;}
 .scrim.open{display:block;}
 .detail{display:none;position:fixed;inset:0;z-index:910;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;flex-direction:column;}
 .detail.open{display:flex;}
@@ -99,17 +116,17 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .item:last-child{border-bottom:none;}
 .check{width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .12s;}
 .check.on{background:var(--accent);border-color:var(--accent);}
-.check.on::after{content:'✓';color:#fff;font-size:0.8rem;font-weight:800;}
+.check.on::after{content:'✓';color:var(--on-accent);font-size:0.8rem;font-weight:800;}
 .check.std.on{background:var(--amber);border-color:var(--amber);}
 .item-text{font-size:0.9rem;line-height:1.55;color:var(--text2);flex:1;}
 .std .item-text{font-weight:600;color:var(--text);}
 .notes{width:100%;border:1.5px solid var(--border2);border-radius:8px;padding:11px 13px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);resize:vertical;min-height:80px;line-height:1.55;-webkit-appearance:none;}
 .notes:focus{outline:none;border-color:var(--accent);}
-.cp-note{background:var(--purple-bg);border:1px solid #C4A8DC;border-radius:var(--radius);padding:14px 16px;font-size:0.85rem;line-height:1.6;color:var(--text2);}
+.cp-note{background:var(--purple-bg);border:1px solid var(--purple-line);border-radius:var(--radius);padding:14px 16px;font-size:0.85rem;line-height:1.6;color:var(--text2);}
 .cp-note b{color:var(--purple);}
 .master-btn{width:100%;margin-top:26px;padding:16px;border-radius:var(--radius);border:none;font-family:inherit;font-size:0.95rem;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:0.02em;}
-.master-btn.ready{background:var(--accent);color:#fff;}
-.master-btn.ready:hover{background:#145535;}
+.master-btn.ready{background:var(--accent);color:var(--on-accent);}
+.master-btn.ready:hover{background:var(--accent-hover);}
 .master-btn.notready{background:var(--surface2);color:var(--muted2);border:1.5px solid var(--border);cursor:not-allowed;}
 .master-btn.done{background:var(--accent-bg);color:var(--accent);border:1.5px solid var(--accent);}
 .gate-hint{text-align:center;font-size:0.72rem;color:var(--muted);margin-top:10px;}
@@ -126,7 +143,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .road-row:last-child{border-bottom:none;}
 .road-tag{font-size:0.58rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;padding:3px 8px;border-radius:4px;white-space:nowrap;min-width:74px;text-align:center;background:var(--accent-bg);color:var(--accent);}
 .road-tag.c{background:var(--purple-bg);color:var(--purple);}
-.road-tag.peak{background:#FBEAEA;color:var(--red);}
+.road-tag.peak{background:var(--red-bg);color:var(--red);}
 .road-body{font-size:0.8rem;color:var(--text2);line-height:1.45;}
 .road-body b{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:500;}
 .pmod{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
@@ -134,7 +151,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .pmod-n{font-size:0.7rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--muted);min-width:26px;}
 .pmod-t{flex:1;font-size:0.86rem;font-weight:600;}
 .pmod-c{font-size:0.66rem;font-family:'JetBrains Mono',monospace;color:var(--muted);}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:12px 22px;border-radius:24px;font-size:0.82rem;font-weight:700;z-index:999;transition:transform .28s cubic-bezier(.22,1,.36,1);box-shadow:var(--shadow-lg);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:var(--bg);padding:12px 22px;border-radius:24px;font-size:0.82rem;font-weight:700;z-index:999;transition:transform .28s cubic-bezier(.22,1,.36,1);box-shadow:var(--shadow-lg);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .storage-banner{background:var(--amber-bg);color:var(--amber);font-size:0.72rem;padding:8px 16px;text-align:center;font-weight:600;display:none;}
 /* ---- audio tool panel ---- */
@@ -144,8 +161,8 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .t-label{font-size:0.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;min-width:100%;margin-top:6px;}
 .t-target{display:none;font-size:0.74rem;font-weight:600;color:var(--accent);background:var(--accent-bg);border-radius:var(--radius-sm);padding:8px 11px;margin-top:8px;line-height:1.45;}
 .t-target.show{display:block;}
-.tbtn{font-family:inherit;font-size:0.78rem;font-weight:700;padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all .15s;}
-.tbtn:hover{background:#145535;}
+.tbtn{font-family:inherit;font-size:0.78rem;font-weight:700;padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:var(--on-accent);cursor:pointer;transition:all .15s;}
+.tbtn:hover{background:var(--accent-hover);}
 .tbtn.sec{background:var(--surface);color:var(--accent);}
 .tbtn.sec:hover{background:var(--accent-bg);}
 .tbtn.warn{background:var(--surface);color:var(--amber);border-color:var(--amber);}
@@ -159,19 +176,15 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .pd-note{font-size:1.25rem;font-weight:700;color:var(--text);min-width:42px;}
 .pd-cents{font-size:0.72rem;color:var(--muted);}
 .pd-lock{margin-left:auto;font-size:0.66rem;font-weight:800;letter-spacing:0.04em;padding:3px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
-.pd-lock.on{background:var(--accent);color:#fff;border-color:var(--accent);}
-.pd-lock.sharp,.pd-lock.flat{background:var(--amber-bg);color:var(--amber);border-color:#E8C07A;}
-.pd-meter{position:relative;height:12px;margin-top:10px;border-radius:6px;background:linear-gradient(90deg,#E8C07A22,#E8C07A11 40%,var(--accent-bg) 50%,#E8C07A11 60%,#E8C07A22);border:1px solid var(--border);overflow:hidden;}
-.pd-zone{position:absolute;left:calc(50% - 9%);width:18%;top:0;bottom:0;background:rgba(26,107,69,.16);border-left:1px solid var(--accent);border-right:1px solid var(--accent);}
-.pd-needle{position:absolute;top:-2px;bottom:-2px;width:3px;left:50%;transform:translateX(-50%);background:var(--text);border-radius:2px;transition:left .07s linear,background .15s;}
-.pd.locked .pd-needle{background:var(--accent);}
+.pd-lock.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+.pd-lock.sharp,.pd-lock.flat{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line);}
 .pd-msg{display:none;font-size:0.72rem;color:var(--red);font-weight:600;margin-top:9px;line-height:1.45;}
 .pd-msg.show{display:block;}
 .pd-scoop{display:none;align-items:center;gap:10px;margin-top:9px;padding:7px 9px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);}
 .pd-scoop.show{display:flex;}
-.pd-scoop.ok{background:var(--accent-bg);border-color:#A8C8B6;}
-.pd-scoop.soft{background:#FBF6EC;border-color:#E8D4A8;}
-.pd-scoop.warn{background:var(--amber-bg);border-color:#E8C07A;}
+.pd-scoop.ok{background:var(--accent-bg);border-color:var(--accent-line);}
+.pd-scoop.soft{background:var(--amber-bg);border-color:var(--amber-line);}
+.pd-scoop.warn{background:var(--amber-bg);border-color:var(--amber-line);}
 .pd-scoop .scoop-v{flex:1;font-size:0.74rem;font-weight:700;line-height:1.3;}
 .pd-scoop.ok .scoop-v{color:var(--accent);}
 .pd-scoop.soft .scoop-v{color:var(--amber);}
@@ -179,9 +192,9 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 /* ---- in-app recorder ---- */
 .rec{margin-top:12px;padding:13px 14px;border:1.5px solid var(--purple);border-radius:var(--radius);background:linear-gradient(0deg,var(--purple-bg),var(--surface) 70%);}
 .rec-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.rec-btn{font-family:inherit;font-size:0.82rem;font-weight:800;padding:10px 16px;border-radius:var(--radius-sm);border:none;background:var(--red);color:#fff;cursor:pointer;display:flex;align-items:center;gap:7px;}
+.rec-btn{font-family:inherit;font-size:0.82rem;font-weight:800;padding:10px 16px;border-radius:var(--radius-sm);border:none;background:var(--red);color:var(--on-red);cursor:pointer;display:flex;align-items:center;gap:7px;}
 .rec-btn.stop{background:var(--text);}
-.rec-dot{width:9px;height:9px;border-radius:50%;background:#fff;}
+.rec-dot{width:9px;height:9px;border-radius:50%;background:var(--on-red);}
 .rec-btn.live .rec-dot{animation:recpulse 1s infinite;}
 @keyframes recpulse{0%,100%{opacity:1}50%{opacity:.25}}
 .rec-time{font-family:'JetBrains Mono',monospace;font-size:0.9rem;font-weight:600;color:var(--text2);}
@@ -205,10 +218,10 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .hold-prog > i{display:block;height:100%;width:0;background:var(--accent);border-radius:5px;transition:width .25s linear;}
 .hold-res{display:none;font-size:0.74rem;font-weight:700;margin-top:9px;padding:7px 10px;border-radius:var(--radius-sm);}
 .hold-res.show{display:block;}
-.hold-res.ok{background:var(--accent-bg);color:var(--accent);border:1px solid #A8C8B6;}
-.hold-res.warn{background:var(--amber-bg);color:var(--amber);border:1px solid #E8C07A;}
+.hold-res.ok{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-line);}
+.hold-res.warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-line);}
 /* ---- lesson log / auto-test ---- */
-.ll-auto{font-family:'JetBrains Mono',monospace;font-size:0.54rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--purple);background:var(--purple-bg);border:1px solid #C4A8DC;border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:middle;}
+.ll-auto{font-family:'JetBrains Mono',monospace;font-size:0.54rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-line);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:middle;}
 .lesson-log{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow-sm);}
 .ll-prog{font-size:0.82rem;color:var(--text2);margin-bottom:10px;}
 .ll-prog b{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;}
@@ -219,23 +232,23 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .ll-row:last-child{border-bottom:none;}
 .ll-note{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:0.84rem;min-width:34px;}
 .ll-b{font-family:'JetBrains Mono',monospace;font-size:0.58rem;font-weight:700;padding:2px 6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
-.ll-b.ok{background:var(--accent-bg);color:var(--accent);border-color:#A8C8B6;}
-.ll-b.soft{background:#FBF6EC;color:var(--amber);border-color:#E8D4A8;}
-.ll-b.warn{background:var(--amber-bg);color:var(--amber);border-color:#E8C07A;}
+.ll-b.ok{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-line);}
+.ll-b.soft{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line);}
+.ll-b.warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line);}
 .ll-lk{flex:1;font-size:0.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace;}
 .ll-res{font-weight:800;font-size:0.9rem;}
 .ll-res.p{color:var(--accent);}
 .ll-res.f{color:var(--muted2);}
 .ll-final{margin-top:12px;font-size:0.78rem;font-weight:700;padding:9px 11px;border-radius:var(--radius-sm);}
-.ll-final.ok{background:var(--accent-bg);color:var(--accent);border:1px solid #A8C8B6;}
+.ll-final.ok{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-line);}
 /* ---- metronome ---- */
 .metro-dot{width:54px;height:54px;border-radius:50%;background:var(--surface2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;color:var(--muted);transition:transform .05s,background .05s,color .05s,border-color .05s;}
-.metro-dot.beat{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.12);}
+.metro-dot.beat{background:var(--accent);color:var(--on-accent);border-color:var(--accent);transform:scale(1.12);}
 .metro-dot.accent{background:var(--amber);border-color:var(--amber);}
 /* ---- quick drill ---- */
-.qd-cta{width:100%;margin-top:14px;padding:15px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:0.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:var(--shadow-sm);}
-.qd-cta:hover{background:#145535;}
-.qd-cta.sec{background:var(--purple-bg);color:var(--purple);border:1.5px solid #C4A8DC;box-shadow:none;}
+.qd-cta{width:100%;margin-top:14px;padding:15px;border-radius:var(--radius);border:none;background:var(--accent);color:var(--on-accent);font-family:inherit;font-size:0.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:var(--shadow-sm);}
+.qd-cta:hover{background:var(--accent-hover);}
+.qd-cta.sec{background:var(--purple-bg);color:var(--purple);border:1.5px solid var(--purple-line);box-shadow:none;}
 .qd-big{font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;text-align:center;color:var(--accent);margin:6px 0;}
 .qd-sub{text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:14px;}
 .score-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px;}
@@ -246,7 +259,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .streak-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow-sm);}
 .streak-box .sk-n{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:700;color:var(--accent);line-height:1;}
 .streak-box .sk-l{font-size:0.6rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
-.road-tag.mando{background:#FBEAF2;color:#9B2C6B;}
+.road-tag.mando{background:var(--pink-bg);color:var(--pink);}
 @media(max-width:768px){
   .site-header{padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;}
   .logo p{display:none;}
@@ -256,26 +269,209 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
   .l-title{font-size:1rem;}
   .l-focus{font-size:0.82rem;}
 }
+/* ===== v40 redesign — shared with The Rebuild: eucalyptus palette, Archivo display, bottom tabs, dark mode ===== */
+body{font-size:15px;}
+.display{font-family:var(--f-display);font-weight:800;letter-spacing:-0.02em;line-height:1.04;color:var(--text);}
+.eyebrow{font-family:var(--f-mono);font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);}
+.ico{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;}
+.site-header{padding:calc(env(safe-area-inset-top) + 12px) 18px 10px;box-shadow:none;}
+.header-inner{max-width:760px;}
+.logo{display:flex;align-items:baseline;gap:8px;}
+.logo-zh{font-family:var(--f-display);font-weight:800;font-size:1.25rem;color:var(--text);}
+.logo-en{font-family:var(--f-display);font-weight:700;font-size:1rem;color:var(--accent);}
+.logo-v{font-family:var(--f-mono);font-size:0.68rem;color:var(--muted);}
+.icon-btn{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+.menu-scrim{display:none;position:fixed;inset:0;z-index:950;}
+.menu-scrim.open{display:block;}
+.menu{display:none;position:fixed;top:calc(env(safe-area-inset-top) + 62px);right:12px;z-index:960;width:min(300px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:8px;}
+.menu.open{display:block;}
+.menu-h{font-family:var(--f-mono);font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:8px 10px 6px;}
+.menu-item{width:100%;min-height:44px;display:flex;align-items:center;gap:12px;padding:0 10px;border:0;background:none;border-radius:10px;font:inherit;font-size:0.92rem;font-weight:600;color:var(--text);cursor:pointer;text-align:left;}
+.menu-item:hover{background:var(--surface2);}
+.menu-item .ico{color:var(--muted);}
+.menu-item.danger,.menu-item.danger .ico{color:var(--red);}
+.menu-sep{height:1px;background:var(--border);margin:6px 4px;}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--surface2);}
+.seg-b{min-height:40px;border:0;border-radius:10px;background:transparent;color:var(--text2);font:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;}
+.seg-b[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:700;}
+.menu .seg{margin:0 4px 4px;}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:calc(var(--tabbar-h) + env(safe-area-inset-bottom));padding:6px 6px env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--border);}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:var(--muted);font:inherit;font-size:0.72rem;font-weight:600;cursor:pointer;}
+.tab .ico{width:24px;height:24px;stroke-width:1.8;}
+.tab[aria-current="page"]{color:var(--accent);font-weight:700;}
+.wrap{max-width:760px;padding:18px 18px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 28px);}
+.toast{bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 14px);}
+.mod-head .mtag{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;}
+.mod-head h2{font-family:var(--f-display);font-size:2rem;font-weight:800;line-height:1.05;margin-top:6px;}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;}
+.page-head h1{font-size:2.2rem;}
+.page-count{font-family:var(--f-mono);font-size:0.82rem;font-weight:600;color:var(--muted);}
+.page-sub{font-size:0.86rem;color:var(--text2);margin-top:8px;line-height:1.45;}
+.bar{background:var(--track);border:0;height:6px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-top:14px;}
+.card-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.25;}
+.card-sub{font-size:0.82rem;color:var(--text2);margin-top:3px;line-height:1.4;}
+.card-eyebrow{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.pills{display:flex;flex-wrap:wrap;gap:8px;}
+.pill{display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:0.82rem;font-weight:600;color:var(--text2);}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.pill.amber{background:var(--amber-bg);border-color:transparent;color:var(--amber);}
+.chips-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip2{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:0.8rem;font-weight:500;color:var(--text2);}
+.chip2 .ico{width:14px;height:14px;color:var(--muted);}
+.chip2.soft{background:var(--surface2);border-color:transparent;border-radius:999px;}
+.chip2.due{background:var(--amber-bg);border-color:transparent;color:var(--amber);font-weight:600;border-radius:999px;}
+.cta{width:100%;min-height:56px;margin-top:16px;border:0;border-radius:16px;background:var(--accent);color:var(--on-accent);font:inherit;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;}
+.cta:hover{background:var(--accent-hover);}
+.cta-sec{width:100%;min-height:46px;margin-top:10px;border-radius:14px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font:inherit;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.cta-sec.purple{border-color:var(--purple-line);background:var(--purple-bg);color:var(--purple);}
+.btn-outline{flex:none;min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--accent);background:none;color:var(--accent);font:inherit;font-size:0.9rem;font-weight:700;cursor:pointer;}
+.qd-cta{border-radius:16px;font-weight:700;min-height:52px;}
+.hero{display:flex;flex-direction:column;gap:9px;margin-top:20px;}
+.hero h1{font-size:2.5rem;}
+.hero-focus{font-size:0.95rem;line-height:1.5;color:var(--text2);}
+.warm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;}
+.warm div{background:var(--surface2);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;}
+.warm b{font-family:var(--f-mono);font-size:0.7rem;color:var(--accent);}
+.warm span{font-size:0.9rem;font-weight:600;color:var(--text);}
+.note-line{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text2);margin-top:12px;}
+.note-line .ico{color:var(--muted);width:18px;height:18px;}
+.road-list{position:relative;margin-top:18px;}
+.road-list::before{content:'';position:absolute;left:19px;top:24px;bottom:30px;width:2px;background:var(--border2);}
+.rm{position:relative;}
+.rm-row{display:flex;align-items:center;gap:10px;}
+.rm-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:58px;border:0;background:none;padding:0;font:inherit;text-align:left;color:inherit;cursor:pointer;}
+.rm-node{position:relative;flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface);}
+.rm-node.done{background:var(--accent);color:var(--on-accent);}
+.rm-node.lock{background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+.rm-node svg.ring{position:absolute;inset:0;}
+.rm-node .n{position:relative;font-family:var(--f-display);font-weight:800;font-size:0.9rem;color:var(--accent);}
+.rm-node .ico{width:18px;height:18px;}
+.rm-node.done .ico{stroke-width:2.6;}
+.rm-text{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.rm-eyebrow{font-family:var(--f-mono);font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+.rm-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.2;}
+.rm.locked .rm-title{color:var(--text2);}
+.rm-chev{flex:none;color:var(--muted);display:flex;transition:transform .15s;}
+.rm-chev .ico{width:18px;height:18px;}
+.rm.open .rm-chev{transform:rotate(180deg);}
+.pill-btn{flex:none;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--purple-line);background:var(--purple-bg);color:var(--purple);font:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;}
+.rm-card{margin:0 0 12px 52px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px 4px;}
+.rm-goal{font-size:0.84rem;color:var(--text2);line-height:1.5;padding-bottom:10px;}
+.ls{display:flex;align-items:center;gap:11px;width:100%;min-height:48px;border:0;border-top:1px solid var(--border);background:none;padding:6px 0;font:inherit;text-align:left;color:var(--text);cursor:pointer;}
+div.ls{cursor:default;}
+.ls-ic{flex:none;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.ls-ic.done{background:var(--accent);color:var(--on-accent);}
+.ls-ic.done .ico{width:12px;height:12px;stroke-width:3.4;}
+.ls-ic.next{border:2px solid var(--accent);}
+.ls-ic.next::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.ls-ic.todo{border:2px solid var(--border2);}
+.ls-ic.lock{color:var(--muted2);}
+.ls-ic.lock .ico{width:15px;height:15px;}
+.ls-ic.cp:not(.done)::after{content:'';width:11px;height:11px;background:var(--purple);transform:rotate(45deg);border-radius:2px;}
+.ls-t{flex:1;min-width:0;font-size:0.92rem;font-weight:500;line-height:1.3;}
+.ls.next .ls-t{font-weight:700;}
+.ls.locked .ls-t{color:var(--muted);}
+.ls-tag{flex:none;font-size:0.72rem;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--accent-bg);color:var(--accent);}
+.ls-tag.p{background:var(--purple-bg);color:var(--purple);}
+.ls-tag.m{background:none;color:var(--muted);font-weight:600;padding:4px 0;}
+.d-close{justify-content:flex-start;gap:12px;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;font-family:var(--f-mono);font-size:0.7rem;font-weight:600;letter-spacing:0.08em;}
+.d-close .icon-btn{padding:0;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);}
+.d-body{padding:18px 18px 0;}
+.d-title{font-family:var(--f-display);font-size:2rem;font-weight:800;line-height:1.05;}
+.d-meta{gap:8px;}
+.acc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-top:12px;}
+.acc > summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;cursor:pointer;font-weight:700;font-size:0.95rem;color:var(--text);}
+.acc > summary::-webkit-details-marker{display:none;}
+.acc > summary .acc-meta{margin-left:auto;font-family:var(--f-mono);font-size:0.76rem;font-weight:600;color:var(--muted);}
+.acc > summary .ico{width:16px;height:16px;color:var(--muted);transition:transform .15s;}
+.acc[open] > summary .ico{transform:rotate(180deg);}
+.acc-body{padding:0 16px 12px;}
+.acc .lesson-log{border:0;box-shadow:none;padding:0;background:none;}
+.acc.cp{border-color:var(--purple-line);}
+.d-foot{position:sticky;bottom:0;z-index:5;margin:20px -18px 0;padding:12px 18px calc(env(safe-area-inset-bottom) + 14px);background:var(--surface);border-top:1px solid var(--border);}
+.d-foot .master-btn{margin-top:0;min-height:52px;border-radius:14px;}
+.d-foot .gate-hint{margin-top:8px;}
+.d-foot .unmark{margin-top:8px;}
+.master-btn.notready{color:var(--muted);}
+.check{border-radius:7px;}
+.tool-panel{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;box-shadow:none;}
+.tool-panel .t-title{font-family:var(--f-mono);font-weight:600;font-size:0.7rem;color:var(--muted);}
+.t-label{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;letter-spacing:0.08em;margin-top:14px;}
+.tbtn{border-radius:12px;min-height:44px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-width:1px;}
+.tbtn .ico{width:17px;height:17px;}
+.tbtn.warn{border-color:var(--amber-line);}
+.tbtn.tog{background:var(--surface);color:var(--text);border-color:var(--border2);}
+.tbtn.tog.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-line);}
+.tsel{border-radius:12px;min-height:44px;border-width:1px;background:var(--surface);}
+.toggle-chip{border-radius:12px;min-height:44px;border-width:1px;}
+.t-target{background:none;padding:0 0 4px;margin-top:0;font-size:0.9rem;font-weight:500;color:var(--text2);border-radius:0;}
+.t-target b{display:block;font-family:var(--f-display);font-size:1.7rem;font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.1;margin-bottom:4px;}
+.t-target .win{display:block;font-size:0.78rem;color:var(--muted);margin-top:6px;}
+.pd{margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:18px;background:var(--surface2);}
+.pd.locked{border-color:var(--accent-line);background:var(--accent-bg);}
+.pd-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.pd-read{flex-direction:column;align-items:flex-start;gap:5px;}
+.pd-note{font-family:var(--f-display);font-size:2.6rem;font-weight:800;line-height:0.95;letter-spacing:-0.02em;}
+.pd-cents{font-size:0.82rem;font-weight:600;color:var(--text2);}
+.pd-lock{margin-left:0;min-height:30px;display:inline-flex;align-items:center;padding:0 12px;border-radius:999px;font-family:var(--f-mono);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;}
+.pd-lock:empty{display:none;}
+.pd-gauge{display:block;width:100%;max-width:300px;height:auto;margin:6px auto 2px;}
+.pd-gauge .trk{fill:none;stroke:var(--track);stroke-width:12;stroke-linecap:round;}
+.pd-gauge .zn{fill:none;stroke:var(--zone);stroke-width:12;stroke-linecap:round;}
+.pd-gauge .tk{stroke:var(--border2);stroke-width:2;stroke-linecap:round;}
+.pd-gauge .tk0{stroke:var(--muted);}
+.pd-gauge .ndl line{stroke:var(--text);stroke-width:3;stroke-linecap:round;}
+.pd-gauge .ndl circle{fill:var(--text);}
+.pd.locked .pd-gauge .ndl line{stroke:var(--accent);}
+.pd.locked .pd-gauge .ndl circle{fill:var(--accent);}
+.pd-gauge text{font-family:var(--f-mono);font-size:11px;fill:var(--muted);}
+.pd .pdBtn{width:100%;margin-top:6px;}
+.hold{flex-wrap:wrap;}
+.hold .hold-meter{flex:1 1 100%;}
+.hold-num{font-size:1.4rem;min-width:30px;}
+.hold-prog{height:10px;border:0;background:var(--track);border-radius:0;-webkit-mask:repeating-linear-gradient(90deg,#000 0 calc(12.5% - 3px),transparent calc(12.5% - 3px) 12.5%);mask:repeating-linear-gradient(90deg,#000 0 calc(12.5% - 3px),transparent calc(12.5% - 3px) 12.5%);}
+.hold-prog > i{border-radius:0;}
+.hold-res{border-radius:12px;}
+@media(min-width:769px){.tabbar{max-width:760px;margin:0 auto;border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;}}
 </style>
+<script id="theme-boot">
+/* Sets light/dark before first paint. Preference lives in its own key (not the backup): auto | light | dark */
+(function(){var p='auto';try{p=localStorage.getItem('harmony_theme')||'auto';}catch(e){}
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+function apply(){var d=p==='dark'||(p==='auto'&&!!mq&&mq.matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',d?'#111514':'#ECEEEA');}
+apply();if(mq){var f=function(){if(p==='auto')apply();};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f);}
+window.__setTheme=function(v){p=v;try{localStorage.setItem('harmony_theme',v);}catch(e){}apply();};
+window.__getTheme=function(){return p;};})();
+</script>
 </head>
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
-  <div class="header-btns">
-    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v39</span>
-    <button class="hbtn" onclick="doExport()">Backup</button>
-    <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
-    <button class="hbtn" onclick="doReset()">Reset</button>
-    <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
-  </div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v40</span></div>
+  <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
+  <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
 <div class="storage-banner" id="sb">⚠ Browser storage unavailable — progress won't save this session.</div>
-<div class="nav-wrap"><div class="nav" id="nav"></div></div>
+</div>
+<div class="menu-scrim" id="menuScrim" onclick="toggleMenu(false)"></div>
+<div class="menu" id="menu" role="menu" aria-label="More options">
+  <div class="menu-h">Appearance</div>
+  <div class="seg" role="group" aria-label="Theme"><button class="seg-b theme-opt" data-theme-opt="auto" onclick="setThemePref('auto')">Auto</button><button class="seg-b theme-opt" data-theme-opt="light" onclick="setThemePref('light')">Light</button><button class="seg-b theme-opt" data-theme-opt="dark" onclick="setThemePref('dark')">Dark</button></div>
+  <div class="menu-sep"></div>
+  <button class="menu-item" role="menuitem" onclick="toggleMenu(false);go('setup')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>Find your range (Module 0)</button>
+  <button class="menu-item" role="menuitem" onclick="toggleMenu(false);go('ref')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 17a3 3 0 0 1 3-3h11"></path></svg>Reference — intervals &amp; songs</button>
+  <div class="menu-sep"></div>
+  <button class="menu-item" role="menuitem" onclick="toggleMenu(false);doExport()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>Back up progress</button>
+  <button class="menu-item" role="menuitem" onclick="toggleMenu(false);document.getElementById('imp').click()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V9"></path><path d="M7 14l5-5 5 5"></path><path d="M5 4h14"></path></svg>Restore from backup</button>
+  <button class="menu-item danger" role="menuitem" onclick="toggleMenu(false);doReset()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg>Reset all progress</button>
 </div>
 <main class="wrap" id="main"></main>
+<nav class="tabbar" id="tabbar" aria-label="App sections"></nav>
 <div class="scrim" id="scrim" onclick="closeDetail()"></div>
-<div class="detail" id="detail"><div class="d-close"><span id="dCrumb">Lesson</span><button onclick="closeDetail()">✕ Close</button></div><div class="d-body" id="dBody"></div></div>
+<div class="detail" id="detail"><div class="d-close"><button class="icon-btn" onclick="closeDetail()" aria-label="Back"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button><span id="dCrumb">Lesson</span></div><div class="d-body" id="dBody"></div></div>
 <div class="toast" id="toast"></div>
 <script>
 /* ===================== PROGRAM DATA ===================== */
@@ -482,6 +678,26 @@ function unlockAudio(){
 }
 document.addEventListener('touchend',unlockAudio,{passive:true});
 document.addEventListener('click',unlockAudio);
+/* ---- line icons (replace emoji); stroke = currentColor so they follow the theme ---- */
+const ICONS={
+ today:'<path d="M3 11l9-7 9 7"></path><path d="M5 10v10h5v-6h4v6h5V10"></path>',
+ path:'<circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="5" r="2"></circle><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"></path>',
+ mic:'<rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path>',
+ chart:'<path d="M3 20h18"></path><path d="M6 20v-6"></path><path d="M12 20V7"></path><path d="M18 20v-10"></path>',
+ check:'<path d="M5 12.5l4.5 4.5L19 7.5"></path>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path>',
+ chevd:'<path d="M6 9l6 6 6-6"></path>',
+ clock:'<circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path>',
+ phones:'<path d="M4 14v-2a8 8 0 0 1 16 0v2"></path><rect x="3" y="14" width="4" height="6" rx="1.5"></rect><rect x="17" y="14" width="4" height="6" rx="1.5"></rect>',
+ wave:'<path d="M3 12h2M7 8v8M11 5v14M15 8v8M19 11v2"></path>',
+ play:'<path d="M7 5l12 7-12 7z"></path>',
+ stop:'<rect x="6" y="6" width="12" height="12" rx="2"></rect>'
+};
+function ico(n){return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';}
+/* ---- ⋯ menu + theme ---- */
+function toggleMenu(force){const m=document.getElementById('menu'),sc=document.getElementById('menuScrim'),b=document.getElementById('menuBtn');if(!m)return;const open=(force===undefined)?!m.classList.contains('open'):!!force;m.classList.toggle('open',open);if(sc)sc.classList.toggle('open',open);if(b)b.setAttribute('aria-expanded',String(open));if(open)syncThemeBtns();}
+function setThemePref(v){if(window.__setTheme)window.__setTheme(v);syncThemeBtns();}
+function syncThemeBtns(){const p=window.__getTheme?window.__getTheme():'auto';document.querySelectorAll('.theme-opt').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.themeOpt===p)));}
 const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 function freq(s){return 261.626*Math.pow(2,s/12);}
 function nlabel(s){return NN[((s%12)+12)%12]+(4+Math.floor(s/12));}
@@ -510,7 +726,7 @@ function toggleDrone(){
  if(a.state==='running')go();else a.resume().then(go).catch(go);
 }
 function toggleDrone5(el){TS.drone5=!TS.drone5;if(el)el.classList.toggle('on',TS.drone5);if(droneNodes.length){stopDrone();toggleDrone();}}
-function syncDroneBtns(){document.querySelectorAll('.droneBtn').forEach(b=>{b.textContent=TS.droneOn?'■ Stop drone':'▶ Start drone';});}
+function syncDroneBtns(){document.querySelectorAll('.droneBtn').forEach(b=>{b.innerHTML=ico('wave')+(TS.droneOn?'Drone on':'Start drone');b.classList.toggle('on',TS.droneOn);b.setAttribute('aria-pressed',String(TS.droneOn));});}
 function reTuneDrone(){if(droneNodes.length){const a=ac();droneNodes.forEach(n=>n.osc.frequency.setValueAtTime(freq(TS.root+n.off),a.currentTime));}}
 function setRoot(v){TS.root=parseInt(v,10);setTarget(holdTargetSemi());reTuneDrone();syncHoldTarget();}
 function randRoot(){TS.root=-12+Math.floor(Math.random()*20);document.querySelectorAll('.rootSel').forEach(s=>{s.value=TS.root;});reTuneDrone();playRoot();}
@@ -604,8 +820,8 @@ async function togglePitch(hostId){
 }
 function pdError(host,msg){const h=document.getElementById(host);if(h){const c=h.querySelector('.pd-cents');if(c)c.textContent='mic blocked';let box=h.querySelector('.pd-msg');if(box){box.textContent=msg;box.classList.add('show');}}showToast('Mic blocked — see the tuner panel');}
 function clearPdMsg(){const h=pdHost&&document.getElementById(pdHost);if(h){const box=h.querySelector('.pd-msg');if(box){box.classList.remove('show');box.textContent='';}}}
-function stopPitch(){if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)nd.style.left='50%';const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
-function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.textContent=on?'■ Stop tuner':'🎤 Live tuner';b.classList.toggle('sec',!on);});}
+function stopPitch(){if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
+function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.innerHTML=ico('mic')+(on?'Tuner on — tap to stop':'Start tuner');b.classList.toggle('on',on);});}
 function autoCorrelate(buf,sr,minClarity){
  const SIZE=buf.length;
  let c0=0;for(let i=0;i<SIZE;i++)c0+=buf[i]*buf[i];
@@ -818,19 +1034,19 @@ function paintTuner(hz){
  const noteEl=h.querySelector('.pd-note'),centsEl=h.querySelector('.pd-cents'),needle=h.querySelector('.pd-needle'),lock=h.querySelector('.pd-lock');
  if(!noteEl)return;
  const tName=pdTargetHz>0?hzToNote(pdTargetHz).name:'';
- if(hz<=0){noteEl.textContent='—';centsEl.textContent=pdTargetHz>0?('aim '+tName+' · sing…'):'sing a steady note…';needle.style.left='50%';h.classList.remove('locked');lock.className='pd-lock';lock.textContent='';return;}
+ if(hz<=0){noteEl.textContent='—';centsEl.textContent=pdTargetHz>0?('aim '+tName+' · sing…'):'sing a steady note…';setNeedle(needle,0);h.classList.remove('locked');lock.className='pd-lock';lock.textContent='';return;}
  const n=hzToNote(hz);noteEl.textContent=n.name;
  if(pdTargetHz<=0){
   /* free mode — intonation against the nearest note */
   centsEl.textContent=(n.cents>0?'+':'')+n.cents+'¢';
-  needle.style.left=(50+Math.max(-50,Math.min(50,n.cents)))+'%';
+  setNeedle(needle,n.cents);
   lock.className='pd-lock';lock.textContent='free';h.classList.remove('locked');pdLocked=false;return;
  }
  /* target mode — needle, number AND lamp all measured against the target note,
     so they never disagree. Needle follows the live (smoothed) reading; the lamp
     uses the median so vibrato wobbles the needle but doesn't flicker the lock. */
  const live=centsToTarget(hz);
- needle.style.left=(50+Math.max(-50,Math.min(50,live)))+'%';
+ setNeedle(needle,live);
  centsEl.textContent=(live>=0?'+':'')+Math.round(live)+'¢ vs '+tName;
  if(pdHist.length<4){lock.className='pd-lock';lock.textContent='hold '+tName+'…';h.classList.remove('locked');return;}
  const m=medianCents();
@@ -839,7 +1055,13 @@ function paintTuner(hz){
  else if(Math.abs(m)<55){pdLocked=false;lock.className='pd-lock '+(m>0?'sharp':'flat');lock.textContent=(m>0?'▲ a touch high':'▼ a touch low');h.classList.remove('locked');}
  else{pdLocked=false;lock.className='pd-lock '+(m>0?'sharp':'flat');lock.textContent=(m>0?'▲ too high':'▼ too low');h.classList.remove('locked');}
 }
-function tunerHTML(host){return '<div class="pd" id="'+host+'"><div class="pd-row"><button class="tbtn sec pdBtn" data-host="'+host+'" onclick="togglePitch(\''+host+'\')">🎤 Live tuner</button><div class="pd-read"><span class="pd-note">—</span><span class="pd-cents">tuner off</span></div><div class="pd-lock"></div></div><div class="pd-meter"><div class="pd-zone"></div><div class="pd-needle"></div></div><div class="pd-scoop"></div><div class="pd-msg"></div></div>';}
+function zoneArc(c){const a=Math.min(80,c/50*80)*Math.PI/180,dx=118*Math.sin(a),y=140-118*Math.cos(a);return 'M '+(150-dx).toFixed(1)+' '+y.toFixed(1)+' A 118 118 0 0 1 '+(150+dx).toFixed(1)+' '+y.toFixed(1);}
+function setNeedle(n,c){if(!n)return;const d=Math.max(-50,Math.min(50,c||0))/50*80;n.setAttribute('transform','rotate('+d.toFixed(1)+' 150 140)');}
+function tunerHTML(host){
+ return '<div class="pd" id="'+host+'"><div class="pd-top"><div class="pd-read"><span class="pd-note">—</span><span class="pd-cents">tuner off</span></div><div class="pd-lock"></div></div>'+
+ '<svg class="pd-gauge" viewBox="0 0 300 152" aria-hidden="true"><path class="trk" d="M 33.8 119.5 A 118 118 0 0 1 266.2 119.5"></path><path class="zn" d="'+zoneArc(lockWindow().grab)+'"></path><path class="tk tk0" d="M 150 16 L 150 6"></path><path class="tk" d="M 70.3 45.0 L 65.1 38.9"></path><path class="tk" d="M 229.7 45.0 L 234.9 38.9"></path><g class="ndl pd-needle"><line x1="150" y1="140" x2="150" y2="36"></line><circle cx="150" cy="140" r="7"></circle></g><text x="34" y="148" text-anchor="middle">flat</text><text x="266" y="148" text-anchor="middle">sharp</text></svg>'+
+ '<button class="tbtn tog pdBtn" data-host="'+host+'" onclick="togglePitch(\''+host+'\')">'+ico('mic')+'Start tuner</button><div class="pd-scoop"></div><div class="pd-msg"></div></div>';
+}
 /* ===================== IN-APP RECORDER ===================== */
 let mediaRec=null,recChunks=[],recURL=null,recOwner=null,recT0=0,recTick=null;
 function recPickMime(){if(!window.MediaRecorder)return null;const t=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/aac','audio/ogg'];for(const m of t)if(MediaRecorder.isTypeSupported(m))return m;return '';}
@@ -888,7 +1110,7 @@ function metroHTML(){
    button and an "Auto-start" toggle remain. */
 let holdTimer=null,holdCount=0,holdLocked=0;
 let holdAuto=true,holdArmed=true,holdOnset=0,holdSil=0,holdDoneAt=0,holdHintTxt='';
-function syncHoldBtns(){document.querySelectorAll('.hold-btn').forEach(b=>{b.textContent=holdTimer?'■ Stop count':'▶ Hold count (8)';});}
+function syncHoldBtns(){document.querySelectorAll('.hold-btn').forEach(b=>{b.innerHTML=holdTimer?ico('stop')+'Stop count':ico('play')+'Hold count';});}
 function setHoldNum(n,ok){document.querySelectorAll('.hold-num').forEach(e=>{e.textContent=n;e.style.color=ok===true?'var(--accent)':(ok===false?'var(--amber)':'');});}
 function setHoldBar(pct){document.querySelectorAll('.hold-bar').forEach(e=>{e.style.width=pct+'%';});}
 function setHoldRes(txt,ok){document.querySelectorAll('.hold-res').forEach(e=>{e.textContent=txt||'';e.className='hold-res'+(txt?(' show '+(ok?'ok':'warn')):'');});}
@@ -897,23 +1119,17 @@ function setHoldRes(txt,ok){document.querySelectorAll('.hold-res').forEach(e=>{e
    above the drone; onDrone → unison with it; otherwise hidden. */
 const OFFNAME={2:'a whole step',3:'a minor 3rd',4:'a 3rd',5:'a 4th',7:'a 5th',9:'a 6th',12:'an octave'};
 function syncHoldTarget(){
+ document.querySelectorAll('.seg-off').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.off===TS.holdOff)));
  const el=document.getElementById('holdTarget');if(!el)return;
  const l=curId&&lessonById(curId),hc=l&&l.auto&&holdCheck(l),sc=l&&l.auto&&stepCheck(l);
- if(sc){
-  el.textContent='🎯 Sing '+patternNames(l)+' — step by step. The needle follows the note you’re on, so land each step in tune; the drone stays put as your anchor.';
+ const LW=lockWindow(),win='<span class="win">Lock window ±'+LW.grab+'¢ · '+LW.name+(LW.name==='tight'?'':' — it tightens later in the course')+'</span>';
+ if(sc){el.innerHTML='<b>Sing '+patternNames(l)+'</b>Step by step. The needle follows the note you’re on, so land each step in tune; the drone stays put as your anchor.';el.className='t-target show';}
+ else if(hc){
+  if(hc.offDrone){const off=TS.holdOff||4;el.innerHTML='<b>Sing '+nlabel(TS.root+off)+'</b>'+(OFFNAME[off]||off+' semitones')+' above the drone ('+nlabel(TS.root)+'). Hold it steady — don’t let it slide onto the drone’s own note.'+win;}
+  else if(hc.onDrone){el.innerHTML='<b>Sing '+nlabel(TS.root)+'</b>Match the drone exactly, in unison — aim for the fused, beat-free sound.'+win;}
+  else{el.innerHTML='<b>Land the note</b>Play a note, then sing it on “ooh” — land it dead-on, no sliding up, and hold for 8 counts.'+win;}
   el.className='t-target show';
- }else if(hc){
-  const LW=lockWindow(),win=' Lock window ±'+LW.grab+'¢ ('+LW.name+(LW.name==='tight'?'':' — it tightens later in the course')+').';
-  if(hc.offDrone){
-   const off=TS.holdOff||4;
-   el.textContent='🎯 Sing '+nlabel(TS.root+off)+' — '+(OFFNAME[off]||off+' semitones')+' above the drone ('+nlabel(TS.root)+'). Hold it steady; do NOT let it slide onto the drone’s own note.'+win;
-  }else if(hc.onDrone){
-   el.textContent='🎯 Sing '+nlabel(TS.root)+' — match the drone exactly, in unison. Aim for the fused, beat-free sound.'+win;
-  }else{
-   el.textContent='🎯 Play a note, then sing it on “ooh” — land it dead-on, no sliding up, and hold for 8 counts.'+win;
-  }
-  el.className='t-target show';
- }else{el.className='t-target';el.textContent='';}
+ }else{el.className='t-target';el.innerHTML='';}
 }
 function setHoldHint(txt,ok){if(holdHintTxt===txt)return;holdHintTxt=txt;setHoldRes(txt,ok);}
 function resetAutoHold(){holdArmed=true;holdOnset=0;holdSil=0;holdDoneAt=0;holdHintTxt='';}
@@ -1024,7 +1240,7 @@ function renderSetup(){
  if(pr&&profileDraft.low==null&&profileDraft.high==null){profileDraft.low=pr.low;profileDraft.high=pr.high;if(pr.voice)voiceOverride=pr.voice;}
  const haveBoth=profileDraft.low!=null&&profileDraft.high!=null;
  const curVoice=haveBoth?(voiceOverride||voiceType((profileDraft.low+profileDraft.high)/2)):'';
- const card=(id,label,val,which)=>'<div style="flex:1;border:1px solid var(--border2,#e3e0d8);border-radius:12px;padding:14px;text-align:center"><div style="font-size:12px;opacity:.7;margin-bottom:6px">'+label+'</div><div id="'+id+'" style="font:700 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace;margin-bottom:12px">'+val+'</div><button class="tbtn sec" onclick="armRange(\''+which+'\')">🎤 Capture</button></div>';
+ const card=(id,label,val,which)=>'<div style="flex:1;border:1px solid var(--border2,#e3e0d8);border-radius:12px;padding:14px;text-align:center"><div style="font-size:12px;opacity:.7;margin-bottom:6px">'+label+'</div><div id="'+id+'" style="font:700 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace;margin-bottom:12px">'+val+'</div><button class="tbtn sec" onclick="armRange(\''+which+'\')">Capture</button></div>';
  let h='<div class="mod-head"><div class="mtag">Module 0</div><h2>Find Your Range</h2><p>A one-minute voice check so the drone and the exercises sit where you can actually sing them. Optional, and you can redo it any time from this tab.</p></div>';
  h+='<div class="tool-panel"><div class="t-title">♪ Voice range check</div>'+tunerHTML('tuner_setup');
  h+='<div style="display:flex;gap:10px;margin:12px 0">'+card('rngLow','Lowest comfortable note',haveBoth||profileDraft.low!=null?(profileDraft.low!=null?rangeMidiName(profileDraft.low):'—'):'—','low')+card('rngHigh','Highest comfortable note',profileDraft.high!=null?rangeMidiName(profileDraft.high):'—','high')+'</div>';
@@ -1219,7 +1435,7 @@ function earQuizHTML(){
  const l=curId&&lessonById(curId),c=l&&earCheck(l);const tot=c?(c.rounds||8):8;
  return '<div class="t-label">Ear test — locked or off?</div>'+
   '<div class="hold" style="flex-wrap:wrap;gap:8px"><button class="tbtn eq-btn" onclick="toggleEar()">▶ Start ear test</button><div class="hold-meter"><div id="eqRound" style="font-size:13px;opacity:.8">—</div><div id="eqScore" style="font:700 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace">0 / '+tot+'</div></div></div>'+
-  '<div id="eqControls" style="display:none"><div class="t-row" style="margin-top:6px"><button class="tbtn sec" onclick="replayEar()">🔁 Replay</button><button class="tbtn" onclick="answerEar(\'locked\')">🔒 Locked</button><button class="tbtn warn" onclick="answerEar(\'off\')">🌀 Off (beating)</button></div></div>'+
+  '<div id="eqControls" style="display:none"><div class="t-row" style="margin-top:6px"><button class="tbtn sec" onclick="replayEar()">Replay</button><button class="tbtn" onclick="answerEar(\'locked\')">Locked</button><button class="tbtn warn" onclick="answerEar(\'off\')">Off (beating)</button></div></div>'+
   '<div id="eqState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
   '<div class="t-hint">The app plays a root and a third together. A locked third rings smooth and still; an off one beats and shimmers. Tap which you hear — '+tot+' rounds. Headphones essential.</div>';
 }
@@ -1589,6 +1805,7 @@ function paintLessonLog(){
  else if(allTicked)h+='<button class="master-btn ready" style="margin-top:14px" onclick="autoFinalize()">✓ Live test passed — Mark mastered</button>';
  else if(autoChecks(l).some(c=>checkMet(c,s)))h+='<div class="ll-final ok">✓ Part of the live test passed — finish the other test above to unlock mastery</div>';
  box.innerHTML=h;
+ paintFooter();
 }
 function autoFinalize(){
  const s=st(curId),l=lessonById(curId);if(!l)return;
@@ -1651,6 +1868,7 @@ function recordReview(stats,results,today){
 function syncReviewBtn(){document.querySelectorAll('.rv-btn').forEach(b=>{b.textContent=(jdActive&&jdReview)?'■ Stop review':'▶ Start review — '+REVIEW_N+' trials';});}
 function paintReviewMix(){
  const el=document.getElementById('rvMix');if(!el)return;const RS=reviewStats(),today=todayStr();
+ el.innerHTML='<div class="chips-row">'+reviewChipsHTML()+'</div><div class="t-hint">Amber = due: new, or not reviewed for 3+ days. Weak and due skills come up more often.</div>';return;
  el.innerHTML=reviewPool().map(id=>{const k=reviewSkill(id),s=RS[id],h=(s&&s.hist)||[],d=reviewDays(s,today);
   const acc=h.length?(h.filter(Boolean).length+'/'+h.length+' recent'):'new';const due=d==null||d>=3;
   return '<span class="chip'+(due?' cp':'')+'">'+k.short+' · '+acc+(d!=null&&d>=3?' · '+d+'d ago':'')+'</span>';}).join(' ')+
@@ -1690,14 +1908,13 @@ function rootSelHTML(){let h='<select class="tsel rootSel" onchange="setRoot(thi
 function intSelHTML(){const I=[[4,'Major 3rd (do→mi)'],[3,'Minor 3rd'],[5,'Perfect 4th'],[7,'Perfect 5th (do→so)'],[9,'Major 6th'],[12,'Octave']];let h='<select class="tsel" onchange="TS.intv=parseInt(this.value,10)">';I.forEach(p=>{h+='<option value="'+p[0]+'"'+(p[0]===TS.intv?' selected':'')+'>'+p[1]+'</option>';});return h+'</select>';}
 function keySelHTML(){const K=[[0,'Key C'],[-3,'Key A (lower)'],[-5,'Key G (lower)'],[2,'Key D (higher)']];let h='<select class="tsel" onchange="TS.key=parseInt(this.value,10)">';K.forEach(p=>{h+='<option value="'+p[0]+'"'+(p[0]===TS.key?' selected':'')+'>'+p[1]+'</option>';});return h+'</select>';}
 function toolHTML(type){
- if(type==='tone')return '<div class="tool-panel"><div class="t-title">♪ Tone &amp; Drone</div>'+
-  '<div class="t-row">'+rootSelHTML()+'<button class="tbtn" onclick="playRoot()">▶ Play note</button><button class="tbtn sec droneBtn" onclick="toggleDrone()">'+(TS.droneOn?'■ Stop drone':'▶ Start drone')+'</button><span class="toggle-chip'+(TS.drone5?' on':'')+'" onclick="toggleDrone5(this)"><span class="tg"></span>+5th</span></div>'+
-  '<div class="t-label">Second note, over the drone</div><div class="t-row"><button class="tbtn warn" onclick="playOff(2)">One step up</button><button class="tbtn warn" onclick="playOff(4)">A 3rd up</button><button class="tbtn warn" onclick="playOff(7)">A 5th up</button></div>'+
-  '<div class="t-target" id="holdTarget"></div>'+
+ if(type==='tone')return '<div class="tool-panel"><div class="t-target" id="holdTarget"></div>'+
   tunerHTML('tuner_tone')+
   '<div class="t-label">Hold for a slow count of 8</div>'+
-  '<div class="hold"><button class="tbtn sec hold-btn" onclick="toggleHold()">▶ Hold count (8)</button><span class="toggle-chip'+(holdAuto?' on':'')+'" onclick="toggleHoldAuto(this)"><span class="tg"></span>Auto-start</span><div class="hold-meter"><div class="hold-num">8</div><div class="hold-prog"><i class="hold-bar"></i></div></div></div>'+
+  '<div class="hold"><button class="tbtn tog hold-btn" onclick="toggleHold()">'+ico('play')+'Hold count</button><span class="toggle-chip'+(holdAuto?' on':'')+'" onclick="toggleHoldAuto(this)"><span class="tg"></span>Auto-start</span><div class="hold-meter"><div class="hold-num">8</div><div class="hold-prog"><i class="hold-bar"></i></div></div></div>'+
   '<div class="hold-res"></div>'+
+  '<div class="t-label">Second note over the drone</div><div class="seg" role="group" aria-label="Second note over the drone"><button class="seg-b seg-off" data-off="2" aria-pressed="false" onclick="playOff(2)">Step up</button><button class="seg-b seg-off" data-off="4" aria-pressed="false" onclick="playOff(4)">3rd</button><button class="seg-b seg-off" data-off="7" aria-pressed="false" onclick="playOff(7)">5th</button></div>'+
+  '<div class="t-row" style="margin-top:10px"><button class="tbtn tog droneBtn'+(TS.droneOn?' on':'')+'" aria-pressed="'+TS.droneOn+'" onclick="toggleDrone()">'+ico('wave')+(TS.droneOn?'Drone on':'Start drone')+'</button>'+rootSelHTML()+'<button class="tbtn tog" onclick="playRoot()">'+ico('play')+'Play note</button><span class="toggle-chip'+(TS.drone5?' on':'')+'" onclick="toggleDrone5(this)"><span class="tg"></span>+5th</span></div>'+
   (lessonHasStep()?stepDrillHTML():'')+
   (lessonHasEar()?earQuizHTML():'')+
   '<div class="t-hint">Play or drone a note, sing it on “ooh”, then hold steady. With <b>Auto-start</b> on and the live tuner running, the 8-count begins on its own once you’re holding the note and scores itself — a long silence resets it. Tap the button to run a count by hand, or switch Auto-start off. Use headphones so playback does not bleed into the mic.</div></div>';
@@ -1736,16 +1953,49 @@ function statusOf(id){if(isMastered(id))return 'mastered';const i=FLAT.indexOf(i
 function lessonById(id){for(const m of MODULES)for(const l of m.lessons)if(l.id===id)return l;}
 function moduleProgress(m){const tot=m.lessons.length;const done=m.lessons.filter(l=>isMastered(l.id)).length;return {done,tot};}
 let view='today';
+function navTab(){if(view==='today')return 'today';if(view==='room'||view==='ref')return 'practice';if(view==='prog')return 'progress';return 'path';}
 function renderNav(){
- const pset=!!profile();
- let h='<button class="ntab '+(view==='today'?'active':'')+'" onclick="go(\'today\')">★ Today</button>';
- h+='<button class="ntab '+(view==='setup'?'active':'')+'" onclick="go(\'setup\')"><span class="mod-dot '+(pset?'done':'')+'"></span>M0</button>';
- h+=MODULES.map(m=>{const p=moduleProgress(m);const cls=p.done===p.tot?'done':(p.done>0?'part':'');const firstLocked=statusOf(m.lessons[0].id)==='locked';
-  return '<button class="ntab '+(view===m.n?'active':'')+'" onclick="go('+m.n+')"><span class="mod-dot '+cls+'"></span>M'+m.n+(firstLocked?' <span class="lock">🔒</span>':'')+'</button>';}).join('');
- h+='<button class="ntab '+(view==='room'?'active':'')+'" onclick="go(\'room\')" style="color:'+(view==='room'?'var(--accent)':'var(--purple)')+'">♪ Practice Room</button>';
- h+='<button class="ntab '+(view==='ref'?'active':'')+'" onclick="go(\'ref\')">📖 Reference</button>';
- h+='<button class="ntab '+(view==='prog'?'active':'')+'" onclick="go(\'prog\')">📈 Progress</button>';
- document.getElementById('nav').innerHTML=h;
+ const el=document.getElementById('tabbar');if(!el)return;const cur=navTab();
+ const T=[['today','Today','today','today'],['path','Path','path','path'],['practice','Practice','mic','room'],['progress','Progress','chart','prog']];
+ el.innerHTML=T.map(t=>'<button class="tab"'+(cur===t[0]?' aria-current="page"':'')+' onclick="go(\''+t[3]+'\')">'+ico(t[2])+t[1]+'</button>').join('');
+}
+/* ---- Path: one vertical roadmap replaces the per-module tabs ---- */
+let pathOpen=null;
+function togglePath(n){pathOpen=(pathOpen===n)?-1:n;render();}
+function rmNode(state,label,done,tot){
+ if(state==='done')return '<span class="rm-node done">'+ico('check')+'</span>';
+ if(state==='lock')return '<span class="rm-node lock">'+ico('lock')+'</span>';
+ const C=106.8,dash=tot?(C*done/tot).toFixed(1):'0';
+ return '<span class="rm-node"><svg class="ring" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" style="fill:none;stroke:var(--track);stroke-width:4"></circle>'+(done?'<circle cx="20" cy="20" r="17" transform="rotate(-90 20 20)" stroke-dasharray="'+dash+' '+C+'" style="fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round"></circle>':'')+'</svg><span class="n">'+label+'</span></span>';
+}
+function pathLesson(l,next){
+ const s=statusOf(l.id),chal=s==='locked'&&canChallenge(l.id),isNext=l.id===next;
+ let ic,tag='',cls='ls';
+ if(s==='mastered'){ic='<span class="ls-ic done">'+ico('check')+'</span>';if(l.cp)tag='<span class="ls-tag m">Passed</span>';}
+ else if(l.cp){ic='<span class="ls-ic cp"></span>';tag=chal?'<span class="ls-tag p">Test out</span>':(s==='available'?'<span class="ls-tag p">Ready</span>':'<span class="ls-tag m">Checkpoint</span>');}
+ else if(isNext){ic='<span class="ls-ic next"></span>';tag='<span class="ls-tag">Up next</span>';cls+=' next';}
+ else if(s==='available'){ic='<span class="ls-ic todo"></span>';}
+ else{ic='<span class="ls-ic lock">'+ico('lock')+'</span>';cls+=' locked';}
+ const inner=ic+'<span class="ls-t">'+l.t+'</span>'+tag;
+ return (s!=='locked'||chal)?'<button class="'+cls+'" onclick="openLesson(\''+l.id+'\')">'+inner+'</button>':'<div class="'+cls+'">'+inner+'</div>';
+}
+function renderPath(){
+ const next=nextLessonId(),nm=next?moduleOf(next):null;
+ if(pathOpen===null)pathOpen=nm?nm.n:MODULES[0].n;
+ const tot=FLAT.length,doneN=FLAT.filter(isMastered).length,pset=!!profile();
+ let h='<div class="page-head"><h1 class="display">Your path</h1><span class="page-count">'+doneN+' / '+tot+'</span></div>';
+ h+='<div class="bar" style="margin-top:12px"><i style="width:'+Math.round(doneN/tot*100)+'%"></i></div>';
+ h+='<p class="page-sub">Modules unlock in order — or pass a checkpoint early to test out.</p><div class="road-list">';
+ h+='<div class="rm"><div class="rm-row"><button class="rm-main" onclick="go(\'setup\')">'+rmNode(pset?'done':'ring','0',0,1)+'<span class="rm-text"><span class="rm-eyebrow">Module 0 · '+(pset?'done':'1 min · optional')+'</span><span class="rm-title">Find Your Range</span></span></button></div></div>';
+ MODULES.forEach(m=>{
+  const p=moduleProgress(m),locked=statusOf(m.lessons[0].id)==='locked'&&p.done===0,open=pathOpen===m.n;
+  const state=p.done===p.tot?'done':(locked?'lock':'ring'),cp=moduleCp(m),testOut=locked&&cp&&canChallenge(cp.id)&&!isMastered(cp.id);
+  const eb='Module '+m.n+' · '+(p.done===p.tot?'complete':(locked?p.tot+' lessons':p.done+' of '+p.tot));
+  h+='<div class="rm'+(locked?' locked':'')+(open?' open':'')+'"><div class="rm-row"><button class="rm-main" aria-expanded="'+open+'" onclick="togglePath('+m.n+')">'+rmNode(state,String(m.n),p.done,p.tot)+'<span class="rm-text"><span class="rm-eyebrow">'+eb+'</span><span class="rm-title">'+m.t+'</span></span><span class="rm-chev">'+ico('chevd')+'</span></button>'+(testOut?'<button class="pill-btn" onclick="openLesson(\''+cp.id+'\')">Test out</button>':'')+'</div>';
+  if(open)h+='<div class="rm-card"><p class="rm-goal">'+m.g+'</p>'+m.lessons.map(l=>pathLesson(l,next)).join('')+'</div>';
+  h+='</div>';
+ });
+ return h+'</div>';
 }
 function go(v){stopDrone();stopPitch();stopMetro();stopHold();view=v;render();window.scrollTo({top:0});}
 function render(){
@@ -1755,10 +2005,11 @@ function render(){
  if(view==='room'){main.innerHTML=renderRoom();return;}
  if(view==='ref'){main.innerHTML=renderRef();return;}
  if(view==='prog'){main.innerHTML=renderProg();return;}
+ if(view==='path'||typeof view==='number'){if(typeof view==='number'){pathOpen=view;view='path';}main.innerHTML=renderPath();return;}
  const m=MODULES.find(x=>x.n===view);const p=moduleProgress(m);const pct=Math.round(p.done/p.tot*100);
  let h='<div class="mod-head"><div class="mtag">Module '+m.n+'</div><h2>'+m.t+'</h2><p>'+m.g+'</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+p.done+'/'+p.tot+'</span></div></div>';
  const mcp=moduleCp(m);
- if(mcp&&canChallenge(mcp.id)&&!isMastered(mcp.id)&&p.done<p.tot)h+='<button class="qd-cta sec" onclick="openLesson(\''+mcp.id+'\')">⚡ Already comfortable with this? Test out — pass the checkpoint to skip Module '+m.n+'</button>';
+ if(mcp&&canChallenge(mcp.id)&&!isMastered(mcp.id)&&p.done<p.tot)h+='<button class="qd-cta sec" onclick="openLesson(\''+mcp.id+'\')">Already comfortable with this? Test out — pass the checkpoint to skip Module '+m.n+'</button>';
  h+=m.lessons.map(l=>renderLesson(l)).join('');
  main.innerHTML=h;
 }
@@ -1766,13 +2017,13 @@ function renderLesson(l){
  const s=statusOf(l.id);const cp=l.cp?'cp':'';
  const badge=l.cp?'◆':(s==='mastered'?'✓':(l.id.split('.')[1]||'★'));
  const statusTxt=s==='mastered'?'Mastered':s==='available'?(l.cp?'Ready':'Available'):'Locked';
- const chips=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'')+(l.tool?'<span class="chip">♪ built-in tool</span>':'')+(l.cp?'<span class="chip cp">'+(cpAutoCovers(l)?'auto-scored':'recording')+'</span>':'');
+ const chips=(l.time?'<span class="chip tempo">'+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'')+(l.tool?'<span class="chip">♪ built-in tool</span>':'')+(l.cp?'<span class="chip cp">'+(cpAutoCovers(l)?'auto-scored':'recording')+'</span>':'');
  const chal=s==='locked'&&canChallenge(l.id);
  const onclick=(s==='locked'&&!chal)?'':'onclick="openLesson(\''+l.id+'\')"';
- const stat=chal?'⚡ Test out':(s==='locked'?'🔒 '+statusTxt:statusTxt);
+ const stat=chal?'Test out':(s==='locked'?''+statusTxt:statusTxt);
  return '<div class="lesson '+s+' '+cp+(chal?' challenge':'')+'" '+onclick+'><div class="l-badge '+s+' '+cp+'">'+badge+'</div><div class="l-main"><div class="l-title">'+l.t+'</div><div class="l-focus">'+l.f+'</div><div class="l-chips">'+chips+'</div></div><div class="l-status '+s+'">'+stat+'</div></div>';
 }
-let curId=null;
+let curId=null,curChallenge=false;
 function openLesson(id){
  const challenge=statusOf(id)==='locked';
  if(challenge&&!canChallenge(id))return;
@@ -1783,41 +2034,51 @@ function openLesson(id){
  const _hc=l.auto?holdCheck(l):null;
  if(l.tool==='row'||l.tool==='improv'){TS.holdOff=null;clearTarget();}   /* moving line → free chromatic tuner, never pinned to the root */
  else{TS.holdOff=(_hc&&_hc.offDrone)?4:null;setTarget(holdTargetSemi());}
+ curChallenge=challenge;
  document.getElementById('dCrumb').textContent='Module '+mod.n+' · '+(l.cp?'Checkpoint':'Lesson '+id);
- const meta=(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip '+(l.cp?'cp':'covers')+'">'+l.covers+'</span>':'');
- let h='<div class="d-title">'+l.t+'</div><div class="d-focus">'+l.f+'</div><div class="d-meta">'+meta+'</div>';
- if(challenge)h+='<div class="challenge-note">⚡ <b>Test-out attempt.</b> Pass this checkpoint and every lesson in Module '+mod.n+' is marked mastered, so you skip straight ahead. Miss it and nothing changes — just work through the lessons.</div>';
+ const meta=(l.time?'<span class="chip2">'+ico('clock')+l.time+'</span>':'')+(l.covers?'<span class="chip2">'+l.covers+'</span>':'');
+ let h='<h1 class="d-title">'+l.t+'</h1><div class="d-focus">'+l.f+'</div><div class="d-meta chips-row">'+meta+'</div>';
+ if(challenge)h+='<div class="challenge-note"><b>Test-out attempt.</b> Pass this checkpoint and every lesson in Module '+mod.n+' is marked mastered, so you skip straight ahead. Miss it and nothing changes — just work through the lessons.</div>';
  if(l.tool)h+=toolHTML(l.tool);
- if(l.auto)h+='<div class="d-section"><div class="d-h">Live test log <span class="ll-auto">auto-scored</span></div><div class="lesson-log" id="lessonLog"></div></div>';
+ const acc=(title,metaTxt,body,open,cls,metaId)=>'<details class="acc'+(cls?' '+cls:'')+'"'+(open?' open':'')+'><summary>'+title+'<span class="acc-meta"'+(metaId?' id="'+metaId+'"':'')+'>'+(metaTxt||'')+'</span>'+ico('chevd')+'</summary><div class="acc-body">'+body+'</div></details>';
+ const item=(t)=>'<div class="item"><div class="item-text">'+t+'</div></div>';
  const cpAuto=cpAutoCovers(l);
  if(l.cp&&cpAuto){
-  /* auto-scored checkpoint: the scored runs ARE the test; recording is optional review */
-  h+='<div class="d-section"><div class="d-h cp">What to do</div>'+l.rec.map(r=>'<div class="item"><div class="item-text">'+r+'</div></div>').join('')+'<div class="item"><div class="item-text">The app scores these runs itself — when every standard below is ticked, tap Pass. No recording needed.</div></div></div>';
-  h+='<div class="d-section"><div class="d-h cp">Optional: record a take</div>'+recorderHTML()+'<div class="cp-note" style="margin-top:8px">Listening back to yourself is the fastest way to hear scooping and drift. Want specific feedback? Send the recording to Claude in chat.</div></div>';
+  h+=acc('What to do','',l.rec.map(item).join('')+item('The app scores these runs itself — when every standard is ticked, tap Pass. No recording needed.'),true,'cp');
  } else if(l.cp){
-  h+='<div class="d-section"><div class="d-h cp">What to record</div>'+l.rec.map(r=>'<div class="item"><div class="item-text">'+r+'</div></div>').join('')+'</div>';
-  h+='<div class="d-section"><div class="d-h cp">Record it here</div>'+recorderHTML()+'</div>';
-  h+='<div class="d-section"><div class="cp-note">📤 <b>Send the recording to Claude in chat.</b> I will listen for pitch accuracy, drift, scooping, and whether your line holds against the other voice — then give specific feedback. Paste the key points below so this checkpoint keeps a record.</div></div>';
-  h+='<div class="d-section"><div class="d-h">Recording done</div><div class="item"><div class="check '+(s.recorded?'on':'')+'" onclick="toggleRec()"></div><div class="item-text">I have recorded this and sent it for review.</div></div></div>';
+  h+=acc('What to record','',l.rec.map(item).join('')+recorderHTML()+'<div class="cp-note" style="margin-top:10px"><b>Send the recording to Claude in chat.</b> I will listen for pitch accuracy, drift, scooping, and whether your line holds against the other voice — then give specific feedback. Paste the key points into the notes so this checkpoint keeps a record.</div><div class="item"><div class="check '+(s.recorded?'on':'')+'" onclick="toggleRec()"></div><div class="item-text">I have recorded this and sent it for review.</div></div>',true,'cp');
  } else {
-  h+='<div class="d-section"><div class="d-h">Practise</div>'+l.tasks.map((t,i)=>'<div class="item"><div class="check '+(s.tasks[i]?'on':'')+'" onclick="toggleTask('+i+')"></div><div class="item-text">'+t+'</div></div>').join('')+'</div>';
+  h+=acc('How to practise',l.tasks.length+' steps',l.tasks.map((t,i)=>'<div class="item"><div class="check '+(s.tasks[i]?'on':'')+'" onclick="toggleTask('+i+',this)"></div><div class="item-text">'+t+'</div></div>').join(''),!s.mastered);
  }
- h+='<div class="d-section"><div class="d-h std">Standard to pass'+(l.cp?'':' — tick when true')+'</div>'+l.stds.map((t,i)=>'<div class="item std"><div class="check std '+(s.stds[i]?'on':'')+'" onclick="toggleStd('+i+')"></div><div class="item-text">'+t+'</div></div>').join('')+'</div>';
- h+='<div class="d-section"><div class="d-h">'+(l.cp?'Review notes / self-assessment':'Practice log')+'</div><textarea class="notes" placeholder="'+(l.cp?'Paste Claude feedback or your own assessment...':'What locked in, your jump-drill score, what to chase next time...')+'" onchange="saveNotes(this.value)">'+((l.cp?s.review:s.notes)||'')+'</textarea></div>';
- const allStd=l.stds.every((_,i)=>s.stds[i]);const recOk=l.cp?(s.recorded||cpAuto):true;const ready=allStd&&recOk;
- if(s.mastered){
-  h+='<button class="master-btn done">✓ '+(l.cp?'Checkpoint passed':'Mastered')+' — next unlocked</button><button class="unmark" onclick="unmark()">un-mark this</button>';
- } else {
-  h+='<button class="master-btn '+(ready?'ready':'notready')+'" '+(ready?'onclick="markMastered()"':'')+'>'+(l.cp?(challenge?'Pass — skip Module '+mod.n:'Pass checkpoint'):'Mark mastered')+' → unlock next</button>';
-  if(!ready)h+='<div class="gate-hint">'+(l.cp&&!s.recorded&&!cpAuto?'Mark the recording done, and tick':'Tick')+' all standards above to unlock this.</div>';
- }
+ if(l.auto)h+=acc('Live log','auto-scored','<div class="lesson-log" id="lessonLog"></div>',true);
+ h+=acc('Standards to pass','',l.stds.map((t,i)=>'<div class="item std"><div class="check std '+(s.stds[i]?'on':'')+'" onclick="toggleStd('+i+',this)"></div><div class="item-text">'+t+'</div></div>').join(''),!l.auto,'','stdMeta');
+ if(l.cp&&cpAuto)h+=acc('Optional: record a take','',recorderHTML()+'<div class="cp-note" style="margin-top:10px">Listening back to yourself is the fastest way to hear scooping and drift. Want specific feedback? Send the recording to Claude in chat.</div>',false,'cp');
+ h+=acc(l.cp?'Review notes':'Practice notes','','<textarea class="notes" placeholder="'+(l.cp?'Paste Claude feedback or your own assessment...':'What locked in, your jump-drill score, what to chase next time...')+'" onchange="saveNotes(this.value)">'+((l.cp?s.review:s.notes)||'')+'</textarea>',false);
+ h+='<div class="d-foot" id="dFoot"></div>';
  document.getElementById('dBody').innerHTML=h;
+ paintFooter();
  if(l.auto)paintLessonLog();syncHoldTarget();
  document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
 }
+/* The pinned footer: Mark mastered / Pass, live. Re-painted whenever scoring or a tick changes,
+   so an auto-pass is visible even with the Live log folded away. */
+function paintFooter(){
+ const f=document.getElementById('dFoot');if(!f||!curId)return;
+ const l=lessonById(curId),s=st(curId),mod=moduleOf(curId),cpAuto=cpAutoCovers(l);
+ const n=l.stds.filter((_,i)=>s.stds[i]).length,tot=l.stds.length,recOk=l.cp?(s.recorded||cpAuto):true,ready=n===tot&&recOk;
+ document.querySelectorAll('#dBody .check.std').forEach((el,i)=>el.classList.toggle('on',!!s.stds[i]));
+ const sm=document.getElementById('stdMeta');if(sm)sm.textContent=n+' of '+tot;
+ let h;
+ if(s.mastered)h='<button class="master-btn done">✓ '+(l.cp?'Checkpoint passed':'Mastered')+' — next unlocked</button><button class="unmark" onclick="unmark()">un-mark this</button>';
+ else{
+  h='<button class="master-btn '+(ready?'ready':'notready')+'" '+(ready?'onclick="markMastered()"':'aria-disabled="true"')+'>'+(l.cp?(curChallenge?'Pass — skip Module '+mod.n:'Pass checkpoint'):'Mark mastered')+'</button>';
+  if(!ready)h+='<div class="gate-hint">'+(l.cp&&!s.recorded&&!cpAuto?'Mark the recording done, and tick':'Tick')+' every standard to unlock — '+n+' of '+tot+' so far</div>';
+ }
+ f.innerHTML=h;
+}
+function toggleTask(i,el){const s=st(curId);s.tasks[i]=!s.tasks[i];persist();if(el)el.classList.toggle('on',!!s.tasks[i]);else openLesson(curId);}
+function toggleStd(i,el){const s=st(curId);s.stds[i]=!s.stds[i];persist();if(el)paintFooter();else openLesson(curId);}
 function closeDetail(){stopDrone();stopPitch();stopHold();if(mediaRec&&mediaRec.state==='recording')mediaRec.stop();document.getElementById('scrim').classList.remove('open');document.getElementById('detail').classList.remove('open');document.body.style.overflow='';render();}
-function toggleTask(i){const s=st(curId);s.tasks[i]=!s.tasks[i];persist();openLesson(curId);}
-function toggleStd(i){const s=st(curId);s.stds[i]=!s.stds[i];persist();openLesson(curId);}
 function toggleRec(){const s=st(curId);s.recorded=!s.recorded;persist();openLesson(curId);}
 function saveNotes(v){const s=st(curId);const l=lessonById(curId);if(l.cp)s.review=v;else s.notes=v;persist();}
 /* Checkpoints the app fully auto-scores (every standard is ticked by an auto check:
@@ -1852,28 +2113,30 @@ async function startSession(id){
  if(document.getElementById(host)&&!pdActive)await togglePitch(host);
  if(droneLesson(l)&&!droneNodes.length)toggleDrone();
 }
+function reviewChipsHTML(){const RS=reviewStats(),today=todayStr();return reviewPool().map(id=>{const k=reviewSkill(id),s=RS[id],hh=(s&&s.hist)||[],d=reviewDays(s,today),due=d==null||d>=3;const acc=hh.length?(hh.filter(Boolean).length+'/'+hh.length):'new';return '<span class="chip2 '+(due?'due':'soft')+'">'+k.short+' · '+(due&&hh.length?'due':acc)+'</span>';}).join('');}
 function renderToday(){
  const id=nextLessonId(),M=meta();
- let h='<div class="mod-head"><div class="mtag">Today</div><h2>Your next step</h2><p>Headphones in, a minute of humming or lip trills to warm up, then one tap — your lesson opens with the tools already running.</p></div>';
- if(!profile())h+='<div class="bcard"><div class="bcard-title">First time? Find your range</div><div class="bcard-sub">one minute · optional</div><p class="today-p">The range check centres the drone in your voice, so every exercise sits where you can sing it relaxed.</p><button class="qd-cta sec" onclick="go(\'setup\')">Do the range check (Module 0)</button></div>';
+ let h='';
+ if(id){const m0=moduleOf(id);h+='<div class="pills"><span class="pill"><span class="dot"></span>Module '+m0.n+' · '+m0.t+'</span>'+(M.streak?'<span class="pill amber">'+M.streak+'-day streak</span>':'')+'</div>';}
  if(!id){
-  h+='<div class="bcard"><div class="bcard-title">You’ve finished the path</div><p class="today-p">Keep it alive: the 5-minute daily review a few times a week, and lesson 5.4 — sing with humans.</p></div>';
+  h+='<div class="hero"><div class="eyebrow">All done</div><h1 class="display">You’ve finished the path</h1><p class="hero-focus">Keep it alive: the 5-minute daily review a few times a week, and lesson 5.4 — sing with humans.</p></div>';
  }else{
   const l=lessonById(id),m=moduleOf(id),live=l.tool?(droneLesson(l)?'drone and tuner':'tuner'):'';
-  h+='<div class="bcard"><div class="bcard-sub">Module '+m.n+' · '+m.t+' · '+(l.cp?'Checkpoint':'Lesson '+id)+'</div><div class="bcard-title">'+l.t+'</div><p class="today-p">'+l.f+'</p>'+
-   '<div class="l-chips">'+(l.time?'<span class="chip tempo">⏱ '+l.time+'</span>':'')+(l.covers?'<span class="chip covers">'+l.covers+'</span>':'')+'</div>'+
-   '<button class="qd-cta" onclick="startSession(\''+id+'\')">▶ '+(live?'Start — '+live+' on':'Open lesson')+'</button></div>';
+  h+='<div class="hero"><div class="eyebrow">Up next · '+(l.cp?'Checkpoint':'Lesson '+id)+'</div><h1 class="display">'+l.t+'</h1><p class="hero-focus">'+l.f+'</p><div class="chips-row">'+(l.time?'<span class="chip2">'+ico('clock')+l.time+'</span>':'')+(live?'<span class="chip2">'+(live==='tuner'?'Tuner':'Drone + tuner')+'</span>':'')+(l.covers?'<span class="chip2">'+l.covers+'</span>':'')+'</div></div>';
+  h+='<button class="cta" onclick="startSession(\''+id+'\')">'+ico(live?'mic':'play')+(live?'Start — '+live+' on':'Open lesson')+'</button>';
   const cp=moduleCp(m);
-  if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="qd-cta sec" onclick="openLesson(\''+cp.id+'\')">⚡ Already comfortable with Module '+m.n+'? Test out</button>';
+  if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="cta-sec purple" onclick="openLesson(\''+cp.id+'\')">Already solid on Module '+m.n+'? Test out</button>';
  }
- h+='<button class="qd-cta sec" onclick="openQuick()">⏱ Only 5 minutes? Do the daily review instead</button>';
- h+='<div class="today-streak">🔥 '+(M.streak||0)+'-day streak · best '+(M.best||0)+' · '+FLAT.filter(isMastered).length+' of '+FLAT.length+' lessons mastered</div>';
+ if(!profile())h+='<section class="card"><div class="card-row"><div><div class="card-title">Find your range first</div><div class="card-sub">A one-minute range check centres the drone in your voice.</div></div><button class="btn-outline" onclick="go(\'setup\')">Start</button></div></section>';
+ h+='<section class="card"><div class="card-eyebrow"><span>Warm up first</span><span>1 min</span></div><div class="warm"><div><b>1</b><span>Hum</span></div><div><b>2</b><span>Lip trills</span></div><div><b>3</b><span>Sirens</span></div></div><div class="note-line">'+ico('phones')+'Headphones in — the mic must not hear the drone.</div></section>';
+ h+='<section class="card"><div class="card-row"><div><div class="card-title">5-minute daily review</div><div class="card-sub">'+REVIEW_N+' scored trials, leaning on what’s shaky</div></div><button class="btn-outline" onclick="openQuick()">Start</button></div><div class="chips-row" style="margin-top:12px">'+reviewChipsHTML()+'</div></section>';
  return h;
 }
 /* ---- Practice Room ---- */
 function renderRoom(){
- return '<div class="mod-head"><div class="mtag">Practice Room</div><h2>All the Tools</h2><p>The sound tools from the lessons, in one place — for warm-ups and free practice once you know the drills. Always warm up first: gentle humming, lip trills, sirens low to high.</p></div>'+
- '<button class="qd-cta" onclick="openQuick()">⚡ Start the 5-minute daily review</button>'+
+ return '<div class="page-head"><h1 class="display">Practice</h1></div><p class="page-sub">The sound tools from the lessons, in one place — for warm-ups and free practice. Warm up first: gentle humming, lip trills, sirens low to high.</p>'+
+ '<button class="cta" onclick="openQuick()">'+ico('mic')+'Start the 5-minute daily review</button>'+
+ '<button class="cta-sec" onclick="go(\'ref\')">Reference — intervals, song ladder &amp; craft</button>'+
  toolHTML('tone')+toolHTML('interval')+toolHTML('row')+metroHTML()+
  '<div class="tool-panel"><div class="t-title">♪ Quick Recorder</div>'+recorderHTML()+'</div>'+
  '<div class="bcard"><div class="bcard-title">The 30–40 minute session</div><div class="bcard-sub">2–3 sessions a week · no calendar, only gates</div><div class="road">'+
@@ -1930,11 +2193,11 @@ function renderProg(){
  let h='<div class="mod-head"><div class="mtag">Progress</div><h2>Your Path</h2><p>'+doneL+' of '+totL+' lessons mastered. Each module unlocks the next as you pass its standards — no calendar, only gates.</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+pct+'%</span></div></div>';
  const M=meta();
  h+='<div class="streak"><div class="streak-box"><div class="sk-n">'+(M.streak||0)+'</div><div class="sk-l">Day streak</div></div><div class="streak-box"><div class="sk-n">'+(M.best||0)+'</div><div class="sk-l">Best streak</div></div><div class="streak-box"><div class="sk-n">'+(M.quick||0)+'</div><div class="sk-l">Drills logged</div></div></div>';
- h+='<button class="qd-cta sec" onclick="openQuick()">⚡ Do today\u2019s 5-minute review</button>';
- h+='<div class="bcard" style="margin-top:14px"><div class="bcard-title">Modules</div><div class="bcard-sub">tap a module tab to open its lessons</div>';
- MODULES.forEach(m=>{const p=moduleProgress(m);const locked=statusOf(m.lessons[0].id)==='locked';h+='<div class="pmod"><div class="pmod-n">M'+m.n+'</div><div class="pmod-t">'+m.t+(locked?' 🔒':'')+'</div><div class="pmod-c">'+p.done+'/'+p.tot+'</div></div>';});
+ h+='<button class="qd-cta sec" onclick="openQuick()">Do today\u2019s 5-minute review</button>';
+ h+='<div class="bcard" style="margin-top:14px"><div class="bcard-title">Modules</div><div class="bcard-sub">open one on the Path tab</div>';
+ MODULES.forEach(m=>{const p=moduleProgress(m);const locked=statusOf(m.lessons[0].id)==='locked';h+='<div class="pmod"><div class="pmod-n">M'+m.n+'</div><div class="pmod-t">'+m.t+(locked?' · locked':'')+'</div><div class="pmod-c">'+p.done+'/'+p.tot+'</div></div>';});
  h+='</div><div class="bcard"><div class="bcard-title">Checkpoints</div><div class="bcard-sub">M1–M3 are auto-scored and can be taken early to test out · M4 and the final need a recording</div>';
- cps.forEach(l=>{const done=isMastered(l.id);const open=statusOf(l.id)!=='locked';h+='<div class="pmod"><div class="pmod-n">'+(done?'✓':(open?'◆':'🔒'))+'</div><div class="pmod-t">'+l.t.replace('Checkpoint — ','')+'</div><div class="pmod-c">'+(done?'passed':(open?'ready':'locked'))+'</div></div>';});
+ cps.forEach(l=>{const done=isMastered(l.id);const open=statusOf(l.id)!=='locked';h+='<div class="pmod"><div class="pmod-n">'+(done?'✓':(open?'◆':'—'))+'</div><div class="pmod-t">'+l.t.replace('Checkpoint — ','')+'</div><div class="pmod-c">'+(done?'passed':(open?'ready':'locked'))+'</div></div>';});
  h+='</div>';
  return h;
 }

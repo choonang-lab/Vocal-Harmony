@@ -33,8 +33,17 @@ only as an offline validation harness (see Testing), never at runtime.
 
 ## Architecture (mental model)
 - **Rendering:** view-based. Global `view` selects what `render()` paints into `#main` via
-  innerHTML. Views: `today` (the landing view — next lesson + one-tap `startSession`), `setup`,
-  `room`, `ref`, `prog`, or a module number.
+  innerHTML. Views: `today` (landing — next lesson + one-tap `startSession`), `path` (the module
+  roadmap; a numeric view maps here with that module expanded), `setup`, `room` (Practice tab),
+  `ref`, `prog`. Navigation is the bottom `#tabbar` (`renderNav`); Backup/Restore/Reset, Range
+  check and Reference live in the ⋯ menu.
+- **Theming (v40):** all colours are CSS tokens with a `:root[data-theme="dark"]` override; never
+  hard-code a colour in CSS or in generated markup — add a token. Icons come from `ico(name)`
+  (`ICONS`), never emoji. **Any extra `<script>` tag MUST carry an attribute** (like
+  `<script id="theme-boot">`): the parse-check and the harness find the app code with the regex
+  `/<script>([\s\S]*)<\/script>/`, which matches a bare `<script>` only.
+- **Lesson screen:** the pinned Mark-mastered button is `#dFoot`, painted by `paintFooter()`; call
+  it after anything that changes `s.stds` (`paintLessonLog` and the tick handlers already do).
 - **Content:** `MODULES` array, each `{n, t, g, lessons:[...]}`. `n` is the module number —
   note the interlude module is `n:3.5` (a float) between 3 and 4. `FLAT` is the flattened lesson
   list; lessons unlock sequentially along it (`statusOf`).
