@@ -469,6 +469,9 @@ div.ls{cursor:default;}
 .skl-w{font-size:0.75rem;color:var(--muted);text-align:right;}
 .card-eyebrow + .ls{margin-top:10px;}
 .card-foot{font-size:0.78rem;color:var(--muted);line-height:1.45;margin-top:10px;}
+.pd-leak{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--amber-bg);color:var(--amber);font-size:0.82rem;line-height:1.45;}
+.pd-leak.show{display:block;}
+.pd-leak b{display:block;margin-bottom:2px;}
 @media(min-width:769px){.tabbar{max-width:760px;margin:0 auto;border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;}}
 </style>
 <script id="theme-boot">
@@ -484,7 +487,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v41</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v42</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -648,7 +651,7 @@ const MODULES=[
 ];
 /* ===================== AUDIO ENGINE ===================== */
 let actx=null,droneNodes=[],sessionMode='playback',actxMode='playback';
-const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true,holdOff:null,part:'above'};
+const TS={root:0,intv:4,key:0,droneOn:false,drone5:false,bpm:96,countin:true,holdOff:null,part:'above',droneVol:1};
 /* holdOff = the "second note" offset (semitones above root) the live tuner is aimed
    at and the hold scorer locks to. null → the root itself (unison). It PERSISTS across
    drone/root toggles so enabling the tuner (which rebuilds the context and restarts the
@@ -752,7 +755,16 @@ function playOff(off){TS.holdOff=off;setTarget(TS.root+off);tone(TS.root+off,1.5
 function rangeNudge(off){const p=profile();if(!p)return;const tgt=TS.root+off+60;if(tgt>p.high+2)showToast('That note sits above your tested range — try a lower root');else if(tgt<p.low-2)showToast('That note sits below your tested range — try a higher root');}
 function playBoth(off){setTarget(TS.root+off);tone(TS.root,2,0,0.18);tone(TS.root+off,2,0,0.18);}
 function stopDrone(){if(droneNodes.length){const a=ac();droneNodes.forEach(n=>{try{n.gain.gain.linearRampToValueAtTime(0,a.currentTime+0.2);n.osc.stop(a.currentTime+0.25);}catch(e){}});droneNodes=[];TS.droneOn=false;syncDroneBtns();}}
-function addDrone(off,type,vol){const a=ac();const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq(TS.root+off);g.gain.setValueAtTime(0,a.currentTime);g.gain.linearRampToValueAtTime(vol,a.currentTime+0.3);o.connect(g);g.connect(a.destination);o.start();droneNodes.push({osc:o,gain:g,off:off});}
+function addDrone(off,type,vol){const a=ac();const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq(TS.root+off);g.gain.setValueAtTime(0,a.currentTime);g.gain.linearRampToValueAtTime(droneGain(vol),a.currentTime+0.3);o.connect(g);g.connect(a.destination);o.start();droneNodes.push({osc:o,gain:g,off:off,vol:vol});}
+/* Drone volume (20–100%, saved). On the phone speaker the drone leaks into the mic; once it
+   reaches ~2.5× your voice there, the tuner flips between you and the drone. Turning it down
+   keeps the leak under that point. */
+function droneGain(base){return base*(TS.droneVol==null?1:TS.droneVol);}
+function setDroneVol(pct){
+ TS.droneVol=Math.max(0.2,Math.min(1,(+pct||100)/100));meta().droneVol=TS.droneVol;persist();
+ if(actx&&droneNodes.length)droneNodes.forEach(n=>{try{n.gain.gain.cancelScheduledValues(actx.currentTime);n.gain.gain.setTargetAtTime(droneGain(n.vol),actx.currentTime,0.05);}catch(e){}});
+ document.querySelectorAll('.droneVolVal').forEach(e=>{e.textContent=Math.round(TS.droneVol*100)+'%';});
+}
 function toggleDrone(){
  if(droneNodes.length){stopDrone();return;}
  const a=ac();
@@ -851,10 +863,11 @@ async function togglePitch(hostId){
   return;
  }
  pdHost=hostId;pdActive=true;pdSmooth=0;pdArmed=true;pdCap=null;pdSilCount=99;clearPdMsg();syncPitchBtns();loopPitch();
+ leakCheck(hostId);
 }
 function pdError(host,msg){const h=document.getElementById(host);if(h){const c=h.querySelector('.pd-cents');if(c)c.textContent='mic blocked';let box=h.querySelector('.pd-msg');if(box){box.textContent=msg;box.classList.add('show');}}showToast('Mic blocked — see the tuner panel');}
 function clearPdMsg(){const h=pdHost&&document.getElementById(pdHost);if(h){const box=h.querySelector('.pd-msg');if(box){box.classList.remove('show');box.textContent='';}}}
-function stopPitch(){if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
+function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
 function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.innerHTML=ico('mic')+(on?'Tuner on — tap to stop':'Start tuner');b.classList.toggle('on',on);});}
 function autoCorrelate(buf,sr,minClarity){
  const SIZE=buf.length;
@@ -1091,10 +1104,37 @@ function paintTuner(hz){
 }
 function zoneArc(c){const a=Math.min(80,c/50*80)*Math.PI/180,dx=118*Math.sin(a),y=140-118*Math.cos(a);return 'M '+(150-dx).toFixed(1)+' '+y.toFixed(1)+' A 118 118 0 0 1 '+(150+dx).toFixed(1)+' '+y.toFixed(1);}
 function setNeedle(n,c){if(!n)return;const d=Math.max(-50,Math.min(50,c||0))/50*80;n.setAttribute('transform','rotate('+d.toFixed(1)+' 150 140)');}
+/* Speaker-leak check, run when the tuner starts. A short 3.15 kHz beep — above every note the
+   tuner tracks — and the mic level at exactly that frequency, before vs during the beep. Through
+   wired earphones the mic hears nothing; through the phone speaker it jumps by tens of dB. A drone
+   leaking at a few times your voice's level makes the reading flip between you and the drone. */
+const LEAK_HZ=3150,LEAK_DB=18;
+let pdLeak=false;
+function leakVerdict(base,during){const b=isFinite(base)?Math.max(-140,base):-140,d=isFinite(during)?Math.max(-140,during):-140;return d>-90&&(d-b)>=LEAK_DB;}
+async function leakCheck(host){
+ if(!pdAnalyser||!pdAnalyser.getFloatFrequencyData)return;
+ const a=ac(),bins=new Float32Array(pdAnalyser.frequencyBinCount),bin=Math.round(LEAK_HZ/(a.sampleRate/pdAnalyser.fftSize));
+ pdAnalyser.smoothingTimeConstant=0;              // frequency data only; the tuner reads time-domain data
+ const level=()=>{pdAnalyser.getFloatFrequencyData(bins);let m=-Infinity;for(let k=bin-2;k<=bin+2;k++)if(bins[k]>m)m=bins[k];return m;};
+ const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ await wait(150);if(!pdActive||pdHost!==host)return;
+ const base=level();
+ const o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
+ o.frequency.value=LEAK_HZ;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.06,t+0.02);g.gain.setValueAtTime(0.06,t+0.32);g.gain.linearRampToValueAtTime(0,t+0.36);
+ o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+0.4);
+ let peak=-Infinity;for(let i=0;i<5;i++){await wait(60);peak=Math.max(peak,level());}
+ if(!pdActive||pdHost!==host)return;
+ pdLeak=leakVerdict(base,peak);paintLeak(host);
+}
+function paintLeak(host){
+ const h=host&&document.getElementById(host),el=h&&h.querySelector('.pd-leak');if(!el)return;
+ el.classList.toggle('show',pdLeak);
+ el.innerHTML=pdLeak?'<b>The mic can hear the app through the speaker.</b>That makes the needle jump between your voice and the drone. Wired earphones fix it'+(h.closest('.tool-panel')&&h.closest('.tool-panel').querySelector('.droneVolVal')?' — or turn the drone down below.':'.'):'';
+}
 function tunerHTML(host){
  return '<div class="pd" id="'+host+'"><div class="pd-top"><div class="pd-read"><span class="pd-note">—</span><span class="pd-cents">tuner off</span></div><div class="pd-lock"></div></div>'+
  '<svg class="pd-gauge" viewBox="0 0 300 152" aria-hidden="true"><path class="trk" d="M 33.8 119.5 A 118 118 0 0 1 266.2 119.5"></path><path class="zn" d="'+zoneArc(lockWindow().grab)+'"></path><path class="tk tk0" d="M 150 16 L 150 6"></path><path class="tk" d="M 70.3 45.0 L 65.1 38.9"></path><path class="tk" d="M 229.7 45.0 L 234.9 38.9"></path><g class="ndl pd-needle"><line x1="150" y1="140" x2="150" y2="36"></line><circle cx="150" cy="140" r="7"></circle></g><text x="34" y="148" text-anchor="middle">flat</text><text x="266" y="148" text-anchor="middle">sharp</text></svg>'+
- '<button class="tbtn tog pdBtn" data-host="'+host+'" onclick="togglePitch(\''+host+'\')">'+ico('mic')+'Start tuner</button><div class="pd-scoop"></div><div class="pd-msg"></div></div>';
+ '<button class="tbtn tog pdBtn" data-host="'+host+'" onclick="togglePitch(\''+host+'\')">'+ico('mic')+'Start tuner</button><div class="pd-scoop"></div><div class="pd-msg"></div><div class="pd-leak" role="status"></div></div>';
 }
 /* ===================== IN-APP RECORDER ===================== */
 let mediaRec=null,recChunks=[],recURL=null,recOwner=null,recT0=0,recTick=null;
@@ -1962,6 +2002,7 @@ function toolHTML(type){
   '<div class="hold-res"></div>'+
   '<div class="t-label">Second note over the drone</div><div class="seg" role="group" aria-label="Second note over the drone"><button class="seg-b seg-off" data-off="2" aria-pressed="false" onclick="playOff(2)">Step up</button><button class="seg-b seg-off" data-off="4" aria-pressed="false" onclick="playOff(4)">3rd</button><button class="seg-b seg-off" data-off="7" aria-pressed="false" onclick="playOff(7)">5th</button></div>'+
   '<div class="t-row" style="margin-top:10px"><button class="tbtn tog droneBtn'+(TS.droneOn?' on':'')+'" aria-pressed="'+TS.droneOn+'" onclick="toggleDrone()">'+ico('wave')+(TS.droneOn?'Drone on':'Start drone')+'</button>'+rootSelHTML()+'<button class="tbtn tog" onclick="playRoot()">'+ico('play')+'Play note</button><span class="toggle-chip'+(TS.drone5?' on':'')+'" onclick="toggleDrone5(this)"><span class="tg"></span>+5th</span></div>'+
+  '<div class="slider-row"><label for="droneVol">Drone</label><input id="droneVol" type="range" min="20" max="100" step="5" value="'+Math.round((TS.droneVol==null?1:TS.droneVol)*100)+'" oninput="setDroneVol(this.value)"><span class="slider-val droneVolVal">'+Math.round((TS.droneVol==null?1:TS.droneVol)*100)+'%</span></div>'+
   (lessonHasStep()?stepDrillHTML():'')+
   (lessonHasEar()?earQuizHTML():'')+
   '<div class="t-hint">Play or drone a note, sing it on “ooh”, then hold steady. With <b>Auto-start</b> on and the live tuner running, the 8-count begins on its own once you’re holding the note and scores itself — a long silence resets it. Tap the button to run a count by hand, or switch Auto-start off. Use headphones so playback does not bleed into the mic.</div></div>';
@@ -1992,6 +2033,7 @@ function init(){
  if(OK){try{S=JSON.parse(localStorage.getItem('harmony_lessons_v1')||'{}');}catch(e){S={};}}
  if(S.__profile&&typeof S.__profile.root==='number')TS.root=S.__profile.root;
  if(S.__meta&&S.__meta.part==='below')TS.part='below';   // remember a low voice's harmony part across visits
+ if(S.__meta&&typeof S.__meta.droneVol==='number')TS.droneVol=Math.max(0.2,Math.min(1,S.__meta.droneVol));   // and the drone volume
 }
 function persist(){if(OK)try{localStorage.setItem('harmony_lessons_v1',JSON.stringify(S));}catch(e){}}
 function st(id){if(!S[id])S[id]={mastered:false,tasks:{},stds:{},notes:'',recorded:false,review:''};return S[id];}

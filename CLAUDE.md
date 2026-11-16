@@ -42,6 +42,10 @@ only as an offline validation harness (see Testing), never at runtime.
   (`ICONS`), never emoji. **Any extra `<script>` tag MUST carry an attribute** (like
   `<script id="theme-boot">`): the parse-check and the harness find the app code with the regex
   `/<script>([\s\S]*)<\/script>/`, which matches a bare `<script>` only.
+- **Speaker leak (v42):** on the phone speaker the drone leaks into the mic and makes the tuner flip
+  between voice and drone. `leakCheck()` runs on every tuner start (short 3.15 kHz beep, measured with
+  the analyser's frequency data — keep the beep above the 1100 Hz tracking range). Drone voices must go
+  through `droneGain()` so the volume slider applies.
 - **Practice days (v41):** `meta().days` is the dated practice history behind the calendar and
   the streak. **Any new scoring path must call `markDayActive()`** (the existing ones do it next to
   `persist();paintLessonLog();`) or that practice silently won't count. Show the streak with

@@ -6,9 +6,28 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v41 / harmony-v41** — live on GitHub Pages (Progress redesign + toast fix; the commit after 18948de). Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v42 / harmony-v42** — live on GitHub Pages (speaker-leak check + drone volume; the commit after cfb743e). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
-## What changed this session (v40 → v41) — Progress tab redesign (release 3) + practice days
+## What changed this session (v41 → v42) — needle jitter on the phone speaker
+User reported a jittery needle while holding steady, practising on the **phone speaker**. Diagnosis by
+simulation (the app's own autoCorrelate, frame-by-frame at 30/s on a realistic held E3 with natural
+wobble): harmonics, vibrato, breath and room noise are all read correctly and steadily (<1¢/frame).
+The cause is the **drone leaking from the speaker into the mic** (bottom speaker sits beside the bottom
+mic): up to ~2× the voice level the tuner still reads the voice; at ~2.5–3.5× it flips between voice,
+drone and in-between notes (24–62¢/frame, 300¢ jumps); at 4×+ it reads only the drone. Smoothing
+cannot fix that (best filter still jumped ~300¢). Fix = wired earphones; the app now helps:
+1. **Leak check** (`leakCheck`, run from togglePitch): a soft 0.36 s 3.15 kHz beep, above every tracked
+   note; mic level at that frequency before vs during (`leakVerdict`: ≥18 dB rise and > −90 dB). On a
+   leak, an amber note in the tuner card (`.pd-leak`, `paintLeak`); cleared on stopPitch.
+2. **Drone volume** slider in the tone panel (20–100%, `TS.droneVol`, saved in meta().droneVol,
+   `droneGain`/`setDroneVol`), applied live to playing drone voices.
+- Harness +11 (236). Browser, end to end: app output looped into its own "mic" (speaker) → beep heard
+  at −38 dB → warning shown; silent-but-noisy mic (earphones, −102 dB floor) → +0.7 dB → no warning;
+  slider at 40% took drone gains 0.13/0.11 → 0.052/0.044 live.
+- Not built (offered, user declined for now): an opt-in "speaker mode" using the phone's echo
+  cancellation — only judgeable on the iPhone. Bluetooth earphones remain unsuitable (call-mode mic).
+
+## What changed earlier this session (v40 → v41) — Progress tab redesign (release 3) + practice days
 - **Practice days now count practice.** The streak used to tick only on mastering a lesson or
   finishing a daily review, so a session of holds that didn't end in mastery counted for nothing,
   and the stored streak kept showing a run that had already ended. Now: `meta().days` is a dated

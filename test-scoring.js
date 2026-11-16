@@ -99,6 +99,7 @@ const EXPOSE = [
   'REVIEW_SKILLS', 'reviewPool', 'reviewWeight', 'planReview', 'recordReview',
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
+  'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -764,6 +765,30 @@ group('practice days: history, backfill, live streak, calendar');
   ok(/Same note.*2\/3.*today/.test(A.reviewAccHTML()), 'each skill shows landed/attempted as text and when it was last reviewed');
 
   A.setS(saved);
+}
+
+/* ---- Speaker leak check + drone volume (v42) ----
+   On the phone speaker the drone leaks into the mic; at ~2.5–3.5× the voice level the tuner
+   flips between voice and drone (the needle jitter). The leak check compares the mic level at
+   a 3.15 kHz test beep before vs during the beep; the drone volume lowers the leak. */
+group('speaker leak verdict and drone volume');
+{
+  ok(A.leakVerdict(-100, -40), 'speaker: the beep comes back 60 dB louder → leak');
+  ok(A.leakVerdict(-95, -95 + A.LEAK_DB), 'a rise of exactly the threshold counts as a leak');
+  ok(!A.leakVerdict(-100, -96), 'wired earphones: a few dB of noise is not a leak');
+  ok(!A.leakVerdict(-Infinity, -Infinity), 'a silent mic (no data) is not a leak');
+  ok(!A.leakVerdict(-Infinity, -120), 'a rise that stays near the noise floor is not a leak');
+  ok(A.leakVerdict(-Infinity, -50), 'a loud beep over a silent baseline is a leak');
+
+  const saved = A.getS(), savedVol = A.TS.droneVol;
+  A.setS({});
+  A.setDroneVol(40);
+  eq(A.TS.droneVol, 0.4, 'the slider sets the drone volume');
+  eq(A.getS().__meta.droneVol, 0.4, 'and saves it with your progress');
+  eq(Math.round(A.droneGain(0.13) * 1000) / 1000, 0.052, 'drone voices scale by the volume');
+  A.setDroneVol(5); eq(A.TS.droneVol, 0.2, 'the drone never goes below 20% (that is what Stop is for)');
+  A.setDroneVol(150); eq(A.TS.droneVol, 1, 'and never above 100%');
+  A.TS.droneVol = savedVol; A.setS(saved);
 }
 
 /* ================================================================ */
