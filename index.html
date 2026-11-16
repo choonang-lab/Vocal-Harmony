@@ -263,7 +263,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 <header class="site-header"><div class="header-inner">
   <div class="logo"><h1>和声 <span>· Harmony Path</span></h1><p>Vocal Harmony · Pop & Folk Duets · Self-Paced Module Path</p></div>
   <div class="header-btns">
-    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v37</span>
+    <span style="font-size:0.6rem;color:#B8B6B0;font-family:'JetBrains Mono',monospace;align-self:center;padding-right:2px" title="build">v38</span>
     <button class="hbtn" onclick="doExport()">Backup</button>
     <button class="hbtn" onclick="document.getElementById('imp').click()">Restore</button>
     <button class="hbtn" onclick="doReset()">Reset</button>
@@ -645,16 +645,29 @@ function loopPitch(){
 }
 /* "drift off and pull back" detector: locked → drifted (>~50¢, still voiced) → re-locked,
    all without breaking voicing. Each completed round-trip is one rep. */
+/* Progressive lock window. The lock lamp — and every hold scored from it — is forgiving
+   while the skill is new and tightens as the course goes on: gentle in Module 1's lessons,
+   standard at the Module 1 checkpoint, tight from Module 2 on (2.3 "The Lock" is where
+   precise tuning is the point). Outside a lesson it follows the lesson you're on.
+   grab/keep = the lamp's hysteresis; drLock/drDrift = the 1.2 drift-and-return detector. */
+const LOCK_TIERS={
+ gentle:{name:'gentle',grab:35,keep:45,drLock:33,drDrift:60},
+ standard:{name:'standard',grab:30,keep:40,drLock:28,drDrift:55},
+ tight:{name:'tight',grab:24,keep:34,drLock:22,drDrift:50}
+};
+function lockTierFor(id){if(['1.1','1.2','1.3','1.4'].includes(id))return LOCK_TIERS.gentle;if(id==='cpA')return LOCK_TIERS.standard;return LOCK_TIERS.tight;}
+function lockWindow(){return lockTierFor(curId||nextLessonId());}
 function resetDrift(){drPhase='idle';drLockF=0;drDriftF=0;drVoidF=0;}
 function updateDrift(voiced,cAbs){
  if(pdTargetHz<=0){resetDrift();return;}
  if(!voiced||cAbs===null){drVoidF++;if(drVoidF>10)resetDrift();return;}  // ~0.33s silence breaks the glide
  drVoidF=0;
- if(cAbs<22){                                   // locked region
+ const LW=lockWindow();
+ if(cAbs<LW.drLock){                            // locked region
   drDriftF=0;drLockF++;
   if(drPhase==='drifted'&&drLockF>=13){drPhase='locked';drDriftF=0;recordDrift();}   // pulled back & held
   else if(drLockF>=14){drPhase='locked';}
- }else if(cAbs>50){                              // clearly off the fused sound
+ }else if(cAbs>LW.drDrift){                      // clearly off the fused sound
   drLockF=0;drDriftF++;
   if(drPhase==='locked'&&drDriftF>=10){drPhase='drifted';}                            // deliberate, sustained
  }else{drLockF=0;drDriftF=0;}                    // transitional zone (22–50¢): neither
@@ -798,7 +811,7 @@ function paintTuner(hz){
  centsEl.textContent=(live>=0?'+':'')+Math.round(live)+'¢ vs '+tName;
  if(pdHist.length<4){lock.className='pd-lock';lock.textContent='hold '+tName+'…';h.classList.remove('locked');return;}
  const m=medianCents();
- const thr=pdLocked?34:24;                 // hysteresis: easy to keep the lock, harder to grab it
+ const LW=lockWindow();const thr=pdLocked?LW.keep:LW.grab;   // hysteresis: easy to keep the lock, harder to grab it; window widens/narrows by course stage
  if(Math.abs(m)<thr){pdLocked=true;lock.className='pd-lock on';lock.textContent='● LOCKED';h.classList.add('locked');}
  else if(Math.abs(m)<55){pdLocked=false;lock.className='pd-lock '+(m>0?'sharp':'flat');lock.textContent=(m>0?'▲ a touch high':'▼ a touch low');h.classList.remove('locked');}
  else{pdLocked=false;lock.className='pd-lock '+(m>0?'sharp':'flat');lock.textContent=(m>0?'▲ too high':'▼ too low');h.classList.remove('locked');}
@@ -866,12 +879,16 @@ function syncHoldTarget(){
  if(sc){
   el.textContent='🎯 Sing '+patternNames(l)+' — step by step. The needle follows the note you’re on, so land each step in tune; the drone stays put as your anchor.';
   el.className='t-target show';
- }else if(hc&&hc.offDrone){
-  const off=TS.holdOff||4;
-  el.textContent='🎯 Sing '+nlabel(TS.root+off)+' — '+(OFFNAME[off]||off+' semitones')+' above the drone ('+nlabel(TS.root)+'). Hold it steady; do NOT let it slide onto the drone’s own note.';
-  el.className='t-target show';
- }else if(hc&&hc.onDrone){
-  el.textContent='🎯 Sing '+nlabel(TS.root)+' — match the drone exactly, in unison. Aim for the fused, beat-free sound.';
+ }else if(hc){
+  const LW=lockWindow(),win=' Lock window ±'+LW.grab+'¢ ('+LW.name+(LW.name==='tight'?'':' — it tightens later in the course')+').';
+  if(hc.offDrone){
+   const off=TS.holdOff||4;
+   el.textContent='🎯 Sing '+nlabel(TS.root+off)+' — '+(OFFNAME[off]||off+' semitones')+' above the drone ('+nlabel(TS.root)+'). Hold it steady; do NOT let it slide onto the drone’s own note.'+win;
+  }else if(hc.onDrone){
+   el.textContent='🎯 Sing '+nlabel(TS.root)+' — match the drone exactly, in unison. Aim for the fused, beat-free sound.'+win;
+  }else{
+   el.textContent='🎯 Play a note, then sing it on “ooh” — land it dead-on, no sliding up, and hold for 8 counts.'+win;
+  }
   el.className='t-target show';
  }else{el.className='t-target';el.textContent='';}
 }
@@ -1003,6 +1020,7 @@ function renderSetup(){
    near the target, not climbing up from the root). Powers any lesson with a jumpN check. */
 let jdActive=false,jdState='idle',jdInterval=4,jdIntName='3rd',jdTrials=10,jdTrial=0,jdRoot=99,jdResults=[],jdCap=[],jdArmed=false,jdSil=0,jdT1=null,jdT2=null;
 let jdInKey=false,jdKey=0,jdDeg=-1,jdTgt=0;   // in-key mode (2.5): jdRoot = the cue note, jdTgt = the third above it in the key
+let jdReview=false,jdPlan=[];                  // daily-review mode: one REVIEW_SKILLS id per trial
 /* In-key thirds (2.5 / cpB): a harmony line a third above the melody stays IN the key,
    so the third is major over do/fa/sol and minor over re/mi/la/ti — the mix the songs
    in Modules 3–3.5 actually use. A check carries inKey:true and the string interval
@@ -1032,11 +1050,11 @@ function startJump(idx){
  if(!pdActive){showToast('Turn on the live tuner first');return;}
  const cs=jumpChecks(lessonById(curId)),c=cs[idx||0];if(!c)return;
  jdInterval=c.interval;jdIntName=c.intName||intervalName(c.interval);jdTrials=c.trials||10;
- jdInKey=!!c.inKey;if(jdInKey){jdKey=pickKey();jdDeg=-1;}
+ jdReview=false;jdInKey=!!c.inKey;if(jdInKey){jdKey=pickKey();jdDeg=-1;}
  jdActive=true;jdTrial=0;jdResults=[];jdState='idle';jdRoot=99;
  syncJumpBtns();nextTrial();
 }
-function stopJump(){jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();paintJump('Drill stopped');setJumpScore(0,jdTrials);syncJumpBtns();}
+function stopJump(){const wasReview=jdReview;jdActive=false;jdReview=false;jdState='idle';jdArmed=false;clearJumpTimers();paintJump(wasReview?'Review stopped — not logged':'Drill stopped');setJumpScore(0,jdTrials);syncJumpBtns();syncReviewBtn();}
 function jumpDrillHTML(){
  const l=curId&&lessonById(curId),jcs=jumpChecks(l);if(!jcs.length)return '';
  const tot=jcs[0].trials||10;let btns,label;
@@ -1058,6 +1076,7 @@ function nextTrial(){
  clearJumpTimers();
  if(jdTrial>=jdTrials){finishJump();return;}
  jdTrial++;
+ if(jdReview){const k=reviewSkill(jdPlan[jdTrial-1]);jdInKey=!!k.inKey;jdInterval=k.inKey?'key3':k.iv;jdIntName=k.name;}   // this trial's skill
  jdState='root';setJumpScore(jdResults.filter(r=>r.pass).length,jdTrials);
  if(jdInKey){
   /* "do" sets the key, then the melody note; you sing the third above it, in the key */
@@ -1075,7 +1094,7 @@ function nextTrial(){
 }
 function beginListen(){
  jdState='listen';jdCap=[];jdArmed=true;jdSil=0;
- paintJump('Trial '+jdTrial+' — '+(jdInKey?('sing the 3rd above '+degName(jdDeg)+' now'):('sing the '+jdIntName+' now')));
+ paintJump('Trial '+jdTrial+' — '+(jdInKey?('sing the 3rd above '+degName(jdDeg)+' now'):('sing '+(jdReview?jdIntName:'the '+jdIntName)+' now')));
  jdT2=setTimeout(()=>{if(jdState==='listen')judgeTrial(true);},6000);
 }
 function feedJump(hz,voiced){
@@ -1103,16 +1122,20 @@ function judgeTrial(noAttempt){
   note=hzToNote(settleHz).name;
  }
  const pass=inTune&&jumped;
- jdResults.push({inTune:inTune,jumped:jumped,pass:pass,note:note});
+ jdResults.push({inTune:inTune,jumped:jumped,pass:pass,note:note,skill:jdReview?jdPlan[jdTrial-1]:null});
  jdState='judge';
  const passes=jdResults.filter(r=>r.pass).length;
  setJumpScore(passes,jdTrials);
  const ans=jdInKey?('   ·   '+degName(jdDeg)+' → '+degName(jdDeg+keyThirdAbove(jdDeg))+' ('+(keyThirdAbove(jdDeg)===3?'minor':'major')+' 3rd)'):'';
- paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?' — you walked up to it':' — off pitch'))))+ans+'   ·   '+passes+'/'+jdResults.length+' so far');
- if(jdInKey){tone(jdRoot,1.0,0.15,0.17);tone(jdTgt,1.0,0.15,0.17);}   // hear the melody+harmony pair you were aiming for
- jdT1=setTimeout(nextTrial,jdInKey?2300:1300);
+ const want=jdReview&&!pass&&!jdInKey?('   ·   wanted '+nlabel(jdTgt)):'';
+ paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?(jdInterval===0?' — you slid into it':' — you walked up to it'):' — off pitch'))))+ans+want+'   ·   '+passes+'/'+jdResults.length+' so far');
+ /* hear the answer: always for in-key (the melody+harmony pair), and after a miss in review */
+ const reveal=jdInKey||(jdReview&&!pass);
+ if(reveal){tone(jdRoot,1.0,0.15,0.17);if(jdTgt!==jdRoot)tone(jdTgt,1.0,0.15,0.17);}
+ jdT1=setTimeout(nextTrial,reveal?2300:1300);
 }
 function finishJump(){
+ if(jdReview){finishReview();return;}
  jdActive=false;jdState='done';jdArmed=false;clearJumpTimers();
  const passes=jdResults.filter(r=>r.pass).length;
  const l=lessonById(curId),c=jumpChecks(l).find(x=>x.interval===jdInterval)||jumpCheck(l);
@@ -1554,25 +1577,87 @@ function meta(){if(!S.__meta)S.__meta={streak:0,best:0,last:'',quick:0};return S
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function yestStr(){const d=new Date(Date.now()-86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function markDayActive(){const M=meta();const t=todayStr();if(M.last===t)return;M.streak=(M.last===yestStr())?(M.streak+1):1;M.last=t;if(M.streak>(M.best||0))M.best=M.streak;persist();}
-/* ===================== QUICK DRILL ===================== */
-let qdScore=5,qdMode='quick';
+/* ===================== DAILY REVIEW =====================
+   The 5-minute drill is a mixed, auto-scored review of the pitch skills you've learned,
+   not always the same major third. A skill joins the pool once a lesson that teaches it is
+   mastered; the skill of the lesson you're on now joins too, so the review is useful from
+   day one. Trials lean toward skills that are WEAK (low recent accuracy) or STALE (not
+   reviewed for days) — light spaced repetition. Runs on the jump-drill engine (jdReview);
+   per-skill stats live in meta().review. Drone holds stay in the lessons. */
+const REVIEW_SKILLS=[
+ {id:'unison',iv:0,name:'the same note',short:'Same note',from:['1.1','1.2']},
+ {id:'step',iv:2,name:'one step up (re)',short:'Step up',from:['1.4']},
+ {id:'M3',iv:4,name:'the 3rd above it',short:'3rd',from:['2.1','2.2','2.3']},
+ {id:'m3',iv:3,name:'the minor 3rd above it',short:'Minor 3rd',from:['2.4']},
+ {id:'P4',iv:5,name:'the 4th above it',short:'4th',from:['2.4']},
+ {id:'P5',iv:7,name:'the 5th above it',short:'5th',from:['2.4']},
+ {id:'key3',inKey:true,name:'3rd in the key',short:'3rd in key',from:['2.5']}
+];
+const REVIEW_FRONT={'1.1':'unison','1.2':'unison','1.3':'unison','1.4':'step','cpA':'step','2.1':'M3','2.2':'M3','2.3':'M3','2.4':'P5','2.5':'key3','cpB':'key3'};
+const REVIEW_N=10;
+function reviewSkill(id){return REVIEW_SKILLS.find(k=>k.id===id);}
+function reviewStats(){const M=meta();if(!M.review)M.review={};return M.review;}
+function reviewPool(){
+ const ids=REVIEW_SKILLS.filter(k=>k.from.some(isMastered)).map(k=>k.id);
+ const f=REVIEW_FRONT[nextLessonId()];if(f&&!ids.includes(f))ids.push(f);
+ return ids.length?ids:['unison'];
+}
+function reviewDays(s,today){return s&&s.last?Math.max(0,Math.round((Date.parse(today)-Date.parse(s.last))/86400000)):null;}
+/* weight = base + staleness (0..1, maxing at a week) + weakness (1.5 x miss rate; unseen = coin-flip) */
+function reviewWeight(s,today){
+ const h=(s&&s.hist)||[],acc=h.length?h.filter(Boolean).length/h.length:0.5,d=reviewDays(s,today);
+ return 0.5+Math.min(d==null?7:d,7)/7+1.5*(1-acc);
+}
+/* Pure: n trials over the pool — every skill once when it fits, the rest drawn by weight,
+   then shuffled. rnd is injectable so the harness can seed it. */
+function planReview(pool,stats,today,n,rnd){
+ rnd=rnd||Math.random;n=n||REVIEW_N;
+ const plan=pool.length<=n?pool.slice():[];
+ const w=pool.map(id=>reviewWeight(stats[id],today)),tot=w.reduce((a,b)=>a+b,0);
+ while(plan.length<n){let r=rnd()*tot,i=0;while(i<w.length-1&&r>=w[i]){r-=w[i];i++;}plan.push(pool[i]);}
+ for(let i=plan.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));const t=plan[i];plan[i]=plan[j];plan[j]=t;}
+ return plan;
+}
+function recordReview(stats,results,today){
+ results.forEach(r=>{if(!r.skill)return;const s=stats[r.skill]||(stats[r.skill]={hist:[],n:0,ok:0});s.hist.push(!!r.pass);if(s.hist.length>10)s.hist.shift();s.n++;if(r.pass)s.ok++;s.last=today;});
+ return stats;
+}
+function syncReviewBtn(){document.querySelectorAll('.rv-btn').forEach(b=>{b.textContent=(jdActive&&jdReview)?'■ Stop review':'▶ Start review — '+REVIEW_N+' trials';});}
+function paintReviewMix(){
+ const el=document.getElementById('rvMix');if(!el)return;const RS=reviewStats(),today=todayStr();
+ el.innerHTML=reviewPool().map(id=>{const k=reviewSkill(id),s=RS[id],h=(s&&s.hist)||[],d=reviewDays(s,today);
+  const acc=h.length?(h.filter(Boolean).length+'/'+h.length+' recent'):'new';const due=d==null||d>=3;
+  return '<span class="chip'+(due?' cp':'')+'">'+k.short+' · '+acc+(d!=null&&d>=3?' · '+d+'d ago':'')+'</span>';}).join(' ')+
+  '<div class="t-hint">Highlighted = due: new, or not reviewed for 3+ days. Weak and due skills come up more often.</div>';
+}
+function startReview(){
+ if(jdActive){stopJump();return;}
+ if(!pdActive){showToast('Turn on the live tuner first');return;}
+ jdReview=true;jdPlan=planReview(reviewPool(),reviewStats(),todayStr(),REVIEW_N);
+ jdTrials=jdPlan.length;jdKey=pickKey();jdDeg=-1;jdActive=true;jdTrial=0;jdResults=[];jdState='idle';jdRoot=99;
+ syncReviewBtn();nextTrial();
+}
+function finishReview(){
+ jdActive=false;jdState='done';jdArmed=false;clearJumpTimers();jdReview=false;
+ recordReview(reviewStats(),jdResults,todayStr());
+ markDayActive();const M=meta();M.quick=(M.quick||0)+1;persist();
+ const passes=jdResults.filter(r=>r.pass).length;
+ paintJump('Review complete — '+passes+' / '+jdResults.length+' · logged · streak '+M.streak+' day'+(M.streak===1?'':'s'));
+ setJumpScore(passes,jdResults.length);syncReviewBtn();paintReviewMix();
+}
 function openQuick(){
- qdScore=5;curId=null;stopDrone();
- document.getElementById('dCrumb').textContent='Daily Drill · Jump to the Third';
- setTarget(TS.root+TS.intv);
- let h='<div class="d-title">5-Minute Daily Drill</div><div class="d-focus">The highest-value drill in the program (lesson 2.2): hear a random root, jump straight to the third above it, then reveal to check. Use the live tuner to confirm the lock. A minute of this every day beats an hour once a week.</div>';
- h+='<div class="d-section"><div class="qd-sub">Current root</div><div class="qd-big" id="qdRoot">'+nlabel(TS.root)+'</div>';
- h+='<div class="t-row" style="justify-content:center"><button class="tbtn sec" onclick="qdNew()">↻ New random root</button><button class="tbtn" onclick="playRoot()">1 · Play root</button></div>';
- h+='<div class="t-row" style="justify-content:center"><button class="tbtn sec" onclick="setTarget(TS.root+TS.intv);playOff(TS.intv)">3 · Reveal the third</button><button class="tbtn sec" onclick="playBoth(TS.intv)">Both together</button></div>';
- h+='<div class="t-hint" style="text-align:center">Step 2 is you — sing the third before you reveal.</div>';
- h+=tunerHTML('tuner_quick')+'</div>';
- h+='<div class="d-section"><div class="d-h">Score this session — out of 10 random roots</div><div class="score-row"><button class="score-btn" onclick="qdAdj(-1)">−</button><span class="score-val" id="qdScore">5 / 10</span><button class="score-btn" onclick="qdAdj(1)">+</button></div></div>';
- h+='<button class="master-btn ready" onclick="logQuick()">✓ Log today\u2019s drill</button>';
- document.getElementById('dBody').innerHTML=h;
+ curId=null;stopDrone();stopPitch();clearTarget();
+ document.getElementById('dCrumb').textContent='Daily Review';
+ let h='<div class="d-title">5-Minute Daily Review</div><div class="d-focus">A quick mixed review of the pitch skills you’ve learned — weighted toward the ones that are shaky or haven’t come up lately. Ten trials, scored for you, and it logs your streak when you finish.</div>';
+ h+='<div class="d-section"><div class="d-h">Today’s mix</div><div class="rv-mix" id="rvMix"></div></div>';
+ h+='<div class="d-section">'+tunerHTML('tuner_quick')+
+  '<div class="hold" style="flex-wrap:wrap;gap:8px"><button class="tbtn rv-btn" onclick="startReview()">▶ Start review — '+REVIEW_N+' trials</button><div class="hold-meter"><div id="jdTrial" style="font-size:13px;opacity:.8">—</div><div id="jdScore" style="font:700 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace">0 / '+REVIEW_N+'</div></div></div>'+
+  '<div id="jdState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
+  '<div class="t-hint">Turn on the tuner, then start. Each trial plays a note — or “do” and then a note, for thirds in the key — and tells you what to sing. Sing it straight away; miss one and you hear the answer. Headphones in.</div></div>';
+ h+='<button class="unmark" onclick="logQuick()">Practised without the tuner? Log today’s drill by hand</button>';
+ document.getElementById('dBody').innerHTML=h;paintReviewMix();
  document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
 }
-function qdNew(){TS.root=-9+Math.floor(Math.random()*14);setTarget(TS.root+TS.intv);const el=document.getElementById('qdRoot');if(el)el.textContent=nlabel(TS.root);playRoot();}
-function qdAdj(d){qdScore=Math.max(0,Math.min(10,qdScore+d));const el=document.getElementById('qdScore');if(el)el.textContent=qdScore+' / 10';}
 function logQuick(){markDayActive();const M=meta();M.quick=(M.quick||0)+1;persist();stopPitch();showToast('Logged — streak '+M.streak+' day'+(M.streak===1?'':'s'));closeDetail();}
 /* ---- tool panels ---- */
 function rootSelHTML(){let h='<select class="tsel rootSel" onchange="setRoot(this.value)">';for(let s=-17;s<=9;s++)h+='<option value="'+s+'"'+(s===TS.root?' selected':'')+'>'+nlabel(s)+'</option>';return h+'</select>';}
@@ -1744,7 +1829,7 @@ function renderToday(){
  let h='<div class="mod-head"><div class="mtag">Today</div><h2>Your next step</h2><p>Headphones in, a minute of humming or lip trills to warm up, then one tap — your lesson opens with the tools already running.</p></div>';
  if(!profile())h+='<div class="bcard"><div class="bcard-title">First time? Find your range</div><div class="bcard-sub">one minute · optional</div><p class="today-p">The range check centres the drone in your voice, so every exercise sits where you can sing it relaxed.</p><button class="qd-cta sec" onclick="go(\'setup\')">Do the range check (Module 0)</button></div>';
  if(!id){
-  h+='<div class="bcard"><div class="bcard-title">You’ve finished the path</div><p class="today-p">Keep it alive: the 5-minute drill a few times a week, and lesson 5.4 — sing with humans.</p></div>';
+  h+='<div class="bcard"><div class="bcard-title">You’ve finished the path</div><p class="today-p">Keep it alive: the 5-minute daily review a few times a week, and lesson 5.4 — sing with humans.</p></div>';
  }else{
   const l=lessonById(id),m=moduleOf(id),live=l.tool?(droneLesson(l)?'drone and tuner':'tuner'):'';
   h+='<div class="bcard"><div class="bcard-sub">Module '+m.n+' · '+m.t+' · '+(l.cp?'Checkpoint':'Lesson '+id)+'</div><div class="bcard-title">'+l.t+'</div><p class="today-p">'+l.f+'</p>'+
@@ -1753,14 +1838,14 @@ function renderToday(){
   const cp=moduleCp(m);
   if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="qd-cta sec" onclick="openLesson(\''+cp.id+'\')">⚡ Already comfortable with Module '+m.n+'? Test out</button>';
  }
- h+='<button class="qd-cta sec" onclick="openQuick()">⏱ Only 5 minutes? Do the daily drill instead</button>';
+ h+='<button class="qd-cta sec" onclick="openQuick()">⏱ Only 5 minutes? Do the daily review instead</button>';
  h+='<div class="today-streak">🔥 '+(M.streak||0)+'-day streak · best '+(M.best||0)+' · '+FLAT.filter(isMastered).length+' of '+FLAT.length+' lessons mastered</div>';
  return h;
 }
 /* ---- Practice Room ---- */
 function renderRoom(){
  return '<div class="mod-head"><div class="mtag">Practice Room</div><h2>All the Tools</h2><p>The sound tools from the lessons, in one place — for warm-ups and free practice once you know the drills. Always warm up first: gentle humming, lip trills, sirens low to high.</p></div>'+
- '<button class="qd-cta" onclick="openQuick()">⚡ Start the 5-minute daily drill</button>'+
+ '<button class="qd-cta" onclick="openQuick()">⚡ Start the 5-minute daily review</button>'+
  toolHTML('tone')+toolHTML('interval')+toolHTML('row')+metroHTML()+
  '<div class="tool-panel"><div class="t-title">♪ Quick Recorder</div>'+recorderHTML()+'</div>'+
  '<div class="bcard"><div class="bcard-title">The 30–40 minute session</div><div class="bcard-sub">2–3 sessions a week · no calendar, only gates</div><div class="road">'+
@@ -1768,7 +1853,7 @@ function renderRoom(){
  '<div class="road-row"><span class="road-tag">5 min</span><span class="road-body">Module 1 maintenance — one drone hold, whatever module you are in.</span></div>'+
  '<div class="road-row"><span class="road-tag">15–20 min</span><span class="road-body">Current lesson work.</span></div>'+
  '<div class="road-row"><span class="road-tag">5–10 min</span><span class="road-body">Sing for fun — end every session on a song you love. That is what keeps a no-deadline program alive.</span></div>'+
- '</div><p style="font-size:0.74rem;color:var(--muted);margin-top:12px;line-height:1.5">Only 10 minutes? Hit the <b>daily drill</b> button above — random-root thirds with the live tuner. Highest value per minute in the program.</p></div>';
+ '</div><p style="font-size:0.74rem;color:var(--muted);margin-top:12px;line-height:1.5">Only 10 minutes? Hit the <b>daily review</b> button above — a scored, mixed review of every pitch skill you’ve learned, leaning on the shaky ones. Highest value per minute in the program.</p></div>';
 }
 /* ---- Reference ---- */
 function renderRef(){
@@ -1817,7 +1902,7 @@ function renderProg(){
  let h='<div class="mod-head"><div class="mtag">Progress</div><h2>Your Path</h2><p>'+doneL+' of '+totL+' lessons mastered. Each module unlocks the next as you pass its standards — no calendar, only gates.</p><div class="mod-prog"><div class="bar"><i style="width:'+pct+'%"></i></div><span>'+pct+'%</span></div></div>';
  const M=meta();
  h+='<div class="streak"><div class="streak-box"><div class="sk-n">'+(M.streak||0)+'</div><div class="sk-l">Day streak</div></div><div class="streak-box"><div class="sk-n">'+(M.best||0)+'</div><div class="sk-l">Best streak</div></div><div class="streak-box"><div class="sk-n">'+(M.quick||0)+'</div><div class="sk-l">Drills logged</div></div></div>';
- h+='<button class="qd-cta sec" onclick="openQuick()">⚡ Do today\u2019s 5-minute drill</button>';
+ h+='<button class="qd-cta sec" onclick="openQuick()">⚡ Do today\u2019s 5-minute review</button>';
  h+='<div class="bcard" style="margin-top:14px"><div class="bcard-title">Modules</div><div class="bcard-sub">tap a module tab to open its lessons</div>';
  MODULES.forEach(m=>{const p=moduleProgress(m);const locked=statusOf(m.lessons[0].id)==='locked';h+='<div class="pmod"><div class="pmod-n">M'+m.n+'</div><div class="pmod-t">'+m.t+(locked?' 🔒':'')+'</div><div class="pmod-c">'+p.done+'/'+p.tot+'</div></div>';});
  h+='</div><div class="bcard"><div class="bcard-title">Checkpoints</div><div class="bcard-sub">M1–M3 are auto-scored and can be taken early to test out · M4 and the final need a recording</div>';

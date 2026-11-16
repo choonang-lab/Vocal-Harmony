@@ -95,6 +95,8 @@ const EXPOSE = [
   'stepRetarget', 'freq', 'clearTarget', 'centsToTarget',
   'keyThirdAbove', 'KEY_DEGS', 'cpAutoCovers', 'canChallenge', 'passCheckpoint',
   'nextLessonId', 'moduleOf', 'droneLesson', 'renderToday',
+  'LOCK_TIERS', 'lockTierFor', 'lockWindow',
+  'REVIEW_SKILLS', 'reviewPool', 'reviewWeight', 'planReview', 'recordReview',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -587,6 +589,71 @@ group('Today screen and one-tap session start');
   const drone = (id) => A.droneLesson(A.lessonById(id));
   ok(drone('1.2') && drone('1.3') && drone('1.4') && drone('2.3') && drone('cpA'), 'drone lessons auto-start the drone');
   ok(!drone('1.1') && !drone('2.2') && !drone('3.1') && !drone('2.5'), 'non-drone lessons start only the tuner');
+}
+
+/* ---- Progressive lock window (item 7) ----
+   The lock lamp (and every hold scored from it) used one ±24¢ window everywhere —
+   strict for lesson 1.1. It now widens in Module 1 and tightens through the course. */
+group('progressive lock window: gentle in M1, standard at cpA, tight after');
+{
+  const T = A.LOCK_TIERS;
+  eq(A.lockTierFor('1.1').grab, 35, '1.1 Land the Note: gentle ±35¢');
+  eq(A.lockTierFor('1.3').grab, 35, '1.3 Tug-of-War: gentle ±35¢');
+  eq(A.lockTierFor('cpA').grab, 30, 'cpA checkpoint: standard ±30¢');
+  eq(A.lockTierFor('2.3').grab, 24, '2.3 The Lock: tight ±24¢');
+  eq(A.lockTierFor('cpC').grab, 24, 'later checkpoints: tight ±24¢');
+  ok(T.gentle.grab > T.standard.grab && T.standard.grab > T.tight.grab, 'the window narrows stage by stage');
+  ok(Object.values(T).every((t) => t.keep > t.grab && t.drDrift > t.drLock),
+    'every tier keeps its hysteresis and a gap between locked and drifted');
+  ok(T.tight.grab === 24 && T.tight.keep === 34 && T.tight.drLock === 22 && T.tight.drDrift === 50,
+    'tight tier = the old constants, so Module 2+ scoring is unchanged');
+  const saved = A.getS();
+  A.setS({});
+  eq(A.lockWindow().name, 'gentle', 'outside a lesson, a beginner gets the gentle window');
+  A.passCheckpoint('cpB');
+  eq(A.lockWindow().name, 'tight', '…and the tight one once they are past Module 2');
+  A.setS(saved);
+}
+
+/* ---- Daily review (item 6): mixed skills, weighted toward weak/stale ---- */
+group('daily review: pool grows with mastery, plan leans on weak/stale skills');
+{
+  const saved = A.getS();
+  A.setS({});
+  eq(JSON.stringify(A.reviewPool()), '["unison"]', 'fresh user: review is landing the note (their current skill)');
+  A.passCheckpoint('cpB');
+  const pool = A.reviewPool();
+  ok(['M3', 'm3', 'P4', 'P5', 'key3'].every((id) => pool.includes(id)), 'after Module 2: thirds, 4th, 5th and in-key thirds are in the pool');
+  ok(!pool.includes('unison'), 'skills from un-mastered lessons stay out (unless current)');
+  A.setS({ '1.1': { mastered: true }, '1.2': { mastered: true }, '1.3': { mastered: true } });
+  eq(JSON.stringify(A.reviewPool()), '["unison","step"]', 'on 1.4, its new skill (step up) joins the mastered ones');
+  A.setS(saved);
+
+  ok(A.REVIEW_SKILLS.every((k) => k.inKey || typeof k.iv === 'number'), 'every review skill is runnable on the jump engine');
+
+  const today = '2026-11-16';
+  const strong = { hist: Array(10).fill(true), last: today };
+  const weak = { hist: Array(10).fill(false), last: '2026-10-01' };
+  ok(A.reviewWeight(weak, today) > A.reviewWeight(undefined, today) && A.reviewWeight(undefined, today) > A.reviewWeight(strong, today),
+    'weight: weak+stale > never seen > strong+fresh');
+
+  let seed = 7; const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  const plan10 = A.planReview(['M3', 'P5', 'key3'], {}, today, 10, rnd);
+  eq(plan10.length, 10, 'a review is 10 trials');
+  ok(['M3', 'P5', 'key3'].every((id) => plan10.includes(id)), 'every skill in the pool comes up at least once');
+  const exact = A.planReview(['M3', 'P5', 'P4', 'm3'], { M3: weak, P5: strong, P4: strong, m3: strong }, today, 4, rnd);
+  eq(exact.slice().sort().join(), 'M3,P4,P5,m3', 'even a heavily weighted skill cannot crowd out the others: each appears once');
+  const big = A.planReview(['M3', 'P5'], { M3: weak, P5: strong }, today, 400, rnd);
+  const nWeak = big.filter((x) => x === 'M3').length;
+  ok(nWeak > 300, 'the weak, stale skill dominates the draw (' + nWeak + '/400)');
+
+  const stats = {};
+  A.recordReview(stats, [{ skill: 'M3', pass: true }, { skill: 'M3', pass: false }, { skill: null, pass: true }], today);
+  ok(stats.M3.hist.length === 2 && stats.M3.ok === 1 && stats.M3.last === today && Object.keys(stats).length === 1,
+    'results update per-skill history and date; non-review trials are ignored');
+  const s2 = { M3: { hist: Array(10).fill(true), n: 10, ok: 10 } };
+  A.recordReview(s2, [{ skill: 'M3', pass: false }], today);
+  ok(s2.M3.hist.length === 10 && s2.M3.hist[9] === false, 'history keeps only the last 10 attempts');
 }
 
 /* ================================================================ */

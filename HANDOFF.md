@@ -6,9 +6,29 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v37 / harmony-v37** — live on GitHub Pages, commit `2bf0334` (pedagogy upgrades). Earlier: v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-16 · **Build: v38 / harmony-v38** — live on GitHub Pages (pedagogy items 6 + 7; the commit after 452d66c). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5). Earlier: v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
 
-## What changed this session (v36 → v37) — pedagogy review, items 1/2/3/5
+## What changed this session (v37 → v38) — pedagogy items 6 + 7
+6. **Daily drill → daily review** (openQuick rewritten; old manual root/reveal/self-score drill
+   removed). An auto-scored 10-trial mix on the jump engine (`jdReview`, one REVIEW_SKILLS id per
+   trial: unison, step, M3, m3, P4, P5, key3). Pool (`reviewPool`) = skills whose teaching lesson
+   is mastered + the skill of the lesson you're on now (`REVIEW_FRONT`), so it's useful from 1.1.
+   `planReview` covers every pool skill once, fills the rest by weight (`reviewWeight` = 0.5 +
+   staleness up to a week + 1.5 × recent miss rate), then shuffles. Misses replay the answer.
+   Finishing logs the streak (M.quick++) and saves per-skill history (last 10 + date) in
+   `meta().review`. Stopping mid-way doesn't log. Manual "log by hand" link kept. Drone holds stay
+   in the lessons (the jump engine can't run a drone hold).
+7. **Progressive lock window** (`LOCK_TIERS` / `lockTierFor` / `lockWindow`): the lamp — and every
+   hold scored from pdLocked, plus the 1.2 drift detector — is gentle ±35¢ (keep 45) in 1.1–1.4,
+   standard ±30¢ at cpA, tight ±24¢ (the old constants, so M2+ scoring unchanged) from 2.1 on.
+   Outside a lesson it follows nextLessonId(). The 🎯 readout now states the window, and 1.1 got a
+   readout. **Needs an on-device feel check** — ±35¢ is a judgement call.
+- Harness +22 (172 total), mutation-tested; two survivors found → tests tightened until caught.
+- Browser-verified (localhost, phone viewport): review mix chips (due flags), a full 10-trial
+  review (plan covers all 5 skills, misses say "wanted X" + replay, streak logged, stats saved);
+  a 30¢-sharp hold reads LOCKED in 1.1 and "a touch high" in 2.3.
+
+## What changed earlier this session (v36 → v37) — pedagogy review, items 1/2/3/5
 User hadn't been using the app; a full curriculum review found the spine sound but the app
 hard to START and one real content gap. Four upgrades shipped (items 4/6/7/8 deferred — see Open tasks):
 1. **Today landing screen** (`view='today'`, new first nav tab; startup IIFE + setup save/skip now
@@ -165,13 +185,9 @@ protects that from a stray auto-check.
 ## Open tasks / next steps
 - **On-device check of v37:** Today → one tap → tuner (and drone on 1.2/1.3/1.4/cpA/2.3) comes on
   with ONE mic prompt; drone stays audible in wired headphones. Then try 2.5's in-key drill.
-- **Deferred pedagogy items from the v37 review** (user picked 1/2/3/5 first):
+- **Deferred pedagogy items from the v37 review** (1/2/3/5 shipped v37, 6/7 shipped v38):
   4. A song taste earlier — 10 drill-only lessons before any music (e.g. Row Your Boat melody
      over the drone in M1; its first phrase in thirds right after 2.2).
-  6. Daily drill as spaced review — rotate mastered skills (hold, 3rd, other intervals, in-key
-     3rds) instead of always major thirds.
-  7. Progressive tuning tolerance — lock lamp grabs at ±24¢ everywhere; loosen to ~±35¢ in M1,
-     keep tight for 2.3 / checkpoints. Needs an on-device feel check.
   8. Harmony below the melody available in the songs (needs a second harmony line per song).
 - **[Task B] — DONE this session** (grace/auralee corrected + pinned in the harness; see above).
   Only optional extension left: the fix keeps each song at its current phrase length (grace =

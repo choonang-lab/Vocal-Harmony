@@ -44,6 +44,14 @@ only as an offline validation harness (see Testing), never at runtime.
   specific `stds` when met (`checkMet`/`evaluateAuto`). `paintLessonLog` renders live progress.
   All standards ticked → mastery. Scored paths are ALWAYS optional, added *beside* the manual
   version, never replacing it.
+- **Lock window is progressive** (`LOCK_TIERS`, `lockTierFor(id)`, `lockWindow()`): gentle ±35¢ in
+  1.1–1.4, standard ±30¢ at cpA, tight ±24¢ from 2.1 on (outside a lesson: the lesson you're on).
+  It drives the lamp, `pdLocked`, every `hold8` score and the 1.2 drift detector. Never hard-code
+  a lock threshold again — read `lockWindow()`.
+- **Daily review** (`openQuick`): auto-scored 10-trial mix on the jump engine (`jdReview`), drawn
+  from `reviewPool()` (mastered skills + the current lesson's skill) and weighted toward weak or
+  stale skills (`planReview`/`reviewWeight`); stats in `meta().review`. A new interval/pitch lesson
+  should add its skill to `REVIEW_SKILLS` (and `REVIEW_FRONT`) or it never gets reviewed.
 - **Checkpoints:** a checkpoint whose every std is auto-ticked (`cpAutoCovers` — cpA, cpB, cpC)
   passes without a recording and can be taken early as a **test-out** (`canChallenge`, opens even
   while locked). Passing ANY checkpoint masters its whole module (`passCheckpoint`). cpD/cpFinal
