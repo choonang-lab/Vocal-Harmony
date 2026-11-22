@@ -100,14 +100,14 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
 const wrapper = new Function(
   'with(this){\n' + js +
   '\n;return {' + EXPOSE.join(',') +
-  ',getS:function(){return S;},setS:function(v){S=v;},getKey:function(){return SONGKEY;},getTgt:function(){return pdTargetHz;}};}'
+  ',getJd:function(){return {state:jdState,early:jdEarly,results:jdResults};},setJd:function(o){jdActive=o.active!==false;jdState=o.state||"idle";jdReview=!!o.review;jdTgt=o.tgt;jdRoot=o.root;jdIv=o.iv;jdCue=o.cue||"root";jdInKey=false;jdResults=[];jdTrial=1;jdTrials=10;jdEarly=0;jdCap=[];},getS:function(){return S;},setS:function(v){S=v;},getKey:function(){return SONGKEY;},getTgt:function(){return pdTargetHz;}};}'
 );
 let A;
 try { A = wrapper.call(sandbox); }
@@ -892,6 +892,31 @@ console.log('\n▸ Scale-degree drill: key from a cadence, name the degree, reso
   ok(homes.every((p) => p.length <= 4), '…in at most three steps (the nearest do)');
   const card = A.streakProgHTML({ best: { '2': 7, '2k': 3 }, runs: [{ k: '2', n: 7 }, { k: '2k', n: 3 }] }, A.DG_LEVELS, 'k', 'Scale degrees', 'openDegTest', 'Go');
   ok(card.includes('2 runs') && card.includes('>7<') && card.includes('Level 2 · hard') && !card.includes('Level 1 · hard'), 'Progress card: bests per level, the harder mode only once tried');
+}
+
+/* ================================================================ */
+/*  v46 — THINK-FIRST GAP                                            */
+/* ================================================================ */
+console.log('\n▸ Think first: a silent gap between the cue and singing');
+{
+  eq([0, 2, 4, 3, -1, '2', undefined].map(A.thinkOf).join(), '0,2,4,0,0,0,0', 'only Off, 2 s and 4 s are valid gaps');
+  A.setThink(0); eq(A.thinkSecs(), 0, 'gap is off by default / when set off');
+  const fresh = () => A.setJd({ tgt: 4, root: 0, iv: 4 });
+  const hum = (n, hz) => { for (let i = 0; i < n; i++) A.feedJump(hz, true); };
+  fresh(); A.afterCue(); eq(A.getJd().state, 'listen', 'gap off: the cue goes straight to listening');
+  A.setThink(2); eq(A.thinkSecs(), 2, 'gap set to 2 s'); eq(A.meta().think, 2, '…and saved in meta');
+  fresh(); A.afterCue(); eq(A.getJd().state, 'think', 'gap on: the cue hands over to the silent think gap');
+  hum(12, A.freq(4)); eq(A.getJd().results.length, 0, 'singing in the gap is never scored as the answer');
+  eq(A.getJd().early, 12, '…but it is counted');
+  A.beginListen(); eq(A.getJd().state, 'listen', 'after the tick, listening opens');
+  hum(12, A.freq(4)); const r = A.getJd().results[0];
+  ok(r && r.pass && r.early === true, 'a clean answer still passes, flagged as hummed in the gap');
+  fresh(); A.afterCue(); hum(4, A.freq(4)); A.beginListen(); hum(12, A.freq(4));
+  ok(A.getJd().results[0].early === false, 'a few stray frames in the gap are not flagged');
+  fresh(); A.afterCue(); A.beginListen(); hum(12, A.freq(4)); A.beginListen(); eq(A.getJd().early, 0, 'humming while listening never counts as early');
+  A.setJd({ tgt: 4, root: 0, iv: 4, review: true }); A.afterCue(); eq(A.getJd().state, 'listen', 'the daily review skips the gap');
+  A.setJd({ tgt: 4, root: 0, iv: 4, active: false }); A.afterCue(); eq(A.getJd().state, 'idle', 'a stopped drill ignores a late cue timer');
+  A.setThink(0);
 }
 
 /* ================================================================ */

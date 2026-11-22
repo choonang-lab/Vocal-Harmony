@@ -97,6 +97,9 @@ melody), plus the Module-0 range probe.
 - Not a check kind: the standalone **Interval Ear Test** (v44, Practice tab, `openEarTest`) — the
   `et*` engine, sudden-death streaks stored in `S.__ear` (`best` per level+mode key, `runs` log),
   pure helpers `etPick`/`etRecord`. It never ticks lesson standards.
+- **Think first (v46):** jump-drill cues hand over through `afterCue()`, never straight to
+  `beginListen` — that is where the optional silent gap (`meta().think`, 0/2/4 s) lives. A new cue
+  type must call `setTimeout(afterCue, …)` too. Humming in the gap sets `early` on the result only.
 - Also not a check kind: the **Scale-degree drill** (v45, `openDegTest`, `dg*`, stored in `S.__deg`):
   cadence sets a key, name the degree, every answer resolves to do (`dgResolve`). It reuses
   `etRecord`, `etHistoryHTML` and `streakProgHTML` — a third streak test should too.

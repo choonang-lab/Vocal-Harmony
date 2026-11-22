@@ -484,6 +484,9 @@ div.ls{cursor:default;}
 .tbtn[disabled],.seg-b[disabled]{opacity:0.55;cursor:default;}
 .dg-grid .tbtn{flex-direction:column;gap:2px;line-height:1.1;}
 .dg-grid small{font-family:var(--f-mono);font-size:0.68rem;font-weight:600;color:var(--muted);}
+.think-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+.think-row .seg{flex:1;}
+.think-l{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -504,7 +507,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v45</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v46</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -577,7 +580,7 @@ const MODULES=[
   stds:['8 of 10: you sing mi after hearing do–re.'],
   auto:{checks:[{kind:'jumpN',interval:'h3',iv:4,cue:'half',steady:true,intName:'3rd · after do–re',trials:10,need:8,stds:[0]}]}},
  {id:'2.2',t:'Jump to It',f:'Hear do, sing mi directly — first with a steady root, then with random roots.',time:'~15 min',covers:'The core skill',tool:'interval',intv:4,anchor:4,
-  tasks:['Start with “steady root”: the same do every trial. Hear it, think “Oh when”, and sing the second note.','Then “random roots”: a new do every time, so you cannot lean on memory — this is the real skill.','This is the highest-value drill in the program. When short on time, do this.'],
+  tasks:['Start with “steady root”: the same do every trial. Hear it, think “Oh when”, and sing the second note.','Then “random roots”: a new do every time, so you cannot lean on memory — this is the real skill.','This is the highest-value drill in the program. When short on time, do this.','If the note won’t come when you need it, set Think first to 2 s: hear it in your head during the silence, then sing on the tick. Shorten the gap as it gets easy.'],
   stds:['8 of 10 with a steady root.','8 of 10 random roots: the third sung correctly, jumping straight to it.'],
   auto:{checks:[{kind:'jumpN',interval:'s3',iv:4,cue:'root',steady:true,intName:'3rd · steady root',trials:10,need:8,stds:[0]},{kind:'jumpN',interval:4,intName:'3rd · random roots',trials:10,need:8,stds:[1]}]}},
  {id:'2.6',t:'First Thirds in a Song',f:'Your first real harmony: the opening line of Row Your Boat, a third above the tune.',time:'~10 min',covers:'Thirds in a real song',tool:'row',song:'row1',
@@ -1418,9 +1421,10 @@ function jumpDrillHTML(){
  }
  const how=[...new Set(jcs.map(c=>{const t=jumpHow(c);return t.charAt(0).toUpperCase()+t.slice(1)+'.';}))].join(' ');
  return '<div class="t-label">'+label+'</div>'+
+  '<div class="think-row"><span class="think-l">Think first</span><div class="seg" role="group" aria-label="Think-first gap">'+[0,2,4].map(v=>'<button class="seg-b think-b" data-t="'+v+'" aria-pressed="'+(thinkSecs()===v)+'" onclick="setThink('+v+')">'+(v?v+' s':'Off')+'</button>').join('')+'</div></div>'+
   '<div class="hold" style="flex-wrap:wrap;gap:8px">'+btns+'<div class="hold-meter"><div id="jdTrial" style="font-size:13px;opacity:.8">—</div><div id="jdScore" style="font:700 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace">0 / '+tot+'</div></div></div>'+
   '<div id="jdState" style="min-height:18px;font-size:13px;text-align:center;margin:6px 0;font-weight:600"></div>'+
-  '<div class="t-hint">'+how+' A miss plays the right answer. Your best session counts. Headphones keep the played notes out of the mic.</div>';
+  '<div class="t-hint">'+how+' A miss plays the right answer. Your best session counts. Headphones keep the played notes out of the mic. <b>Think first</b> adds a silent gap after the cue: hear the note in your head, then sing on the tick.</div>';
 }
 function nextTrial(){
  clearJumpTimers();
@@ -1435,20 +1439,39 @@ function nextTrial(){
   const echo=jdCue==='echo';
   paintJump('Trial '+jdTrial+' — key of '+keyName(jdKey)+': “do”, then '+degName(d)+(echo?', then '+degName(d+keyThirdAbove(d)):'')+'…');
   tone(jdKey,0.45,0,0.2);tone(jdRoot,0.9,0.55,0.24);if(echo)tone(jdTgt,0.9,1.55,0.24);
-  jdT1=setTimeout(beginListen,echo?2600:1700);
+  jdT1=setTimeout(afterCue,echo?2600:1700);
   return;
  }
  jdRoot=jdSteady?jdSteadyRoot:pickRoot();jdTgt=jdRoot+jdIv;setTarget(jdTgt);
- if(jdCue==='echo'){paintJump('Trial '+jdTrial+' — listen: do, then the '+intervalName(jdIv)+'…');tone(jdRoot,0.7,0,0.24);tone(jdTgt,0.9,0.8,0.24);jdT1=setTimeout(beginListen,1900);}
- else if(jdCue==='half'){paintJump('Trial '+jdTrial+' — listen: do, re…');tone(jdRoot,0.6,0,0.24);tone(jdRoot+2,0.6,0.7,0.24);jdT1=setTimeout(beginListen,1500);}
- else{paintJump('Trial '+jdTrial+' — playing '+(jdSteady?'do':'the root')+', listen…');tone(jdRoot,0.9,0,0.24);jdT1=setTimeout(beginListen,1150);}
+ if(jdCue==='echo'){paintJump('Trial '+jdTrial+' — listen: do, then the '+intervalName(jdIv)+'…');tone(jdRoot,0.7,0,0.24);tone(jdTgt,0.9,0.8,0.24);jdT1=setTimeout(afterCue,1900);}
+ else if(jdCue==='half'){paintJump('Trial '+jdTrial+' — listen: do, re…');tone(jdRoot,0.6,0,0.24);tone(jdRoot+2,0.6,0.7,0.24);jdT1=setTimeout(afterCue,1500);}
+ else{paintJump('Trial '+jdTrial+' — playing '+(jdSteady?'do':'the root')+', listen…');tone(jdRoot,0.9,0,0.24);jdT1=setTimeout(afterCue,1150);}
+}
+/* Think first (v46): an optional silent gap between the cue and singing. You hear the note in
+   your head, then a soft tick (C7, above the 1100 Hz tracking range) says "sing". Humming in the
+   gap is noted on the result, not failed: the onset check already catches groping for the note.
+   Lesson drills only; the daily review stays quick. Setting lives in meta().think (0, 2 or 4 s). */
+let jdEarly=0,jdWasEarly=false;
+function thinkOf(v){return [0,2,4].includes(v)?v:0;}
+function thinkSecs(){return thinkOf(meta().think);}
+function setThink(v){meta().think=thinkOf(v);persist();document.querySelectorAll('.think-b').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.t===meta().think)));}
+function thinkWhat(){return jdCue==='echo'?'it again':(jdCue==='half'?'mi':(jdInKey?'the 3rd above '+degName(jdDeg):'the '+intervalName(jdIv)));}
+function afterCue(){if(!jdActive)return;if(!jdReview&&thinkSecs()>0)beginThink();else beginListen();}
+function beginThink(){jdState='think';jdEarly=0;thinkTick(thinkSecs());}
+function thinkTick(left){
+ if(jdState!=='think')return;
+ if(left<=0){jdState='go';tone(36,0.07,0,0.12);jdT1=setTimeout(beginListen,200);return;}
+ paintJump('Trial '+jdTrial+' — think it, don’t sing: hear '+thinkWhat()+' in your head… '+left);
+ jdT2=setTimeout(()=>thinkTick(left-1),1000);
 }
 function beginListen(){
+ jdWasEarly=jdEarly>=6;jdEarly=0;
  jdState='listen';jdCap=[];jdArmed=true;jdSil=0;
  paintJump('Trial '+jdTrial+' — '+(jdCue==='echo'?'sing it back now':(jdCue==='half'?'now sing mi':(jdInKey?('sing the 3rd above '+degName(jdDeg)+' now'):('sing '+(jdReview?jdIntName:'the '+intervalName(jdIv))+' now'))))); 
  jdT2=setTimeout(()=>{if(jdState==='listen')judgeTrial(true);},6000);
 }
 function feedJump(hz,voiced){
+ if(jdActive&&jdState==='think'){if(voiced&&hz>0)jdEarly++;return;}   // humming in the think gap
  if(!jdActive||jdState!=='listen'||!jdArmed)return;
  if(voiced&&hz>0){
   jdSil=0;jdCap.push(hz);if(jdCap.length>60)jdCap.shift();
@@ -1473,13 +1496,13 @@ function judgeTrial(noAttempt){
   note=hzToNote(settleHz).name;
  }
  const pass=inTune&&jumped;
- jdResults.push({inTune:inTune,jumped:jumped,pass:pass,note:note,skill:jdReview?jdPlan[jdTrial-1]:null});
+ jdResults.push({inTune:inTune,jumped:jumped,pass:pass,note:note,skill:jdReview?jdPlan[jdTrial-1]:null,early:jdWasEarly});
  jdState='judge';
  const passes=jdResults.filter(r=>r.pass).length;
  setJumpScore(passes,jdTrials);
  const ans=jdInKey?('   ·   '+degName(jdDeg)+' → '+degName(jdDeg+keyThirdAbove(jdDeg))+' ('+(keyThirdAbove(jdDeg)===3?'minor':'major')+' 3rd)'):'';
  const want=jdReview&&!pass&&!jdInKey?('   ·   wanted '+nlabel(jdTgt)):'';
- paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?(jdIv===0?' — you slid into it':' — you walked up to it'):' — off pitch'))))+ans+want+'   ·   '+passes+'/'+jdResults.length+' so far');
+ paintJump((noAttempt?'No note heard ✗':(pass?('✓ '+note+' — clean jump'):('✗ '+note+(inTune?(jdIv===0?' — you slid into it':' — you walked up to it'):' — off pitch'))))+ans+want+(jdWasEarly?'   ·   you hummed in the think gap — keep it inside':'')+'   ·   '+passes+'/'+jdResults.length+' so far');
  /* hear the answer: always for in-key (the melody+harmony pair), and after a miss in review */
  const reveal=jdInKey||!pass;   // a miss always replays the right answer, so every trial teaches
  if(reveal){tone(jdRoot,1.0,0.15,0.17);if(jdTgt!==jdRoot)tone(jdTgt,1.0,0.15,0.17);}

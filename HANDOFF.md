@@ -6,7 +6,23 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-22 · **Build: v45 / harmony-v45** — live on GitHub Pages (Scale-degree drill). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-22 · **Build: v46 / harmony-v46** — live on GitHub Pages (Think-first gap). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v45 → v46) — Think-first gap in the jump drills
+User can't imagine the harmony note before singing; every drill let them sing at once, so the
+voice could grope while the ear never led. Now an optional silent gap trains inner hearing.
+- Every jump-drill panel (Echo, Half a Walk, Jump to It, the 5th, the 4th, minor thirds, Thirds in a
+  Key) has a "Think first" control: Off / 2 s / 4 s, saved in `meta().think` (`thinkOf` validates).
+- Flow: cue → `afterCue` → `beginThink` (state 'think', countdown "hear the 3rd in your head… 2")
+  → a soft tick (C7, above the 1100 Hz tracking range) → 200 ms → `beginListen`. Gap off = straight
+  to listening, exactly as before. The daily review skips the gap (stays quick).
+- Humming in the gap (≥ 6 voiced frames) is never scored as the answer; it is flagged on the result
+  (`early`) and named in the message, not failed — the onset check already catches groping.
+- Jump to It has a task line pointing at it. Remaining idea from the pedagogy review, NOT built:
+  sing back each note of a two-note sound (voice extraction).
+- Harness: 306 assertions (+14), with `getJd`/`setJd` hooks in the wrapper to drive the jump state
+  machine. Mutation-tested; one survivor (dropping the think-branch `return`) is equivalent.
+- On-device still to check: whether the tick is audible but unobtrusive, and whether 2 s feels right.
 
 ## What changed this session (v44 → v45) — Scale-degree drill
 Pedagogy review after v44: interval naming from random roots strips the key away, but harmony
