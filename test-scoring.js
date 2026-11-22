@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -867,6 +867,31 @@ console.log('\n▸ Interval ear test: random roots, sudden-death streaks');
   eq(st.runs.length, 5, 'every finished run is logged');
   for (let i = 0; i < 300; i++) A.etRecord(st, '2', i % 7, 'x');
   eq(st.runs.length, 200, 'run log is capped at 200');
+}
+
+/* ================================================================ */
+/*  v45 — SCALE-DEGREE DRILL                                         */
+/* ================================================================ */
+console.log('\n▸ Scale-degree drill: key from a cadence, name the degree, resolve to do');
+{
+  let seed = 5; const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  let prev = 99, moved = true, inRange = true; const seen = new Set();
+  for (let i = 0; i < 400; i++) { const k = A.dgPickKey(prev, rnd); if (k === prev) moved = false; if (k < -7 || k > 4) inRange = false; seen.add(k); prev = k; }
+  ok(moved, 'a new key is never the same as the last one');
+  ok(inRange, 'keys stay between F3 and E4, so every note sits in a comfortable range');
+  eq(seen.size, 12, 'all twelve keys come up');
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11];
+  eq(A.DG_LEVELS[1].choices.join(), '0,4,7', 'Level 1 is do, mi, sol');
+  ok(A.DG_LEVELS[3].choices.join() === MAJOR.join(), 'Level 3 is the whole major scale');
+  ok([1, 2, 3].every((l) => A.DG_LEVELS[l].choices.every((v) => MAJOR.includes(v) && A.DEGN[v] && A.DG_NUM[v])), 'every choice is in the key and has a name and a number');
+  ok(A.DG_LEVELS[2].choices.every((v) => A.DG_LEVELS[3].choices.includes(v)) && A.DG_LEVELS[1].choices.every((v) => A.DG_LEVELS[2].choices.includes(v)), 'each level keeps the previous level\'s notes');
+  const homes = MAJOR.map((d) => A.dgResolve(d));
+  ok(homes.every((p, i) => p[0] === MAJOR[i]), 'each resolution starts on the note just heard');
+  ok(homes.every((p) => p[p.length - 1] === 0 || p[p.length - 1] === 12), '…and ends on do');
+  ok(homes.every((p) => p.every((v, i) => i === 0 || (Math.abs(v - p[i - 1]) <= 2 && MAJOR.includes(v % 12)))), '…moving by scale step, inside the key');
+  ok(homes.every((p) => p.length <= 4), '…in at most three steps (the nearest do)');
+  const card = A.streakProgHTML({ best: { '2': 7, '2k': 3 }, runs: [{ k: '2', n: 7 }, { k: '2k', n: 3 }] }, A.DG_LEVELS, 'k', 'Scale degrees', 'openDegTest', 'Go');
+  ok(card.includes('2 runs') && card.includes('>7<') && card.includes('Level 2 · hard') && !card.includes('Level 1 · hard'), 'Progress card: bests per level, the harder mode only once tried');
 }
 
 /* ================================================================ */

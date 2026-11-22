@@ -97,6 +97,9 @@ melody), plus the Module-0 range probe.
 - Not a check kind: the standalone **Interval Ear Test** (v44, Practice tab, `openEarTest`) — the
   `et*` engine, sudden-death streaks stored in `S.__ear` (`best` per level+mode key, `runs` log),
   pure helpers `etPick`/`etRecord`. It never ticks lesson standards.
+- Also not a check kind: the **Scale-degree drill** (v45, `openDegTest`, `dg*`, stored in `S.__deg`):
+  cadence sets a key, name the degree, every answer resolves to do (`dgResolve`). It reuses
+  `etRecord`, `etHistoryHTML` and `streakProgHTML` — a third streak test should too.
 - Shared pure scorers — **reuse, don't duplicate:** `classifyMemory` (best-fit transposition),
   `classifyHarmony` (on-harmony vs collapse-onto-melody), `classifyImprov` (consonance + direction).
 - Multi-drill lessons: `rowRunOk` matches run-type to check-type so a memory run and a harmony

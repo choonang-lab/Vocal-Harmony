@@ -6,7 +6,26 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-22 · **Build: v44 / harmony-v44** — live on GitHub Pages (Interval Ear Test). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-22 · **Build: v45 / harmony-v45** — live on GitHub Pages (Scale-degree drill). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v44 → v45) — Scale-degree drill
+Pedagogy review after v44: interval naming from random roots strips the key away, but harmony
+singers work from the key ("melody on mi, so I sing sol"). Scale-degree hearing was the biggest
+gap — it also dissolves the major/minor-3rd confusion and is what Module 5 assumes. Two further
+ideas were proposed and NOT built yet: singing each note of a two-note sound back (extract a voice),
+and an optional "think first" silent gap before singing in the Echo/Jump drills (inner hearing).
+- Practice tab → "Scale-degree drill" (`openDegTest`, no mic). Each round: a I–IV–V–I cadence
+  (`dgCadence`, close voicing + bass) sets a major key, then one note; name it do…ti (buttons show
+  the solfège and the degree number). Every answer walks the note home to do by step
+  (`dgResolve`: fa and below fall, sol and above rise) — the teaching device.
+- Levels: 1 = do/mi/sol, 2 = + re/fa, 3 = the whole scale. Default keeps one key per run;
+  "New key every round (harder)" changes it each round (`dgPickKey`, F3–E4, never repeats).
+- Sudden death like the ear test; stored in `S.__deg` via the shared `etRecord` (keys '1', '1k', …).
+  The run-history chart (`etHistoryHTML`, now takes a label) and the Progress card
+  (`streakProgHTML`) are shared by both streak tests. 2.5 Thirds in a Key points to the drill.
+- Harness: 292 assertions (+12), mutation-tested (repeat key, long resolution, chromatic step,
+  fi in the scale, hard-mode row always shown — all caught).
+- On-device still to check: the cadence's balance and loudness on the phone speaker vs earphones.
 
 ## What changed this session (v43 → v44) — Interval Ear Test (streak mode)
 User asked for the Hear the Third quiz as a separate test to come back to, harder, with the root
