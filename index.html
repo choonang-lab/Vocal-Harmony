@@ -487,6 +487,15 @@ div.ls{cursor:default;}
 .think-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
 .think-row .seg{flex:1;}
 .think-l{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.rt{margin-top:16px;}
+.rt-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 0;border:0;border-top:1px solid var(--border);background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer;}
+.card-eyebrow + .rt-row{margin-top:10px;}
+.rt-row[disabled]{cursor:default;opacity:0.6;}
+.rt-n{flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-line);font-family:var(--f-mono);font-size:0.8rem;font-weight:700;}
+.rt-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.rt-t{font-size:0.95rem;font-weight:700;}
+.rt-s{font-size:0.78rem;color:var(--muted);line-height:1.35;}
+.rt-row .ico{transform:rotate(-90deg);color:var(--muted);flex:0 0 auto;}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -507,7 +516,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v47</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v48</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -2563,12 +2572,28 @@ function reviewAccHTML(){
  return h+'<button class="cta-sec" onclick="openQuick()">Do today’s 5-minute review</button></section>';
 }
 /* ---- Practice Room ---- */
+/* Ear routine (v48): the listening/singing drills in the order to practise them — hear the key,
+   sing from the inner ear, find a voice inside harmony, then a quick check. Step 2 opens Jump to It,
+   or the furthest of Echo the Third / Half a Walk while it is still locked. */
+const RT_SING=['2.2','2.half','2.echo'];
+function rtSingId(){return RT_SING.find(id=>statusOf(id)!=='locked')||null;}
+function rtThinkDefault(M){if(M.think===undefined)M.think=2;return M.think;}   // first time only; a chosen Off stays Off
+function openRoutineSing(){const id=rtSingId();if(!id)return;rtThinkDefault(meta());persist();openLesson(id);}
+function routineHTML(){
+ const sid=rtSingId(),sl=sid&&lessonById(sid);
+ const row=(n,t,sub,on,dis)=>'<button class="rt-row" onclick="'+on+'"'+(dis?' disabled':'')+'><span class="rt-n">'+n+'</span><span class="rt-txt"><span class="rt-t">'+t+'</span><span class="rt-s">'+sub+'</span></span>'+(dis?'':ico('chevd'))+'</button>';
+ const best=b=>b?' · best '+b:'';
+ return '<section class="card rt"><div class="card-eyebrow"><span>Ear routine · in this order</span><span>~12 min</span></div>'+
+  row(1,'Scale degrees','Hear where a note sits in the key · 3 min'+best(degBestAny()),'openDegTest()')+
+  row(2,sl?(sl.t+' — think first'):'Jump to It — think first',sl?('Hear it in your head, then sing · 5 min · lesson '+lessonNo(sid)+(sid!=='2.2'?' (Jump to It is still locked)':'')):'Unlocks at Echo the Third (lesson '+lessonNo('2.echo')+')','openRoutineSing()',!sl)+
+  row(3,'Pick it out','Sing one note out of two · 3 min'+best(vxBestAny()),'openVoiceX()')+
+  row(4,'Interval ear test','Optional quick check · 2 min'+best(etBestAny()),'openEarTest()')+
+  '</section>';
+}
 function renderRoom(){
  return '<div class="page-head"><h1 class="display">Practice</h1></div><p class="page-sub">The sound tools from the lessons, in one place — for warm-ups and free practice. Warm up first: gentle humming, lip trills, sirens low to high.</p>'+
+ routineHTML()+
  '<button class="cta" onclick="openQuick()">'+ico('mic')+'Start the 5-minute daily review</button>'+
- '<button class="cta-sec" onclick="openDegTest()">Scale-degree drill — hear where a note sits in the key'+(degBestAny()?' · best '+degBestAny():'')+'</button>'+
- '<button class="cta-sec" onclick="openVoiceX()">Pick it out — sing one note of two'+(vxBestAny()?' · best '+vxBestAny():'')+'</button>'+
- '<button class="cta-sec" onclick="openEarTest()">Interval ear test — how many in a row?'+(etBestAny()?' · best '+etBestAny():'')+'</button>'+
  '<button class="cta-sec" onclick="go(\'ref\')">Reference — intervals, song ladder &amp; craft</button>'+
  toolHTML('tone')+toolHTML('interval')+toolHTML('row')+metroHTML()+
  '<div class="tool-panel"><div class="t-title">♪ Quick Recorder</div>'+recorderHTML()+'</div>'+

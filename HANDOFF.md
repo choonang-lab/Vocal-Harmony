@@ -6,7 +6,17 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-22 · **Build: v47 / harmony-v47** — live on GitHub Pages (Pick It Out — voice extraction). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-22 · **Build: v48 / harmony-v48** — live on GitHub Pages (Ear routine on the Practice tab). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v47 → v48) — Ear routine on the Practice tab
+User asked for Jump to It on the Practice tab, in the order to practise everything.
+- The three loose Practice buttons became one numbered "Ear routine · in this order" card at the top
+  (`routineHTML`): 1 Scale degrees → 2 Jump to It, think first → 3 Pick it out → 4 Interval ear test
+  (optional). Daily review CTA and Reference follow it.
+- Step 2 follows progress (`rtSingId`): Jump to It once unlocked, else the furthest of Half a Walk /
+  Echo the Third, else disabled with "Unlocks at Echo the Third". Opening it from the routine sets
+  Think first to 2 s the first time only (`rtThinkDefault`); a chosen Off stays Off.
+- Harness: 331 assertions (+9), mutation-tested.
 
 ## What changed this session (v46 → v47) — Pick It Out (voice extraction)
 Last of the three pedagogy-review ideas (degree hearing v45, think-first v46): hearing one line

@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -945,6 +945,26 @@ console.log('\n▸ Pick it out: two notes together, sing each one');
   eq(A.vxRange().join(), '-9,5', 'default range without a profile');
   const zero = A.streakProgHTML({ best: {}, runs: [{ k: '1', n: 0 }] }, A.VX_LEVELS, 'm', 'Pick it out', 'openVoiceX', 'Go');
   ok(zero.includes('skl-v">0<') && zero.includes('skl-v">—<'), 'Progress card: a level with only zero runs shows 0, an untried level shows —');
+}
+
+/* ================================================================ */
+/*  v48 — EAR ROUTINE ON THE PRACTICE TAB                            */
+/* ================================================================ */
+console.log('\n▸ Ear routine: drills in practice order, step 2 follows your progress');
+{
+  const saved = A.getS(); A.setS({});
+  const masterUpTo = (stop) => { for (const id of A.FLAT) { if (id === stop) break; A.st(id).mastered = true; } };
+  eq(A.rtSingId(), null, 'brand new: the singing step waits (Echo the Third still locked)');
+  ok(A.routineHTML().includes('Unlocks at Echo the Third'), '…and says where it unlocks');
+  masterUpTo('2.echo'); eq(A.rtSingId(), '2.echo', 'at Echo the Third: step 2 opens it');
+  masterUpTo('2.half'); eq(A.rtSingId(), '2.half', 'at Half a Walk: step 2 opens it');
+  masterUpTo('2.2'); eq(A.rtSingId(), '2.2', 'at Jump to It: step 2 opens Jump to It');
+  masterUpTo('2.3'); eq(A.rtSingId(), '2.2', 'past it: still Jump to It');
+  const h = A.routineHTML(), at = (t) => h.indexOf(t);
+  ok(at('Scale degrees') < at('Jump to It') && at('Jump to It') < at('Pick it out') && at('Pick it out') < at('Interval ear test'), 'order: scale degrees → Jump to It → pick it out → ear test');
+  const M1 = {}; eq(A.rtThinkDefault(M1), 2, 'first routine visit turns Think first on at 2 s');
+  const M2 = { think: 0 }; eq(A.rtThinkDefault(M2), 0, '…but a chosen Off stays Off');
+  A.setS(saved);
 }
 
 /* ================================================================ */
