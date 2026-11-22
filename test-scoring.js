@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -839,6 +839,34 @@ group('Module 2 rebuild: order, numbering, checks, carried-over progress');
   ok(['4', '7', '5', 'm3'].every((k) => A.ANCHORS[k] && A.ANCHORS[k].notes.length >= 2), 'every interval has an anchor tune');
   eq(A.ANCHORS[5].notes[1][0] - A.ANCHORS[5].notes[0][0], 5, 'the 4th anchor opens with a 4th (“Here comes”)');
   eq(A.ANCHORS.m3.notes[0][0] - A.ANCHORS.m3.notes[1][0], 3, 'the minor-3rd anchor opens sol→mi, a minor 3rd down');
+}
+
+/* ================================================================ */
+/*  v44 — INTERVAL EAR TEST (streak mode)                            */
+/* ================================================================ */
+console.log('\n▸ Interval ear test: random roots, sudden-death streaks');
+{
+  let seed = 11; const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  for (const lv of [1, 2, 3]) {
+    const ch = A.ET_LEVELS[lv].choices; let prev = 99, moved = true, inRange = true, seen = new Set();
+    for (let i = 0; i < 400; i++) { const p = A.etPick(ch, prev, rnd); if (p.root === prev) moved = false; if (p.root < -12 || p.root + p.iv > 12) inRange = false; if (!ch.includes(p.iv)) inRange = false; seen.add(p.iv); prev = p.root; }
+    ok(moved, 'Level ' + lv + ': the root moves every round');
+    ok(inRange, 'Level ' + lv + ': both notes stay within C3–C5 and the interval is one of the level\'s choices');
+    eq(seen.size, ch.length, 'Level ' + lv + ': every choice comes up');
+  }
+  eq(A.ET_LEVELS[1].choices.join(), '2,4,7', 'Level 1 is the Hear the Third set (step, 3rd, 5th)');
+  ok(A.ET_LEVELS[3].choices.length > A.ET_LEVELS[2].choices.length && A.ET_LEVELS[2].choices.length > A.ET_LEVELS[1].choices.length, 'each level adds choices');
+  ok(A.ET_LEVELS[3].choices.every((v) => A.IQ_SHORT[v] && A.IQ_NAMES[v]), 'every choice has an answer label and a name');
+  eq(A.etKey(2, true), '2t', 'together mode keeps its own best');
+  const st = { best: {}, runs: [] };
+  let r = A.etRecord(st, '1', 4, '2026-11-22'); ok(r.newBest && st.best['1'] === 4, 'first run sets the best');
+  r = A.etRecord(st, '1', 2, '2026-11-22'); ok(!r.newBest && st.best['1'] === 4 && r.best === 4, 'a shorter run keeps the best');
+  r = A.etRecord(st, '1', 4, '2026-11-22'); ok(!r.newBest, 'equalling the best is not a new best');
+  r = A.etRecord(st, '1t', 1, '2026-11-22'); ok(r.newBest && st.best['1'] === 4 && st.best['1t'] === 1, 'modes keep separate bests');
+  r = A.etRecord(st, '1', 0, '2026-11-22'); ok(!r.newBest && st.best['1'] === 4, 'a zero run is logged, best unchanged');
+  eq(st.runs.length, 5, 'every finished run is logged');
+  for (let i = 0; i < 300; i++) A.etRecord(st, '2', i % 7, 'x');
+  eq(st.runs.length, 200, 'run log is capped at 200');
 }
 
 /* ================================================================ */

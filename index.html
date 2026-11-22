@@ -474,6 +474,19 @@ div.ls{cursor:default;}
 .pd-leak b{display:block;margin-bottom:2px;}
 .ls-part{font-family:var(--f-mono);font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:12px 0 6px;border-top:1px solid var(--border);}
 .ls-part + .ls{border-top:0;}
+.et-sub{text-align:center;font-size:0.8rem;color:var(--muted);margin-top:8px;}
+.et-score{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 6px;text-align:center;}
+.et-n{font-size:3rem;font-weight:800;line-height:1;letter-spacing:-0.02em;color:var(--text);}
+.et-best{color:var(--text2);}
+.et-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:12px;}
+.et-grid .tbtn{min-height:52px;font-size:0.95rem;}
+.et-msg{min-height:22px;text-align:center;font-size:0.88rem;font-weight:600;margin-top:12px;color:var(--text2);line-height:1.4;}
+.tbtn[disabled],.seg-b[disabled]{opacity:0.55;cursor:default;}
+.et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
+.et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
+.et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
+.et-bar.best i{background:var(--accent);}
+.et-bar span{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;color:var(--text2);min-height:14px;}
 @media(min-width:769px){.tabbar{max-width:760px;margin:0 auto;border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;}}
 </style>
 <script id="theme-boot">
@@ -489,7 +502,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v43</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v44</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -550,7 +563,7 @@ const MODULES=[
   stds:['You can land the third by walking up, from any root in your range.'],
   auto:{checks:[{kind:'stepSeq',pattern:[0,2,4],lockDeg:4,stepTol:45,lockTol:25,need:2,require:'both',stds:[0]}]}},
  {id:'2.hear',t:'Hear the Third',f:'Before you sing it, learn to recognise it: was that jump a 3rd?',time:'~5 min',covers:'Ear training',tool:'interval',intv:4,anchor:4,
-  tasks:['Press “Hear the anchor” — “Oh when the saints”. Its first two notes, “Oh when”, go do up to mi: a major 3rd. That is the sound you are learning.','Start the listening quiz: the app plays two notes and you tap what the jump was — a step, a 3rd or a 5th. Nothing to sing yet.','A wrong answer replays the right one, so every round teaches. One quiz a day until you pass.'],
+  tasks:['Press “Hear the anchor” — “Oh when the saints”. Its first two notes, “Oh when”, go do up to mi: a major 3rd. That is the sound you are learning.','Start the listening quiz: the app plays two notes and you tap what the jump was — a step, a 3rd or a 5th. Nothing to sing yet.','A wrong answer replays the right one, so every round teaches. One quiz a day until you pass.','Once you pass, keep sharpening on Practice → Interval ear test: the root jumps every round, and it counts how many you get in a row.'],
   stds:['8 of 10: you can tell a 3rd from a step and a 5th by ear.'],
   auto:{checks:[{kind:'intervalQuiz',choices:[2,4,7],target:4,rounds:10,need:8,stds:[0]}]}},
  {id:'2.echo',t:'Echo the Third',f:'Hear do, then mi — sing the mi straight back. Copying comes before finding.',time:'~10 min',covers:'Imitation',tool:'interval',intv:4,anchor:4,
@@ -885,7 +898,7 @@ async function togglePitch(hostId){
 }
 function pdError(host,msg){const h=document.getElementById(host);if(h){const c=h.querySelector('.pd-cents');if(c)c.textContent='mic blocked';let box=h.querySelector('.pd-msg');if(box){box.textContent=msg;box.classList.add('show');}}showToast('Mic blocked — see the tuner panel');}
 function clearPdMsg(){const h=pdHost&&document.getElementById(pdHost);if(h){const box=h.querySelector('.pd-msg');if(box){box.classList.remove('show');box.textContent='';}}}
-function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetIQ();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
+function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetIQ();resetET();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
 function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.innerHTML=ico('mic')+(on?'Tuner on — tap to stop':'Start tuner');b.classList.toggle('on',on);});}
 function autoCorrelate(buf,sr,minClarity){
  const SIZE=buf.length;
@@ -1515,6 +1528,73 @@ function intervalQuizHTML(){const l=curId&&lessonById(curId),c=l&&iqCheck(l);if(
 const ANCHORS={4:{label:'“Oh when the saints”',notes:[[0,0.35],[4,0.35],[5,0.35],[7,1.1]]},7:{label:'“Twinkle, twinkle”',notes:[[0,0.4],[0,0.4],[7,0.4],[7,0.9]]},5:{label:'“Here comes the bride”',notes:[[0,0.55],[5,0.4],[5,0.25],[5,1.0]]},m3:{label:'the “nyah-nyah” chant',notes:[[7,0.45],[4,0.45],[9,0.45],[7,0.45],[4,0.9]]}};
 function anchorHTML(){const l=curId&&lessonById(curId);if(!l||l.anchor==null||!ANCHORS[l.anchor])return '';return '<div class="t-row"><button class="tbtn tog" onclick="playAnchor()">'+ico('play')+'Hear the anchor — '+ANCHORS[l.anchor].label+'</button></div>';}
 function playAnchor(){const l=curId&&lessonById(curId),a=l&&ANCHORS[l.anchor];if(!a)return;const r=(jdActive&&jdSteady&&!jdInKey)?jdSteadyRoot:TS.root;let t=0;a.notes.forEach(n=>{tone(r+n[0],n[1]*0.95,t,0.22);t+=n[1];});}
+/* ===================== INTERVAL EAR TEST (Practice tab, no mic) =====================
+   A test to come back to. The root jumps every round, one miss ends the run, and the score is how
+   many you named in a row. Three levels of choices, plus a harder mode with both notes at once.
+   Runs and best streaks live in S.__ear, so they are part of Backup. */
+const ET_LEVELS={1:{name:'Level 1',sub:'step · 3rd · 5th',choices:[2,4,7]},2:{name:'Level 2',sub:'+ minor 3rd · 4th',choices:[2,3,4,5,7]},3:{name:'Level 3',sub:'+ 6th · octave',choices:[2,3,4,5,7,9,12]}};
+let etActive=false,etState='idle',etStreak=0,etIv=4,etRoot=99,etLevel=1,etTog=false,etTimer=null;
+function earStore(){if(!S.__ear)S.__ear={best:{},runs:[]};return S.__ear;}
+function etKey(level,tog){return String(level)+(tog?'t':'');}
+/* pure: the next round — any interval of the level, from a root that moves every round */
+function etPick(choices,prevRoot,rnd){rnd=rnd||Math.random;const iv=choices[Math.floor(rnd()*choices.length)],lo=-12,hi=12-iv;let root=prevRoot;for(let i=0;i<8&&(root===prevRoot||root<lo||root>hi);i++)root=lo+Math.floor(rnd()*(hi-lo+1));return {iv:iv,root:Math.max(lo,Math.min(hi,root))};}
+/* pure: log a finished run; says whether it beat the best for that level + mode */
+function etRecord(store,key,n,day){const prev=store.best[key]||0;store.runs.push({d:day,k:key,n:n});if(store.runs.length>200)store.runs.shift();if(n>prev)store.best[key]=n;return {best:Math.max(prev,n),newBest:n>prev};}
+function etPlay(){if(etTog){tone(etRoot,1.3,0,0.17);tone(etRoot+etIv,1.3,0,0.17);}else{tone(etRoot,0.65,0,0.22);tone(etRoot+etIv,0.85,0.75,0.22);}}
+function resetET(){if(etTimer)clearTimeout(etTimer);etTimer=null;etActive=false;etState='idle';}
+function openEarTest(){
+ curId=null;stopDrone();stopPitch();resetET();
+ document.getElementById('dCrumb').textContent='Practice · Ear test';
+ document.getElementById('dBody').innerHTML='<h1 class="d-title">Interval Ear Test</h1><div class="d-focus">How many intervals can you name in a row? The root jumps every round, and one miss ends the run. Nothing to sing — just listen.</div><div id="etBody"></div>';
+ paintET();
+ document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
+}
+function setETLevel(l){if(etActive)return;etLevel=l;etState='idle';paintET();}
+function toggleETTog(){if(etActive)return;etTog=!etTog;etState='idle';paintET();}
+function startET(){etActive=true;etStreak=0;etRoot=99;nextET();}
+function nextET(){if(etTimer)clearTimeout(etTimer);etTimer=null;const p=etPick(ET_LEVELS[etLevel].choices,etRoot);etIv=p.iv;etRoot=p.root;etState='answer';paintET('Round '+(etStreak+1)+' — what was the jump?');etPlay();}
+function answerET(v){
+ if(!etActive||etState!=='answer')return;
+ if(v===etIv){etStreak++;etState='reveal';paintET('✓ '+IQ_SHORT[v]+' — '+etStreak+' in a row');etTimer=setTimeout(nextET,750);return;}
+ etActive=false;etState='over';
+ const r=etRecord(earStore(),etKey(etLevel,etTog),etStreak,todayStr());markDayActive();persist();
+ paintET('✗ That was '+IQ_NAMES[etIv]+' — you said '+IQ_SHORT[v]+'. Run over: '+etStreak+' in a row'+(r.newBest?' — a new best!':'.'));
+ etTimer=setTimeout(etPlay,500);
+}
+function stopET(){if(!etActive)return;resetET();paintET('Run stopped — not recorded.');}
+function paintET(msg){
+ const el=document.getElementById('etBody');if(!el)return;
+ const store=earStore(),key=etKey(etLevel,etTog),best=store.best[key]||0,L=ET_LEVELS[etLevel],dis=etActive?' disabled':'';
+ let h='<div class="tool-panel">';
+ h+='<div class="seg" role="group" aria-label="Level">'+[1,2,3].map(l=>'<button class="seg-b" aria-pressed="'+(etLevel===l)+'"'+dis+' onclick="setETLevel('+l+')">'+ET_LEVELS[l].name+'</button>').join('')+'</div>';
+ h+='<div class="et-sub">'+L.sub+'</div>';
+ h+='<div class="t-row" style="justify-content:center"><button class="tbtn tog'+(etTog?' on':'')+'" aria-pressed="'+etTog+'"'+dis+' onclick="toggleETTog()">Both notes together (harder)</button></div>';
+ h+='<div class="et-score"><div><div class="et-n">'+etStreak+'</div><div class="kpi-l">In a row</div></div><div><div class="et-n et-best">'+best+'</div><div class="kpi-l">Your best here</div></div></div>';
+ if(etActive){
+  h+='<div class="et-grid">'+L.choices.map(v=>'<button class="tbtn tog et-ans"'+(etState!=='answer'?' disabled':'')+' onclick="answerET('+v+')">'+IQ_SHORT[v]+'</button>').join('')+'</div>';
+  h+='<div class="t-row" style="justify-content:center"><button class="tbtn tog" onclick="etPlay()">'+ico('play')+'Replay</button><button class="tbtn tog" onclick="stopET()">'+ico('stop')+'Stop</button></div>';
+ }else{
+  h+='<button class="cta" onclick="startET()">'+ico('play')+(etState==='over'?'Start a new run':'Start a run')+'</button>';
+  if(etState==='over')h+='<div class="t-row" style="justify-content:center;margin-top:10px"><button class="tbtn tog" onclick="etPlay()">'+ico('play')+'Hear that one again</button></div>';
+ }
+ h+='<div class="et-msg" role="status">'+(msg||'')+'</div></div>';
+ el.innerHTML=h+etHistoryHTML(store,key,best);
+}
+/* last 12 runs at this level + mode: one hue, the best bar emphasised, labels on the latest and best only */
+function etHistoryHTML(store,key,best){
+ const runs=store.runs.filter(r=>r.k===key).slice(-12);
+ let h='<section class="card"><div class="card-eyebrow"><span>Recent runs · '+ET_LEVELS[etLevel].name+(etTog?' · together':'')+'</span><span>best '+best+'</span></div>';
+ if(!runs.length)return h+'<p class="card-sub" style="margin-top:10px">No runs yet here. Your last 12 runs will show as bars, so you can watch the streaks grow.</p></section>';
+ const top=Math.max(best,5),avg=runs.reduce((a,r)=>a+r.n,0)/runs.length;let bestShown=false;
+ h+='<div class="et-bars" role="img" aria-label="Last '+runs.length+' runs: '+runs.map(r=>r.n).join(', ')+'. Best '+best+'.">'+runs.map((r,i)=>{const isLast=i===runs.length-1,isBest=!bestShown&&best>0&&r.n===best;if(isBest)bestShown=true;return '<div class="et-bar'+(isBest?' best':'')+'" title="'+r.d+': '+r.n+' in a row"><span>'+((isLast||isBest)?r.n:'')+'</span><i style="height:'+Math.max(3,Math.round(r.n/top*100))+'%"></i></div>';}).join('')+'</div>';
+ return h+'<p class="card-sub" style="margin-top:10px">Last run '+runs[runs.length-1].n+' · average of these '+runs.length+': '+avg.toFixed(1)+' · best '+best+'</p></section>';
+}
+function etBestAny(){const E=S.__ear;return E&&E.best?Math.max(0,...Object.values(E.best)):0;}
+function earProgHTML(){
+ const E=S.__ear||{best:{},runs:[]};const rows=[];
+ [1,2,3].forEach(l=>[false,true].forEach(t=>{const k=etKey(l,t),n=E.runs.filter(r=>r.k===k).length;if(n||!t)rows.push('<div class="skl"><span class="skl-n">'+ET_LEVELS[l].name+(t?' · both':'')+'</span><span class="skl-w" style="text-align:left">'+ET_LEVELS[l].sub+'</span><span class="skl-v">'+(E.best[k]!=null?E.best[k]:'—')+'</span><span class="skl-w">'+(n?n+' run'+(n===1?'':'s'):'not yet')+'</span></div>');}));
+ return '<section class="card"><div class="card-eyebrow"><span>Ear test · best in a row</span><span>'+E.runs.length+' run'+(E.runs.length===1?'':'s')+'</span></div>'+rows.join('')+'<button class="cta-sec" onclick="openEarTest()">Take the ear test</button></section>';
+}
 /* ===================== M2 · EAR TEST (2.3 — locked vs off) =====================
    A listening quiz (no mic): plays a root + a third together — either a beatless
    just-intonation third or one detuned ~20–40¢ — and you say which you hear. */
@@ -2311,6 +2391,7 @@ function reviewAccHTML(){
 function renderRoom(){
  return '<div class="page-head"><h1 class="display">Practice</h1></div><p class="page-sub">The sound tools from the lessons, in one place — for warm-ups and free practice. Warm up first: gentle humming, lip trills, sirens low to high.</p>'+
  '<button class="cta" onclick="openQuick()">'+ico('mic')+'Start the 5-minute daily review</button>'+
+ '<button class="cta-sec" onclick="openEarTest()">Interval ear test — how many in a row?'+(etBestAny()?' · best '+etBestAny():'')+'</button>'+
  '<button class="cta-sec" onclick="go(\'ref\')">Reference — intervals, song ladder &amp; craft</button>'+
  toolHTML('tone')+toolHTML('interval')+toolHTML('row')+metroHTML()+
  '<div class="tool-panel"><div class="t-title">♪ Quick Recorder</div>'+recorderHTML()+'</div>'+
@@ -2373,6 +2454,7 @@ function renderProg(){
   h+='<button class="pm" onclick="go('+m.n+')">'+rmNode(state,String(m.n),p.done,p.tot)+'<span class="pm-t"><span class="pm-name">'+m.t+'</span><span class="meter" aria-hidden="true"><i style="width:'+Math.round(p.done/p.tot*100)+'%"></i></span></span><span class="pm-c">'+p.done+'/'+p.tot+'</span></button>';});
  h+='</section>';
  h+=reviewAccHTML();
+ h+=earProgHTML();
  h+='<section class="card"><div class="card-eyebrow"><span>Checkpoints</span><span>'+cps.filter(l=>isMastered(l.id)).length+' of '+cps.length+' passed</span></div>'+cps.map(l=>pathLesson(Object.assign({},l,{t:l.t.replace('Checkpoint — ','')}),null)).join('')+'<p class="card-foot">Modules 1–3 are auto-scored and can be taken early to test out; Module 4 and the final need a recording.</p></section>';
  return h;
 }

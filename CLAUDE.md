@@ -94,6 +94,9 @@ is also its `s.jump` key), `earQuiz` (no mic), `rowRun` (with `memory:true` =
 transpose-invariant sing-from-memory; else harmony-over-melody), `duet` (two-phase self-duet:
 record melody, then harmonize over your own voice), `improv` (sight-harmonize over a generated
 melody), plus the Module-0 range probe.
+- Not a check kind: the standalone **Interval Ear Test** (v44, Practice tab, `openEarTest`) — the
+  `et*` engine, sudden-death streaks stored in `S.__ear` (`best` per level+mode key, `runs` log),
+  pure helpers `etPick`/`etRecord`. It never ticks lesson standards.
 - Shared pure scorers — **reuse, don't duplicate:** `classifyMemory` (best-fit transposition),
   `classifyHarmony` (on-harmony vs collapse-onto-melody), `classifyImprov` (consonance + direction).
 - Multi-drill lessons: `rowRunOk` matches run-type to check-type so a memory run and a harmony

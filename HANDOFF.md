@@ -6,7 +6,24 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-16 · **Build: v43 / harmony-v43** — live on GitHub Pages (Module 2 rebuild; the commit after 2e48eec). Builds now auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-22 · **Build: v44 / harmony-v44** — live on GitHub Pages (Interval Ear Test). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v43 → v44) — Interval Ear Test (streak mode)
+User asked for the Hear the Third quiz as a separate test to come back to, harder, with the root
+jumping around, recording how many correct answers in a row before the first miss.
+- Practice tab → "Interval ear test" (also a card on Progress, and a pointer in Hear the Third's
+  hints). Opens as a detail overlay (`openEarTest`), no mic.
+- Engine `et*`, separate from the lesson's `iq*` quiz: `etPick` (pure) picks any interval of the
+  level from a root that moves every round, both notes within C3–C5; sudden death — the first miss
+  ends the run, names the right answer and replays it. Stop abandons a run without recording it.
+- Levels: 1 = step/3rd/5th, 2 = + minor 3rd/4th, 3 = + 6th/octave; "Both notes together" toggle
+  (harmonic intervals). Each level × mode keeps its own best (`etKey`: '1', '1t', …).
+- Storage: `S.__ear = {best:{key:n}, runs:[{d,k,n}]}` (capped at 200, via `etRecord`, pure), so it
+  rides along in Backup. Each finished run calls `markDayActive()`. Last 12 runs at the selected
+  level show as a single-hue bar chart with the best emphasised.
+- Harness: 280 assertions (+20). Mutation-tested (repeat root, equal-counts-as-best, range ignoring
+  the interval, uncapped log — all caught).
+- On-device still to check: tone timbre/volume for harmonic (together) intervals on the phone speaker.
 
 ## What changed this session (v42 → v43) — Module 2 rebuilt as a gentler ladder
 User struggled with Module 2: after hearing the root they could neither sing nor imagine the
