@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -917,6 +917,34 @@ console.log('\n▸ Think first: a silent gap between the cue and singing');
   A.setJd({ tgt: 4, root: 0, iv: 4, review: true }); A.afterCue(); eq(A.getJd().state, 'listen', 'the daily review skips the gap');
   A.setJd({ tgt: 4, root: 0, iv: 4, active: false }); A.afterCue(); eq(A.getJd().state, 'idle', 'a stopped drill ignores a late cue timer');
   A.setThink(0);
+}
+
+/* ================================================================ */
+/*  v47 — PICK IT OUT (voice extraction)                             */
+/* ================================================================ */
+console.log('\n▸ Pick it out: two notes together, sing each one');
+{
+  let seed = 9; const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  for (const lv of [1, 2, 3]) {
+    const ch = A.VX_LEVELS[lv].choices; let prev = 99, moved = true, inRange = true; const seen = new Set();
+    for (let i = 0; i < 400; i++) { const p = A.vxPick(ch, prev, -9, 5, rnd); if (p.low === prev) moved = false; if (p.low < -9 || p.low + p.iv > 5 || !ch.includes(p.iv)) inRange = false; seen.add(p.iv); prev = p.low; }
+    ok(moved && inRange && seen.size === ch.length, 'Level ' + lv + ': the pair moves every round, both notes in range, every interval comes up');
+  }
+  ok([1, 2, 3].every((l) => A.VX_LEVELS[l].choices.every((v) => v % 12 >= 3 && v % 12 <= 9)), 'no octave or step pairs: the two notes are always ≥3 semitones apart in pitch class');
+  ok(A.VX_LEVELS[1].choices.every((v) => A.VX_LEVELS[2].choices.includes(v)) && A.VX_LEVELS[2].choices.every((v) => A.VX_LEVELS[3].choices.includes(v)), 'each level keeps the previous level\'s pairs');
+  const at = (semi, n, c) => Array(n || 10).fill(A.freq(semi) * Math.pow(2, (c || 0) / 1200));
+  let r = A.vxJudge(at(0), 0, 4); ok(r.ok && r.which === 'target', 'singing the asked note passes');
+  r = A.vxJudge(at(-12), 0, 4); ok(r.ok, '…in another octave too (a low voice can take the high note down)');
+  r = A.vxJudge(at(0, 10, 40), 0, 4); ok(r.ok, '…within 50 cents');
+  r = A.vxJudge(at(0, 10, 70), 0, 4); ok(!r.ok && r.which === 'off', '70 cents off is a miss');
+  r = A.vxJudge(at(4), 0, 4); ok(!r.ok && r.which === 'other', 'singing the OTHER note is named as such');
+  r = A.vxJudge(at(16), 0, 4); eq(r.which, 'other', '…even an octave away');
+  r = A.vxJudge(at(2), 0, 4); eq(r.which, 'off', 'a note between the two is just off');
+  eq(A.vxJudge(at(0, 4), 0, 4).which, 'none', 'too few frames is no attempt');
+  ok(A.vxJudge([A.freq(4), A.freq(4), A.freq(4), A.freq(4)].concat(at(0, 6)), 0, 4).ok, 'judged on the settled tail, not the scoop in');
+  eq(A.vxRange().join(), '-9,5', 'default range without a profile');
+  const zero = A.streakProgHTML({ best: {}, runs: [{ k: '1', n: 0 }] }, A.VX_LEVELS, 'm', 'Pick it out', 'openVoiceX', 'Go');
+  ok(zero.includes('skl-v">0<') && zero.includes('skl-v">—<'), 'Progress card: a level with only zero runs shows 0, an untried level shows —');
 }
 
 /* ================================================================ */

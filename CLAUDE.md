@@ -103,6 +103,9 @@ melody), plus the Module-0 range probe.
 - Also not a check kind: the **Scale-degree drill** (v45, `openDegTest`, `dg*`, stored in `S.__deg`):
   cadence sets a key, name the degree, every answer resolves to do (`dgResolve`). It reuses
   `etRecord`, `etHistoryHTML` and `streakProgHTML` — a third streak test should too.
+- **Pick It Out** (v47, `openVoiceX`, `vx*`, `S.__vx`) is the one streak test that uses the mic:
+  `feedVX` hangs off the pitch loop beside `feedJump`; `vxJudge` is its pure scorer (folds octaves,
+  names the other note). It shares `etRecord`/`etHistoryHTML`/`streakProgHTML` like the others.
 - Shared pure scorers — **reuse, don't duplicate:** `classifyMemory` (best-fit transposition),
   `classifyHarmony` (on-harmony vs collapse-onto-melody), `classifyImprov` (consonance + direction).
 - Multi-drill lessons: `rowRunOk` matches run-type to check-type so a memory run and a harmony

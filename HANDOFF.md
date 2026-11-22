@@ -6,7 +6,25 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-22 · **Build: v46 / harmony-v46** — live on GitHub Pages (Think-first gap). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-22 · **Build: v47 / harmony-v47** — live on GitHub Pages (Pick It Out — voice extraction). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v46 → v47) — Pick It Out (voice extraction)
+Last of the three pedagogy-review ideas (degree hearing v45, think-first v46): hearing one line
+inside a harmony, the core of not collapsing onto the melody in Module 3.
+- Practice tab → "Pick it out" (`openVoiceX`, needs the tuner; the overlay carries its own
+  `tunerHTML('tuner_vx')`). Two notes sound together; sing the low one, then the high one. Both
+  parts right = one round. Default replays the pair before the high note; "No replay before the
+  high note (harder)" makes you hold both. No target on the tuner (no visual cheat).
+- Levels by how much the notes blend: 1 = 6ths (8, 9), 2 = + 3rds, 3 = + 4ths/5ths. No octaves or
+  steps. `vxPick` keeps both notes in the singer's range (`vxRange`: profile, or -9..5).
+- `vxJudge` (pure): settled tail (last 6 frames), octave-folded, ±50¢; singing the OTHER note is
+  named as such ("D4 is the high note — you wanted the low one"). A miss ends the run and plays
+  the pair together, then low, then high (`vxTeach`). Fed from the pitch loop next to feedJump.
+- Streaks in `S.__vx` via `etRecord` (keys '1', '1m', …); shared history chart + Progress card.
+  Fix: the shared card showed "—" for a level whose only runs scored 0; now shows 0.
+- 3.2 Against the Melody points to it. Harness: 322 assertions (+16), mutation-tested.
+- On-device still to check (can't be verified here): real voice scoring, and that on the phone
+  speaker the pair doesn't leak into the mic — listening only opens 0.3 s after the pair ends.
 
 ## What changed this session (v45 → v46) — Think-first gap in the jump drills
 User can't imagine the harmony note before singing; every drill let them sing at once, so the
