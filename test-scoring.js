@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -993,6 +993,61 @@ console.log('\n▸ Scale degrees: do-or-sol start, learn mode, on-screen guide')
   ok(g.includes(' open') && !A.dgGuideHTML(false).includes(' open>'), 'guide opens by itself only for a first-timer');
   eq([0, 1, 3, 6, 8, 10, -4, -5].map(A.keyName).join(), 'C,D♭,E♭,F♯,A♭,B♭,A♭,G', 'keys are named the way singers write them (A♭, not G#)');
   ok(['Four chords', 'One note', 'Sing the note back', 'walks home', 'Key + note', 'Learn', 'Streak'].every((t) => g.includes(t)), 'guide covers what plays, what to do, the buttons and both modes');
+}
+
+/* ================================================================ */
+/*  v50 — TODAY AS A DAILY PLAN                                      */
+/* ================================================================ */
+console.log('\n▸ Today: 10-minute plan, weekly goal, forgiving messages, ear ladder');
+{
+  eq(A.planSteps(10).join(), 'ears,voice', '10 minutes = ears + voice');
+  eq(A.planSteps(15).join(), 'ears,voice,harm', '15 minutes adds Pick it out');
+  ok(['2026-11-23', '2026-11-26', '2026-11-29', '2026-03-01'].every((k) => { const w = A.weekStartOf(k), d = A.pdate(w); return d.getDay() === 1 && k >= w && k <= A.addDays(w, 6); }), 'weeks start on Monday and contain the day');
+  eq(A.addDays('2026-02-27', 2), '2026-03-01', 'date arithmetic crosses month ends');
+  ok(A.dayComplete({ s: ['ears', 'voice'], n: 2 }) && !A.dayComplete({ s: ['ears'], n: 2 }), 'a 10-minute day needs both steps');
+  ok(!A.dayComplete({ s: ['ears', 'harm'], n: 2 }), 'Pick it out cannot stand in for the voice step');
+  ok(!A.dayComplete({ s: ['ears', 'voice'], n: 3 }) && A.dayComplete({ s: ['ears', 'voice', 'harm'], n: 3 }), 'a 15-minute day needs all three');
+  const MON = '2026-11-23', full = { s: ['ears', 'voice'], n: 2 };
+  const mk = (o) => Object.assign({ mins: 10, goal: 4, since: '2026-10-01', snooze: '', done: {} }, o);
+  // week counting
+  let P = mk({ done: { [MON]: full, [A.addDays(MON, 1)]: { s: ['ears'], n: 2 } } });
+  let w = A.weekInfo(P, MON, A.addDays(MON, 2));
+  eq(w.complete, 1, 'one complete day counts, a part day does not');
+  eq(w.days.map((d) => d.st).join(), 'done,part,none,fut,fut,fut,fut', 'day states: done, part, today (none yet), future');
+  eq(w.left, 5, 'days left include today');
+  // forgiving messages
+  const T = A.addDays(MON, 3); // Thursday
+  eq(A.planStatus(mk({}), [], T).msg.startsWith('Start small'), true, 'first day: start small');
+  eq(A.planStatus(mk({ done: { [T]: full } }), [T], T).title, 'Done for today', 'plan done: "Done for today"');
+  ok(/Welcome back/.test(A.planStatus(mk({}), [A.addDays(T, -3)], T).msg), 'after two missed days: welcome back, no catching up');
+  ok(!/Welcome back/.test(A.planStatus(mk({}), [A.addDays(T, -2)], T).msg), 'one missed day is just a normal day');
+  ok(/out of reach/.test(A.planStatus(mk({ goal: 5 }), [A.addDays(T, -1)], T).msg), 'goal out of reach: says so kindly, Monday is fresh');
+  const metP = mk({ done: { [MON]: full, [A.addDays(MON, 1)]: full, [A.addDays(MON, 2)]: full, [A.addDays(MON, 3)]: full } });
+  ok(/bonus/.test(A.planStatus(metP, [A.addDays(T, 0)], A.addDays(MON, 4)).msg), 'goal met: anything more is a bonus');
+  ok(['Start small', 'Welcome back', 'out of reach', 'bonus', 'to go'].length && ![mk({}), metP].some((p) => /fail|lost|broke|missed/i.test(A.planStatus(p, [A.addDays(T, -5)], T).msg)), 'no scolding words');
+  // growing and stepping back
+  const weeks = (wsList, days) => { const d = {}; wsList.forEach((ws) => days.forEach((i) => { d[A.addDays(ws, i)] = full; })); return d; };
+  const W1 = A.addDays(MON, -7), W2 = A.addDays(MON, -14);
+  eq(A.planOffer(mk({ done: weeks([W1, W2], [0, 1, 2, 3]) }), MON), 'up', 'two full weeks at goal on 10 → offer 15');
+  eq(A.planOffer(mk({ done: weeks([W1], [0, 1, 2, 3]) }), MON), null, 'one good week is not enough');
+  eq(A.planOffer(mk({ since: A.addDays(MON, -10), done: weeks([W1, W2], [0, 1, 2, 3]) }), MON), null, 'needs two full weeks of history');
+  eq(A.planOffer(mk({ snooze: MON, done: weeks([W1, W2], [0, 1, 2, 3]) }), MON), null, '"Not yet" hides the offer for the week');
+  eq(A.planOffer(mk({ mins: 15, done: weeks([W1, W2], [0]) }), MON), 'down', 'two missed weeks on 15 → offer 10');
+  eq(A.planOffer(mk({ mins: 10, done: {} }), MON), null, 'missing weeks on 10 never nags');
+  // ear ladder
+  ok(A.levelPassed([{ n: 8 }, { n: 9 }, { n: 3 }]) && !A.levelPassed([{ n: 8 }, { n: 7 }, { n: 8 }]), 'a level passes on two 8+ sessions in a row, and stays passed');
+  const L = { runs: [{ k: '0', n: 8 }, { k: '0', n: 10 }, { k: '1', n: 6 }, { k: '1', n: 8 }, { k: '1k', n: 9 }, { k: '1k', n: 9 }] };
+  const E = A.earLadder(L);
+  eq(E.passed.join(), 'true,false,false,false', 'new-key sessions do not pass the same-key ladder');
+  eq(E.level, 1, 'current rung is Level 1'); eq(E.recent.join(), '6,8', '…with its last two scores');
+  // the page
+  const saved = A.getS(); A.setS({});
+  let h = A.renderToday();
+  ok(h.includes('Your 10 minutes') && h.includes('Ears · Scale degrees') && h.includes('Voice · Land the Note') && !h.includes('Pick it out'), 'Today: 10-minute plan with ears + voice');
+  ok(h.includes('This week') && h.includes('Your ear') && !/day streak/.test(h), 'weekly goal and ear ladder shown; no streak badge');
+  A.plan().mins = 15; h = A.renderToday(); ok(h.includes('Inside harmony · Pick it out'), '15 minutes shows the third step');
+  A.plan().mins = 10; A.planTick('ears'); A.planTick('voice'); h = A.renderToday(); ok(h.includes('Done for today'), 'both steps ticked: done for today');
+  A.setS(saved);
 }
 
 /* ================================================================ */

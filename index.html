@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#ECEEEA">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>和声 · Harmony Path</title>
+<title>Harmony Path</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -278,7 +278,8 @@ body{font-size:15px;}
 .header-inner{max-width:760px;}
 .logo{display:flex;align-items:baseline;gap:8px;}
 .logo-zh{font-family:var(--f-display);font-weight:800;font-size:1.25rem;color:var(--text);}
-.logo-en{font-family:var(--f-display);font-weight:700;font-size:1rem;color:var(--accent);}
+.logo-en{font-family:var(--f-display);font-weight:800;font-size:1.2rem;letter-spacing:-0.01em;color:var(--text);}
+.logo-en span{color:var(--accent);}
 .logo-v{font-family:var(--f-mono);font-size:0.68rem;color:var(--muted);}
 .icon-btn{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -502,6 +503,39 @@ div.ls{cursor:default;}
 .dg-ol{margin:0;padding-left:20px;font-size:0.86rem;line-height:1.5;color:var(--text2);}
 .dg-ol li{margin:4px 0;}
 .dg-ol b{color:var(--text);}
+.plan{margin-top:16px;}
+.pl-row{display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);margin-top:12px;}
+.pl-row + .pl-row{margin-top:0;}
+.pl-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 0;border:0;background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer;}
+.pl-chk{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;color:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.pl-chk .ico{width:20px;height:20px;}
+.pl-chk[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+.pl-row.done .rt-t{color:var(--text2);}
+.pl-row.done .rt-n{background:var(--surface2);border-color:var(--border);color:var(--muted);}
+.wk-goal{border:1px solid var(--border2);background:transparent;border-radius:999px;padding:4px 10px;font:inherit;font-family:var(--f-mono);font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);cursor:pointer;}
+.wk-top{display:flex;align-items:baseline;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.wk-n{font-size:2.4rem;font-weight:800;line-height:1;color:var(--text);}
+.wk-of{font-size:0.95rem;font-weight:600;color:var(--text2);}
+.wk-top .chip2{align-self:center;margin-left:auto;}
+.wk-dots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:14px;}
+.wk-d{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.wk-d i{display:block;width:100%;max-width:34px;aspect-ratio:1;border-radius:50%;background:var(--surface2);border:1.5px solid transparent;}
+.wk-d.done i{background:var(--accent);}
+.wk-d.part i{background:linear-gradient(to top,var(--accent-line) 50%,var(--surface2) 50%);}
+.wk-d.fut i{background:transparent;border-color:var(--border);}
+.wk-d.now i{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent-line);}
+.wk-d small{font-family:var(--f-mono);font-size:0.66rem;font-weight:600;color:var(--muted);}
+.offer{border-color:var(--accent-line);background:var(--accent-bg);}
+.lad{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px;}
+.lad-track{position:absolute;left:12.5%;right:12.5%;top:15px;height:3px;border-radius:2px;background:var(--surface2);}
+.lad-track i{display:block;height:100%;border-radius:2px;background:var(--accent);}
+.lad-s{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.lad-c{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1.5px solid var(--border2);font-family:var(--f-mono);font-size:0.78rem;font-weight:700;color:var(--muted);}
+.lad-c .ico{width:16px;height:16px;}
+.lad-s.ok .lad-c{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+.lad-s.cur .lad-c{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+.lad-s small{font-size:0.74rem;font-weight:600;color:var(--text2);}
+.lad-s.cur small{color:var(--text);}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -522,7 +556,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v49</span></div>
+  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v50</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -1719,13 +1753,13 @@ function answerDG(v){
   tone(dgKey+dgDeg,0.6,0.35,0.24);const t=dgPlayResolve(1.05);dgTimer=setTimeout(()=>nextDG(false),Math.round(t*1000)+700);return;
  }
  dgActive=false;dgState='over';
- const r=etRecord(degStore(),dgKeyOf(dgLevel,dgMove),dgStreak,todayStr());markDayActive();persist();
+ const r=etRecord(degStore(),dgKeyOf(dgLevel,dgMove),dgStreak,todayStr());markDayActive();planTick('ears');persist();
  paintDG('✗ That was '+nm+' in '+keyName(dgKey)+' major — you said '+DEGN[v]+'. Run over: '+dgStreak+' in a row'+(r.newBest?' — a new best!':'.'));
  tone(dgKey+dgDeg,0.6,0.35,0.24);dgPlayResolve(1.05);
 }
 function finishLearnDG(){
  dgClear();dgActive=false;dgState='over';
- const L=degStore().learn,k=dgKeyOf(dgLevel,dgMove);etRecord(L,k,dgStreak,todayStr());markDayActive();persist();
+ const L=degStore().learn,k=dgKeyOf(dgLevel,dgMove);etRecord(L,k,dgStreak,todayStr());markDayActive();planTick('ears');persist();
  const ready=dgReady(L.runs.filter(r=>r.k===k));
  paintDG('Done: '+dgStreak+' of '+DG_LEARN_N+' right. '+(ready?'Two sessions at 8 or more — ready for '+(dgLevel<3?'the next level, or Streak mode here.':'Streak mode.'):(dgStreak>=8?'One more like that and you’re ready to move up.':'Same again next time — this builds slowly, and that’s normal.')));
 }
@@ -1809,7 +1843,7 @@ function judgeVX(noAttempt){
  }
  if(r.ok){vxStreak++;paintVX('✓ Both notes — '+vxStreak+' in a row');vxT1=setTimeout(nextVX,1100);return;}
  vxActive=false;vxState='over';
- const rec=etRecord(vxStore(),String(vxLevel)+(vxMem?'m':''),vxStreak,todayStr());markDayActive();persist();
+ const rec=etRecord(vxStore(),String(vxLevel)+(vxMem?'m':''),vxStreak,todayStr());markDayActive();planTick('harm');persist();
  const pn=part==='low'?'low':'high',on=part==='low'?'high':'low';
  const why=r.which==='none'?'No note heard':(r.which==='other'?'✗ '+r.name+' is the '+on+' note — you wanted the '+pn+' one ('+nlabel(want)+')':'✗ You sang '+r.name+' — the '+pn+' note was '+nlabel(want));
  paintVX(why+'. Run over: '+vxStreak+' in a row'+(rec.newBest?' — a new best!':'.'));
@@ -2280,7 +2314,7 @@ function backfillDays(M){
 function curStreak(){const M=meta();return (M.last===todayStr()||M.last===yestStr())?(M.streak||0):0;}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function yestStr(){const d=new Date(Date.now()-86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function markDayActive(){const M=meta();const t=todayStr();if(!M.days.includes(t)){M.days.push(t);if(M.days.length>400)M.days.shift();}if(M.last===t){persist();return;}M.streak=(M.last===yestStr())?(M.streak+1):1;M.last=t;if(M.streak>(M.best||0))M.best=M.streak;persist();}
+function markDayActive(){if(curId)planTick('voice');const M=meta();const t=todayStr();if(!M.days.includes(t)){M.days.push(t);if(M.days.length>400)M.days.shift();}if(M.last===t){persist();return;}M.streak=(M.last===yestStr())?(M.streak+1):1;M.last=t;if(M.streak>(M.best||0))M.best=M.streak;persist();}
 /* ===================== DAILY REVIEW =====================
    The 5-minute drill is a mixed, auto-scored review of the pitch skills you've learned,
    not always the same major third. A skill joins the pool once a lesson that teaches it is
@@ -2344,7 +2378,7 @@ function startReview(){
 function finishReview(){
  jdActive=false;jdState='done';jdArmed=false;clearJumpTimers();jdReview=false;
  recordReview(reviewStats(),jdResults,todayStr());
- markDayActive();const M=meta();M.quick=(M.quick||0)+1;persist();
+ markDayActive();planTick('voice');const M=meta();M.quick=(M.quick||0)+1;persist();
  const passes=jdResults.filter(r=>r.pass).length;
  paintJump('Review complete — '+passes+' / '+jdResults.length+' · logged · streak '+M.streak+' day'+(M.streak===1?'':'s'));
  setJumpScore(passes,jdResults.length);syncReviewBtn();paintReviewMix();
@@ -2362,7 +2396,7 @@ function openQuick(){
  document.getElementById('dBody').innerHTML=h;paintReviewMix();
  document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
 }
-function logQuick(){markDayActive();const M=meta();M.quick=(M.quick||0)+1;persist();stopPitch();showToast('Logged — streak '+M.streak+' day'+(M.streak===1?'':'s'));closeDetail();}
+function logQuick(){markDayActive();planTick('voice');const M=meta();M.quick=(M.quick||0)+1;persist();stopPitch();showToast('Logged — streak '+M.streak+' day'+(M.streak===1?'':'s'));closeDetail();}
 /* ---- tool panels ---- */
 function rootSelHTML(){let h='<select class="tsel rootSel" onchange="setRoot(this.value)">';for(let s=-17;s<=9;s++)h+='<option value="'+s+'"'+(s===TS.root?' selected':'')+'>'+nlabel(s)+'</option>';return h+'</select>';}
 function intSelHTML(){const I=[[4,'Major 3rd (do→mi)'],[3,'Minor 3rd'],[5,'Perfect 4th'],[7,'Perfect 5th (do→so)'],[9,'Major 6th'],[12,'Octave']];let h='<select class="tsel" onchange="TS.intv=parseInt(this.value,10)">';I.forEach(p=>{h+='<option value="'+p[0]+'"'+(p[0]===TS.intv?' selected':'')+'>'+p[1]+'</option>';});return h+'</select>';}
@@ -2581,22 +2615,99 @@ async function startSession(id){
  if(droneLesson(l)&&!droneNodes.length)toggleDrone();
 }
 function reviewChipsHTML(){const RS=reviewStats(),today=todayStr();return reviewPool().map(id=>{const k=reviewSkill(id),s=RS[id],hh=(s&&s.hist)||[],d=reviewDays(s,today),due=d==null||d>=3;const acc=hh.length?(hh.filter(Boolean).length+'/'+hh.length):'new';return '<span class="chip2 '+(due?'due':'soft')+'">'+k.short+' · '+(due&&hh.length?'due':acc)+'</span>';}).join('');}
+/* ===================== DAILY PLAN (Today, v50) =====================
+   A short plan that ticks itself off. 10 minutes = ears (one scale-degree Learn session) + voice
+   (your next lesson). After two full weeks at the weekly goal it offers 15 minutes (+ one Pick it out
+   run); after two missed weeks on 15 it offers 10 again. The goal is weekly (3–5 days, default 4), so
+   a missed day never resets anything. Stored in S.__plan = {mins, goal, since, snooze, done:{day:{s,n}}}. */
+const PLAN_STEPS={10:['ears','voice'],15:['ears','voice','harm']};
+function planSteps(mins){return PLAN_STEPS[mins===15?15:10];}
+function plan(){if(!S.__plan)S.__plan={mins:10,goal:4,since:todayStr(),snooze:'',done:{}};return S.__plan;}
+function pdate(k){const p=k.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function addDays(k,n){const d=pdate(k);d.setDate(d.getDate()+n);return dstr(d);}
+function weekStartOf(k){const d=pdate(k);d.setDate(d.getDate()-((d.getDay()+6)%7));return dstr(d);}   // Monday
+/* pure: is a day's record complete for the plan size it was made under? */
+function dayComplete(rec){if(!rec||!rec.s)return false;return planSteps(rec.n===3?15:10).every(x=>rec.s.includes(x));}
+/* pure: one week (Mon–Sun) — per-day state, complete count, days left including today */
+function weekInfo(P,ws,today){
+ const days=[];let complete=0;
+ for(let i=0;i<7;i++){const k=addDays(ws,i),r=P.done[k],c=dayComplete(r);if(c)complete++;days.push({k:k,st:c?'done':(r&&r.s.length?'part':(k>today?'fut':'none')),today:k===today});}
+ const left=days.filter(d=>d.k>=today&&d.st!=='done').length;
+ return {ws:ws,days:days,complete:complete,left:left,met:complete>=P.goal};
+}
+/* pure: offer to grow to 15 (two full weeks at goal) or step back to 10 (two full weeks missed) */
+function planOffer(P,today){
+ const ws=weekStartOf(today),w1=addDays(ws,-7),w2=addDays(ws,-14);
+ if(P.snooze===ws||!P.since||P.since>w2)return null;   // needs two full weeks of history
+ const a=weekInfo(P,w1,today),b=weekInfo(P,w2,today);
+ if(P.mins===10&&a.met&&b.met)return 'up';
+ if(P.mins===15&&!a.met&&!b.met)return 'down';
+ return null;
+}
+/* pure: headline + one encouraging line, never a scolding one */
+function planStatus(P,days,today){
+ const w=weekInfo(P,weekStartOf(today),today),done=dayComplete(P.done[today]),g=P.goal;
+ const prev=(days||[]).filter(d=>d<today).sort();const last=prev[prev.length-1];
+ const gap=last?Math.round((pdate(today)-pdate(last))/86400000):null;
+ const plural=n=>n+' day'+(n===1?'':'s');
+ if(done)return {title:'Done for today',msg:w.met?'That makes '+w.complete+' this week — goal met. Anything more is a bonus.':'That’s '+w.complete+' of '+g+' this week. See you tomorrow, or whenever you can.'};
+ const title='Your '+P.mins+' minutes';
+ if(last===undefined)return {title:title,msg:'Start small. Today’s '+P.mins+' minutes is the whole job.'};
+ if(gap>=3)return {title:title,msg:'Welcome back. No catching up needed — today’s '+P.mins+' minutes is all that counts.'};
+ if(w.met)return {title:title,msg:'This week’s goal is already met — today is a bonus.'};
+ if(w.complete+w.left<g)return {title:title,msg:'This week’s goal is out of reach, but every day still counts — and Monday is a fresh start.'};
+ return {title:title,msg:plural(g-w.complete)+' to go for this week’s goal, '+plural(w.left)+' left.'};
+}
+function planTick(step){const P=plan(),t=todayStr();const r=P.done[t]||(P.done[t]={s:[],n:planSteps(P.mins).length});if(!r.s.includes(step))r.s.push(step);
+ const old=Object.keys(P.done).filter(k=>k<addDays(t,-120));old.forEach(k=>delete P.done[k]);persist();}
+function togglePlanStep(step){const P=plan(),t=todayStr(),r=P.done[t];if(r&&r.s.includes(step)){r.s=r.s.filter(x=>x!==step);persist();}else{planTick(step);const c=curId;curId=null;markDayActive();curId=c;}render();}   // a lingering curId must not tick voice
+function setPlanMins(m){const P=plan(),t=todayStr();P.mins=m;P.snooze=weekStartOf(t);if(P.done[t])P.done[t].n=planSteps(m).length;persist();render();showToast(m===15?'15 minutes a day — Pick it out added':'Back to 10 minutes — the habit matters more than the minutes');}
+function snoozeOffer(){plan().snooze=weekStartOf(todayStr());persist();render();}
+function cycleGoal(){const P=plan();P.goal=P.goal>=5?3:P.goal+1;persist();render();}
+/* ear-level ladder: a level is passed by ANY two Learn sessions in a row at 8+ (sticky), same key */
+function levelPassed(runs){for(let i=1;i<runs.length;i++)if(runs[i].n>=8&&runs[i-1].n>=8)return true;return false;}
+function earLadder(L){L=L||{runs:[]};const passed=[0,1,2,3].map(l=>levelPassed(L.runs.filter(r=>r.k===String(l))));let level=passed.indexOf(false);if(level<0)level=4;
+ const cur=level<4?L.runs.filter(r=>r.k===String(level)).slice(-2).map(r=>r.n):[];return {passed:passed,level:level,recent:cur};}
+function openDegFromPlan(){const lv=Math.min(3,earLadder(S.__deg&&S.__deg.learn).level);degStore().pref={l:lv,m:false,learn:true};persist();openDegTest();}
+function planRowHTML(n,step,title,sub,on,done){
+ return '<div class="pl-row'+(done?' done':'')+'"><button class="pl-main" onclick="'+on+'"><span class="rt-n">'+n+'</span><span class="rt-txt"><span class="rt-t">'+title+'</span><span class="rt-s">'+sub+'</span></span></button>'+
+  '<button class="pl-chk" aria-pressed="'+done+'" aria-label="'+(done?'Done — tap to undo':'Mark this step done')+'" onclick="togglePlanStep(\''+step+'\')">'+ico('check')+'</button></div>';
+}
+function weekHTML(P,today){
+ const w=weekInfo(P,weekStartOf(today),today),L='MTWTFSS';
+ return '<section class="card"><div class="card-eyebrow"><span>This week</span><button class="wk-goal" onclick="cycleGoal()" aria-label="Weekly goal: '+P.goal+' days. Tap to change.">goal '+P.goal+' days</button></div>'+
+  '<div class="wk-top"><span class="wk-n">'+w.complete+'</span><span class="wk-of">of '+P.goal+' days</span>'+(w.met?'<span class="chip2">'+ico('check')+'Goal met</span>':'')+'</div>'+
+  '<div class="wk-dots" role="img" aria-label="'+w.complete+' of '+P.goal+' days done this week">'+w.days.map((d,i)=>'<span class="wk-d '+d.st+(d.today?' now':'')+'"><i></i><small>'+L[i]+'</small></span>').join('')+'</div>'+
+  '<p class="card-sub" style="margin-top:10px">A day counts when its plan is done. Missed days don’t reset anything — each Monday starts fresh.</p></section>';
+}
+function offerHTML(P,today){
+ const o=planOffer(P,today);if(!o)return '';
+ if(o==='up')return '<section class="card offer"><div class="card-title">Two weeks at your goal</div><div class="card-sub">Ready for 15 minutes? It adds one Pick it out run — singing one note out of two.</div><div class="t-row" style="margin-top:12px"><button class="tbtn" onclick="setPlanMins(15)">Go to 15 minutes</button><button class="tbtn tog" onclick="snoozeOffer()">Not yet</button></div></section>';
+ return '<section class="card offer"><div class="card-title">A busy couple of weeks?</div><div class="card-sub">Drop back to 10 minutes — showing up matters more than the minutes. You can grow again later.</div><div class="t-row" style="margin-top:12px"><button class="tbtn" onclick="setPlanMins(10)">Back to 10 minutes</button><button class="tbtn tog" onclick="snoozeOffer()">Keep 15</button></div></section>';
+}
+function ladderHTML(){
+ const E=earLadder(S.__deg&&S.__deg.learn),N=['Start','Level 1','Level 2','Level 3'],pct=Math.round(Math.min(E.level,3)/3*100);
+ let h='<section class="card"><div class="card-eyebrow"><span>Your ear</span><span>'+E.passed.filter(Boolean).length+' of 4 passed</span></div>';
+ h+='<div class="lad" role="img" aria-label="Ear ladder: '+E.passed.filter(Boolean).length+' of 4 levels passed"><div class="lad-track"><i style="width:'+pct+'%"></i></div>'+N.map((n,i)=>'<div class="lad-s'+(E.passed[i]?' ok':(i===E.level?' cur':''))+'"><span class="lad-c">'+(E.passed[i]?ico('check'):(i+1))+'</span><small>'+n+'</small></div>').join('')+'</div>';
+ const msg=E.level>=4?'All four passed. Try Streak mode, then “New key every round”.':(N[E.level]+(E.level===0?' (do or sol)':'')+': two Learn sessions in a row at 8/10 or better moves you up.'+(E.recent.length?' Your last '+(E.recent.length===1?'one: ':'two: ')+E.recent.join(', ')+'.':''));
+ return h+'<p class="card-sub" style="margin-top:10px">'+msg+'</p></section>';
+}
 function renderToday(){
- const id=nextLessonId(),M=meta();
+ const id=nextLessonId(),P=plan(),M=meta(),t=todayStr(),r=P.done[t],has=x=>!!(r&&r.s.includes(x)),stp=planSteps(P.mins);
+ const st=planStatus(P,M.days,t),lad=earLadder(S.__deg&&S.__deg.learn);
  let h='';
- if(id){const m0=moduleOf(id);h+='<div class="pills"><span class="pill"><span class="dot"></span>Module '+m0.n+' · '+m0.t+'</span>'+(curStreak()?'<span class="pill amber">'+curStreak()+'-day streak</span>':'')+'</div>';}
- if(!id){
-  h+='<div class="hero"><div class="eyebrow">All done</div><h1 class="display">You’ve finished the path</h1><p class="hero-focus">Keep it alive: the 5-minute daily review a few times a week, and lesson 5.4 — sing with humans.</p></div>';
- }else{
-  const l=lessonById(id),m=moduleOf(id),live=l.tool?(droneLesson(l)?'drone and tuner':(micLesson(l)?'tuner':'')):'';
-  h+='<div class="hero"><div class="eyebrow">Up next · '+(l.cp?'Checkpoint':'Lesson '+lessonNo(id))+'</div><h1 class="display">'+l.t+'</h1><p class="hero-focus">'+l.f+'</p><div class="chips-row">'+(l.time?'<span class="chip2">'+ico('clock')+l.time+'</span>':'')+(live?'<span class="chip2">'+(live==='tuner'?'Tuner':'Drone + tuner')+'</span>':'')+(l.covers?'<span class="chip2">'+l.covers+'</span>':'')+'</div></div>';
-  h+='<button class="cta" onclick="startSession(\''+id+'\')">'+ico(live?'mic':'play')+(live?'Start — '+live+' on':'Open lesson')+'</button>';
-  const cp=moduleCp(m);
-  if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="cta-sec purple" onclick="openLesson(\''+cp.id+'\')">Already solid on Module '+m.n+'? Test out</button>';
- }
+ if(id){const m0=moduleOf(id);h+='<div class="pills"><span class="pill"><span class="dot"></span>Module '+m0.n+' · '+m0.t+'</span></div>';}
+ h+='<div class="hero"><div class="eyebrow">Today · '+P.mins+' minutes</div><h1 class="display">'+st.title+'</h1><p class="hero-focus">'+st.msg+'</p></div>';
  if(!profile())h+='<section class="card"><div class="card-row"><div><div class="card-title">Find your range first</div><div class="card-sub">A one-minute range check centres the drone in your voice.</div></div><button class="btn-outline" onclick="go(\'setup\')">Start</button></div></section>';
- h+='<section class="card"><div class="card-eyebrow"><span>Warm up first</span><span>1 min</span></div><div class="warm"><div><b>1</b><span>Hum</span></div><div><b>2</b><span>Lip trills</span></div><div><b>3</b><span>Sirens</span></div></div><div class="note-line">'+ico('phones')+'Headphones in — the mic must not hear the drone.</div></section>';
- h+='<section class="card"><div class="card-row"><div><div class="card-title">5-minute daily review</div><div class="card-sub">'+REVIEW_N+' scored trials, leaning on what’s shaky</div></div><button class="btn-outline" onclick="openQuick()">Start</button></div><div class="chips-row" style="margin-top:12px">'+reviewChipsHTML()+'</div></section>';
+ const l=id&&lessonById(id);
+ h+='<section class="card plan"><div class="note-line" style="margin-top:0">'+ico('phones')+'Warm up 1 min — hum, lip trills, sirens. Headphones in.</div>';
+ h+=planRowHTML(1,'ears','Ears · Scale degrees','One Learn session · '+DG_LEVELS[Math.min(3,lad.level)].name+' · 3 min','openDegFromPlan()',has('ears'));
+ h+=l?planRowHTML(2,'voice','Voice · '+l.t,(l.cp?'Checkpoint':'Lesson '+lessonNo(id))+' · 5–6 min'+(jumpChecks(l).length?' · Think first helps':''),'startSession(\''+id+'\')',has('voice'))
+     :planRowHTML(2,'voice','Voice · Daily review','10 scored trials · 5 min','openQuick()',has('voice'));
+ if(stp.includes('harm'))h+=planRowHTML(3,'harm','Inside harmony · Pick it out','One run · 3 min','openVoiceX()',has('harm'));
+ h+='</section>';
+ if(l){const m=moduleOf(id),cp=moduleCp(m);if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="cta-sec purple" onclick="openLesson(\''+cp.id+'\')">Already solid on Module '+m.n+'? Test out</button>';}
+ h+=offerHTML(P,t)+weekHTML(P,t)+ladderHTML();
  return h;
 }
 /* Practice calendar: the last 12 weeks, Monday-first columns, one hue (practised) on a neutral

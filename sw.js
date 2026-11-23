@@ -1,11 +1,11 @@
-/* 和声 · Harmony Path — service worker
+/* Harmony Path — service worker
    Bump CACHE on every shell change to retire old caches.
    Strategy:
      · HTML / navigation  → network-first (fresh when online, cached copy offline)
      · same-origin assets → cache-first  (icons, manifest)
      · Google Fonts       → stale-while-revalidate
 */
-const CACHE = 'harmony-v49';
+const CACHE = 'harmony-v50';
 
 /* Local app-shell files. index.html is essential; the rest are best-effort
    so a missing optional asset (e.g. an icon you haven't added yet) never

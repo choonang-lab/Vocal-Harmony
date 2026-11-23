@@ -1,4 +1,4 @@
-# CLAUDE.md — 和声 · Harmony Path
+# CLAUDE.md — Harmony Path
 
 > **Resuming / switching machines?** Read **`HANDOFF.md`** first — current build (v32), what
 > changed last session, the test harness, and open tasks. This file is the stable reference;
@@ -42,7 +42,9 @@ only as an offline validation harness (see Testing), never at runtime.
 - **Rendering:** view-based. Global `view` selects what `render()` paints into `#main` via
   innerHTML. Views: `today` (landing — next lesson + one-tap `startSession`), `path` (the module
   roadmap; a numeric view maps here with that module expanded), `setup`, `room` (Practice tab),
-  `ref`, `prog`. Navigation is the bottom `#tabbar` (`renderNav`); Backup/Restore/Reset, Range
+  `ref`, `prog`. **Today (v50) is a daily plan** (`renderToday`, `S.__plan`): steps tick via `planTick`
+  ('ears' | 'voice' | 'harm'). A new practice path that should count must call `planTick` too —
+  `markDayActive()` only ticks 'voice' when a lesson is open (`curId`). Navigation is the bottom `#tabbar` (`renderNav`); Backup/Restore/Reset, Range
   check and Reference live in the ⋯ menu.
 - **Theming (v40):** all colours are CSS tokens with a `:root[data-theme="dark"]` override; never
   hard-code a colour in CSS or in generated markup — add a token. Icons come from `ico(name)`

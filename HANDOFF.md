@@ -1,4 +1,4 @@
-# HANDOFF — 和声 · Harmony Path
+# HANDOFF — Harmony Path
 
 > **Resuming on another machine / in the Claude Desktop app?**
 > The Desktop app does **not** auto-read repo files. To pick up the session, either
@@ -6,7 +6,29 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-23 · **Build: v49 / harmony-v49** — live on GitHub Pages (Scale degrees: Start level, Learn mode, guide). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-23 · **Build: v50 / harmony-v50** — live on GitHub Pages (Today = daily plan, weekly goal, ear ladder; 和声 dropped from the title). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v49 → v50) — Today becomes a daily plan
+User: re-orient Today to the suggested path, help them come back regularly, allow busy days.
+Decisions (theirs): name stays **Harmony Path**, Chinese 和声 removed from the title/logo; start at
+10 min/day and grow to 15 only when compliance is high; weekly goal instead of streak; ear ladder.
+- Today (`renderToday`): "Today · 10 minutes" hero with one encouraging line (`planStatus`: start
+  small / welcome back after 2+ missed days, no catching up / out of reach — Monday is fresh / goal
+  met — bonus; never scolding). Plan card: warm-up line + 1 Ears · Scale degrees (one Learn session at
+  the ladder's level, `openDegFromPlan`) + 2 Voice · next lesson (`startSession`; daily review once
+  the path is done) + 3 Inside harmony · Pick it out (15-min plan only). Steps tick themselves
+  (`planTick`: markDayActive with a lesson open → voice; finishReview/logQuick → voice; scale-degree
+  session end → ears; Pick it out run end → harm) and can be ticked/unticked by hand.
+- `S.__plan = {mins, goal, since, snooze, done:{day:{s:[steps], n}}}`. A day counts when its plan is
+  complete (`dayComplete`). Weekly card: N of goal (3/4/5, tap to cycle, default 4), Mon–Sun dots
+  (done / part / today / future). `planOffer`: two full weeks at goal on 10 → offer 15; two missed
+  weeks on 15 → offer 10; needs two weeks of history; "Not yet" snoozes for the week.
+- Ear ladder (`earLadder`/`levelPassed`): Start → L1 → L2 → L3, a rung passes on any two
+  consecutive same-key Learn sessions at 8+ (sticky).
+- Streak pill removed from Today (streak + calendar still on Progress).
+- Harness: 376 assertions (+31), mutation-tested (8 mutants, all caught).
+- On-device to check: that ticking feels right after real sessions; manual lessons without a
+  scoring path don't auto-tick Voice (tick by hand).
 
 ## What changed this session (v48 → v49) — Scale degrees made learnable
 User found the scale-degree drill really hard; sudden death on a skill they hadn't yet learned
