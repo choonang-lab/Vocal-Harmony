@@ -496,6 +496,12 @@ div.ls{cursor:default;}
 .rt-t{font-size:0.95rem;font-weight:700;}
 .rt-s{font-size:0.78rem;color:var(--muted);line-height:1.35;}
 .rt-row .ico{transform:rotate(-90deg);color:var(--muted);flex:0 0 auto;}
+.dg-guide{margin-top:14px;}
+.dg-h{font-family:var(--f-mono);font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px;}
+.dg-h:first-child{margin-top:2px;}
+.dg-ol{margin:0;padding-left:20px;font-size:0.86rem;line-height:1.5;color:var(--text2);}
+.dg-ol li{margin:4px 0;}
+.dg-ol b{color:var(--text);}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -516,7 +522,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v48</span></div>
+  <div class="logo"><span class="logo-zh">和声</span><span class="logo-en">Harmony Path</span><span class="logo-v" title="build">v49</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -1388,7 +1394,8 @@ let jdIv=4,jdCue='root',jdSteady=false,jdSteadyRoot=0,jdDegs=null;   // jdInterv
 const KEY_DEGS=[0,2,4,5,7,9];
 function keyThirdAbove(deg){return ({0:4,2:3,4:3,5:4,7:4,9:3,11:3})[((deg%12)+12)%12];}
 function pickKey(){let lo=-9,hi=0;const p=profile();if(p){lo=Math.max(-17,(p.low-60)+1);hi=Math.min(9,(p.high-60)-13);if(hi<lo)hi=lo;}return lo+Math.floor(Math.random()*(hi-lo+1));}   // highest target = do + la + a minor 3rd = an octave up
-function keyName(semi){return nlabel(semi).replace(/-?\d+$/,'');}
+const KEYN=['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B♭','B'];   // how singers name major keys (A♭, not G#)
+function keyName(semi){return KEYN[((semi%12)+12)%12];}
 function jumpCheck(l){return autoChecks(l).find(c=>c.kind==='jumpN');}
 function jumpChecks(l){return autoChecks(l).filter(c=>c.kind==='jumpN');}
 function lessonHasJump(){const l=curId&&lessonById(curId);return !!(l&&jumpCheck(l));}
@@ -1616,11 +1623,11 @@ function paintET(msg){
  el.innerHTML=h+etHistoryHTML(store,key,best,L.name+(etTog?' · together':''));
 }
 /* last 12 runs at this level + mode: one hue, the best bar emphasised, labels on the latest and best only */
-function etHistoryHTML(store,key,best,label){
+function etHistoryHTML(store,key,best,label,scale){
  const runs=store.runs.filter(r=>r.k===key).slice(-12);
  let h='<section class="card"><div class="card-eyebrow"><span>Recent runs · '+label+'</span><span>best '+best+'</span></div>';
- if(!runs.length)return h+'<p class="card-sub" style="margin-top:10px">No runs yet here. Your last 12 runs will show as bars, so you can watch the streaks grow.</p></section>';
- const top=Math.max(best,5),avg=runs.reduce((a,r)=>a+r.n,0)/runs.length;let bestShown=false;
+ if(!runs.length)return h+'<p class="card-sub" style="margin-top:10px">No runs yet here. Your last 12 will show as bars, so you can watch your scores grow.</p></section>';
+ const top=scale||Math.max(best,5),avg=runs.reduce((a,r)=>a+r.n,0)/runs.length;let bestShown=false;
  h+='<div class="et-bars" role="img" aria-label="Last '+runs.length+' runs: '+runs.map(r=>r.n).join(', ')+'. Best '+best+'.">'+runs.map((r,i)=>{const isLast=i===runs.length-1,isBest=!bestShown&&best>0&&r.n===best;if(isBest)bestShown=true;return '<div class="et-bar'+(isBest?' best':'')+'" title="'+r.d+': '+r.n+' in a row"><span>'+((isLast||isBest)?r.n:'')+'</span><i style="height:'+Math.max(3,Math.round(r.n/top*100))+'%"></i></div>';}).join('')+'</div>';
  return h+'<p class="card-sub" style="margin-top:10px">Last run '+runs[runs.length-1].n+' · average of these '+runs.length+': '+avg.toFixed(1)+' · best '+best+'</p></section>';
 }
@@ -1628,21 +1635,34 @@ function degBestAny(){const E=S.__deg;return E&&E.best?Math.max(0,...Object.valu
 function vxBestAny(){const E=S.__vx;return E&&E.best?Math.max(0,...Object.values(E.best)):0;}
 function etBestAny(){const E=S.__ear;return E&&E.best?Math.max(0,...Object.values(E.best)):0;}
 /* shared Progress card for the streak tests: best in a row per level (+ the harder mode once tried) */
-function streakProgHTML(E,LV,mode,title,open,btn){
+function streakProgHTML(E,LV,mode,title,open,btn,extra){
  E=E||{best:{},runs:[]};const rows=[];
- [1,2,3].forEach(l=>[false,true].forEach(t=>{const k=String(l)+(t?mode:''),n=E.runs.filter(r=>r.k===k).length;if(n||!t)rows.push('<div class="skl"><span class="skl-n">'+LV[l].name+(t?' · hard':'')+'</span><span class="skl-w" style="text-align:left">'+LV[l].sub+'</span><span class="skl-v">'+(E.best[k]!=null?E.best[k]:(n?0:'—'))+'</span><span class="skl-w">'+(n?n+' run'+(n===1?'':'s'):'not yet')+'</span></div>');}));
- return '<section class="card"><div class="card-eyebrow"><span>'+title+' · best in a row</span><span>'+E.runs.length+' run'+(E.runs.length===1?'':'s')+'</span></div>'+rows.join('')+'<button class="cta-sec" onclick="'+open+'()">'+btn+'</button></section>';
+ Object.keys(LV).map(Number).sort((a,b)=>a-b).forEach(l=>[false,true].forEach(t=>{const k=String(l)+(t?mode:''),n=E.runs.filter(r=>r.k===k).length;if(n||!t)rows.push('<div class="skl"><span class="skl-n">'+LV[l].name+(t?' · hard':'')+'</span><span class="skl-w" style="text-align:left">'+LV[l].sub+'</span><span class="skl-v">'+(E.best[k]!=null?E.best[k]:(n?0:'—'))+'</span><span class="skl-w">'+(n?n+' run'+(n===1?'':'s'):'not yet')+'</span></div>');}));
+ return '<section class="card"><div class="card-eyebrow"><span>'+title+' · best in a row</span><span>'+E.runs.length+' run'+(E.runs.length===1?'':'s')+'</span></div>'+rows.join('')+(extra||'')+'<button class="cta-sec" onclick="'+open+'()">'+btn+'</button></section>';
 }
-function earProgHTML(){return streakProgHTML(S.__ear,ET_LEVELS,'t','Ear test','openEarTest','Take the ear test')+streakProgHTML(S.__deg,DG_LEVELS,'k','Scale degrees','openDegTest','Take the scale-degree drill')+streakProgHTML(S.__vx,VX_LEVELS,'m','Pick it out','openVoiceX','Take the pick-it-out drill');}
+/* learn-mode sessions for the Progress card: last and best out of 10, per level + mode tried */
+function dgLearnRows(){
+ const L=S.__deg&&S.__deg.learn;if(!L||!L.runs.length)return '';
+ const keys=[...new Set(L.runs.map(r=>r.k))].sort();
+ return keys.map(k=>{const rs=L.runs.filter(r=>r.k===k),lv=DG_LEVELS[parseInt(k,10)];if(!lv)return '';return '<div class="skl"><span class="skl-n">'+lv.name+(k.endsWith('k')?' · hard':'')+'</span><span class="skl-w" style="text-align:left">learn · last '+rs[rs.length-1].n+'/10</span><span class="skl-v">'+(L.best[k]||0)+'/10</span><span class="skl-w">'+rs.length+' session'+(rs.length===1?'':'s')+'</span></div>';}).join('');
+}
+function earProgHTML(){return streakProgHTML(S.__ear,ET_LEVELS,'t','Ear test','openEarTest','Take the ear test')+streakProgHTML(S.__deg,DG_LEVELS,'k','Scale degrees','openDegTest','Take the scale-degree drill',dgLearnRows())+streakProgHTML(S.__vx,VX_LEVELS,'m','Pick it out','openVoiceX','Take the pick-it-out drill');}
 /* ===================== SCALE-DEGREE DRILL (Practice tab, no mic) =====================
    Harmony singers hear the KEY, not bare intervals: "the melody is on mi, so I sing sol".
    Each round a I–IV–V–I cadence sets a major key, then one note plays; name its degree.
    Every answer then walks the note home to do (re→do, sol→la→ti→do), which is the teaching
-   device. One miss ends the run; streaks are stored in S.__deg like the ear test. */
-const DG_LEVELS={1:{name:'Level 1',sub:'do · mi · sol',choices:[0,4,7]},2:{name:'Level 2',sub:'+ re · fa',choices:[0,2,4,5,7]},3:{name:'Level 3',sub:'the whole scale',choices:[0,2,4,5,7,9,11]}};
+   device. Two modes (v49): Learn = 10 rounds, a miss reveals and carries on (S.__deg.learn);
+   Streak = one miss ends the run (S.__deg best/runs, like the ear test). Level 0 "Start" = do or sol. */
+const DG_LEVELS={0:{name:'Start',sub:'do or sol — home, or open?',choices:[0,7]},1:{name:'Level 1',sub:'do · mi · sol',choices:[0,4,7]},2:{name:'Level 2',sub:'+ re · fa',choices:[0,2,4,5,7]},3:{name:'Level 3',sub:'the whole scale',choices:[0,2,4,5,7,9,11]}};
 const DG_NUM={0:1,2:2,4:3,5:4,7:5,9:6,11:7};
-let dgActive=false,dgState='idle',dgStreak=0,dgDeg=0,dgKey=99,dgLevel=1,dgMove=false,dgTimer=null;
-function degStore(){if(!S.__deg)S.__deg={best:{},runs:[]};return S.__deg;}
+const DG_LEARN_N=10;   // learn mode: rounds per session; move up after two sessions at 8+
+let dgActive=false,dgState='idle',dgStreak=0,dgRound=0,dgDeg=0,dgKey=99,dgLevel=0,dgMove=false,dgLearn=true,dgTimer=null,dgTimer2=null;
+function degStore(){if(!S.__deg)S.__deg={best:{},runs:[]};const E=S.__deg;if(!E.learn)E.learn={best:{},runs:[]};return E;}
+function dgKeyOf(l,m){return String(l)+(m?'k':'');}
+function dgLoadPref(){const p=degStore().pref;if(p){if(DG_LEVELS[p.l])dgLevel=p.l;dgMove=!!p.m;dgLearn=p.learn!==false;}}
+function dgSavePref(){degStore().pref={l:dgLevel,m:dgMove,learn:dgLearn};persist();}
+/* pure: ready to move up? the last two learn sessions both 8+ out of 10 */
+function dgReady(runs){const r=runs.slice(-2);return r.length===2&&r.every(x=>x.n>=8);}
 /* pure: a new tonic (F3–E4), never the same as the last one */
 function dgPickKey(prev,rnd){rnd=rnd||Math.random;let k=prev;for(let i=0;i<8&&(k===prev||k<-7||k>4);i++)k=-7+Math.floor(rnd()*12);return Math.max(-7,Math.min(4,k));}
 /* pure: the way home — by step to the nearest do (fa and below fall, sol and above rise) */
@@ -1650,51 +1670,86 @@ function dgResolve(d){return ({0:[0],2:[2,0],4:[4,2,0],5:[5,4,2,0],7:[7,9,11,12]
 function dgCadence(k,t0){const C=[[0,4,7],[0,5,9],[-1,2,7],[0,4,7]],B=[0,5,7,0];C.forEach((ch,i)=>{ch.forEach(v=>tone(k+v,0.5,t0+i*0.55,0.09));tone(k-12+B[i],0.5,t0+i*0.55,0.11);});return t0+4*0.55;}
 function dgPlay(withKey){const t=withKey?dgCadence(dgKey,0)+0.45:0;tone(dgKey+dgDeg,1.0,t,0.24);}
 function dgPlayResolve(t0){const p=dgResolve(dgDeg);p.forEach((v,i)=>tone(dgKey+v,i===p.length-1?0.7:0.3,t0+i*0.32,0.22));return t0+p.length*0.32+0.4;}
-function resetDG(){if(dgTimer)clearTimeout(dgTimer);dgTimer=null;dgActive=false;dgState='idle';}
+function dgClear(){if(dgTimer)clearTimeout(dgTimer);if(dgTimer2)clearTimeout(dgTimer2);dgTimer=dgTimer2=null;}
+function resetDG(){dgClear();dgActive=false;dgState='idle';}
+function dgGuideHTML(open){
+ const body='<p class="dg-h">What you’ll hear — about 4 seconds</p><ol class="dg-ol">'+
+  '<li><b>Four chords</b> (2 s) set the key: home → away → further away → home. The deep bass walks do, fa, sol, do.</li>'+
+  '<li><b>A short pause.</b></li>'+
+  '<li><b>One note</b>, held for a second. It is a note of that key, between do and the do above. At Start and Level 1 it is always one of the three notes of the last chord.</li></ol>'+
+  '<p class="dg-h">What to do</p><ol class="dg-ol">'+
+  '<li>Keep <b>do</b> in your head — the lowest of the last chord’s three upper notes (the deep bass is the same do, an octave down).</li>'+
+  '<li><b>Sing the note back</b> out loud. There’s no mic in this drill, so hum or sing freely.</li>'+
+  '<li><b>Sing up from do</b> — do… mi… sol — and notice which one it matches.</li>'+
+  '<li>Tap your answer. Then listen: the note <b>walks home</b> to do. That walk is the lesson — sol climbs la, ti, do; mi steps down re, do.</li></ol>'+
+  '<p class="dg-h">Buttons and modes</p><ul class="dg-ol">'+
+  '<li><b>Key + note</b> plays the whole round again; <b>Note</b> plays just the note. Nothing is timed — replay as often as you like.</li>'+
+  '<li><b>Learn</b>: 10 rounds, and a miss shows you the answer and carries on. After two sessions at 8 or more, move up a level.</li>'+
+  '<li><b>Streak</b>: one miss ends the run. Use it once a level feels easy.</li></ul>';
+ return '<details class="acc dg-guide"'+(open?' open':'')+'><summary>What you’ll hear · what to do'+ico('chevd')+'</summary><div class="acc-body">'+body+'</div></details>';
+}
 function openDegTest(){
- curId=null;stopDrone();stopPitch();resetDG();
+ curId=null;stopDrone();stopPitch();resetDG();dgLoadPref();
+ const E=degStore(),fresh=!E.runs.length&&!E.learn.runs.length;
  document.getElementById('dCrumb').textContent='Practice · Scale degrees';
- document.getElementById('dBody').innerHTML='<h1 class="d-title">Scale-Degree Drill</h1><div class="d-focus">Chords set the key, then one note plays: is it do, re, mi…? Each answer walks the note home to do, so you hear where it lives. One miss ends the run.</div><div id="dgBody"></div>';
+ document.getElementById('dBody').innerHTML='<h1 class="d-title">Scale-Degree Drill</h1><div class="d-focus">Chords set the key, then one note plays: is it do, mi, sol…? Each answer walks the note home to do, so you hear where it lives.</div>'+dgGuideHTML(fresh)+'<div id="dgBody"></div>';
  paintDG();
  document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
 }
-function setDGLevel(l){if(dgActive)return;dgLevel=l;dgState='idle';paintDG();}
-function toggleDGMove(){if(dgActive)return;dgMove=!dgMove;dgState='idle';paintDG();}
-function startDG(){dgActive=true;dgStreak=0;dgKey=dgPickKey(99);nextDG(true);}
+function setDGLevel(l){if(dgActive)return;dgLevel=l;dgState='idle';dgSavePref();paintDG();}
+function toggleDGMove(){if(dgActive)return;dgMove=!dgMove;dgState='idle';dgSavePref();paintDG();}
+function setDGMode(learn){if(dgActive)return;dgLearn=!!learn;dgState='idle';dgSavePref();paintDG();}
+function dgRoundLabel(){return dgLearn?'Round '+dgRound+' of '+DG_LEARN_N:'Round '+dgRound;}
+function startDG(){dgActive=true;dgStreak=0;dgRound=0;dgKey=dgPickKey(99);nextDG(true);}
 function nextDG(first){
- if(dgTimer)clearTimeout(dgTimer);dgTimer=null;
+ dgClear();
+ if(dgLearn&&dgRound>=DG_LEARN_N){finishLearnDG();return;}
+ dgRound++;
  if(dgMove&&!first)dgKey=dgPickKey(dgKey);
  const ch=DG_LEVELS[dgLevel].choices;dgDeg=ch[Math.floor(Math.random()*ch.length)];
- dgState='answer';paintDG('Round '+(dgStreak+1)+' — '+(first||dgMove?'key of '+keyName(dgKey)+' — ':'')+'which note of the key?');dgPlay(true);
+ dgState='cue';paintDG(dgRoundLabel()+' — chords set the key'+(first||dgMove?' ('+keyName(dgKey)+' major)':'')+', then one note…');dgPlay(true);
+ dgTimer2=setTimeout(()=>{if(dgState==='cue'){dgState='answer';paintDG(dgRoundLabel()+' — which note was that?');}},2650);   // answers open as the note sounds
 }
 function answerDG(v){
  if(!dgActive||dgState!=='answer')return;
  const nm=DEGN[dgDeg]+' ('+DG_NUM[dgDeg]+')';
- if(v===dgDeg){dgStreak++;dgState='reveal';paintDG('✓ '+nm+' — '+dgStreak+' in a row');const t=dgPlayResolve(0.1);dgTimer=setTimeout(()=>nextDG(false),Math.round(t*1000)+250);return;}
+ if(v===dgDeg){dgStreak++;dgState='reveal';paintDG('✓ '+nm+' — '+(dgLearn?dgStreak+' of '+dgRound+' right':dgStreak+' in a row'));const t=dgPlayResolve(0.1);dgTimer=setTimeout(()=>nextDG(false),Math.round(t*1000)+250);return;}
+ if(dgLearn){   // learn: hear the answer and carry on
+  dgState='reveal';paintDG('✗ That was '+nm+' — you said '+DEGN[v]+'. Listen: the note, then its walk home.');
+  tone(dgKey+dgDeg,0.6,0.35,0.24);const t=dgPlayResolve(1.05);dgTimer=setTimeout(()=>nextDG(false),Math.round(t*1000)+700);return;
+ }
  dgActive=false;dgState='over';
- const r=etRecord(degStore(),String(dgLevel)+(dgMove?'k':''),dgStreak,todayStr());markDayActive();persist();
+ const r=etRecord(degStore(),dgKeyOf(dgLevel,dgMove),dgStreak,todayStr());markDayActive();persist();
  paintDG('✗ That was '+nm+' in '+keyName(dgKey)+' major — you said '+DEGN[v]+'. Run over: '+dgStreak+' in a row'+(r.newBest?' — a new best!':'.'));
  tone(dgKey+dgDeg,0.6,0.35,0.24);dgPlayResolve(1.05);
 }
-function stopDG(){if(!dgActive)return;resetDG();paintDG('Run stopped — not recorded.');}
+function finishLearnDG(){
+ dgClear();dgActive=false;dgState='over';
+ const L=degStore().learn,k=dgKeyOf(dgLevel,dgMove);etRecord(L,k,dgStreak,todayStr());markDayActive();persist();
+ const ready=dgReady(L.runs.filter(r=>r.k===k));
+ paintDG('Done: '+dgStreak+' of '+DG_LEARN_N+' right. '+(ready?'Two sessions at 8 or more — ready for '+(dgLevel<3?'the next level, or Streak mode here.':'Streak mode.'):(dgStreak>=8?'One more like that and you’re ready to move up.':'Same again next time — this builds slowly, and that’s normal.')));
+}
+function stopDG(){if(!dgActive)return;resetDG();paintDG('Stopped — not recorded.');}
 function dgAgain(){if(dgState!=='over')return;dgCadence(dgKey,0);tone(dgKey+dgDeg,0.6,2.65,0.24);dgPlayResolve(3.35);}
 function paintDG(msg){
  const el=document.getElementById('dgBody');if(!el)return;
- const store=degStore(),key=String(dgLevel)+(dgMove?'k':''),best=store.best[key]||0,L=DG_LEVELS[dgLevel],dis=dgActive?' disabled':'';
+ const E=degStore(),key=dgKeyOf(dgLevel,dgMove),store=dgLearn?E.learn:E,best=store.best[key]||0,L=DG_LEVELS[dgLevel],dis=dgActive?' disabled':'';
  let h='<div class="tool-panel">';
- h+='<div class="seg" role="group" aria-label="Level">'+[1,2,3].map(l=>'<button class="seg-b" aria-pressed="'+(dgLevel===l)+'"'+dis+' onclick="setDGLevel('+l+')">'+DG_LEVELS[l].name+'</button>').join('')+'</div>';
+ h+='<div class="seg" role="group" aria-label="Mode">'+[['Learn',true],['Streak',false]].map(m=>'<button class="seg-b" aria-pressed="'+(dgLearn===m[1])+'"'+dis+' onclick="setDGMode('+m[1]+')">'+m[0]+'</button>').join('')+'</div>';
+ h+='<div class="et-sub">'+(dgLearn?'10 rounds — a miss shows you the answer and carries on':'One miss ends the run')+'</div>';
+ h+='<div class="seg" role="group" aria-label="Level" style="margin-top:12px">'+[0,1,2,3].map(l=>'<button class="seg-b" aria-pressed="'+(dgLevel===l)+'"'+dis+' onclick="setDGLevel('+l+')">'+DG_LEVELS[l].name+'</button>').join('')+'</div>';
  h+='<div class="et-sub">'+L.sub+'</div>';
  h+='<div class="t-row" style="justify-content:center"><button class="tbtn tog'+(dgMove?' on':'')+'" aria-pressed="'+dgMove+'"'+dis+' onclick="toggleDGMove()">New key every round (harder)</button></div>';
- h+='<div class="et-score"><div><div class="et-n">'+dgStreak+'</div><div class="kpi-l">In a row</div></div><div><div class="et-n et-best">'+best+'</div><div class="kpi-l">Your best here</div></div></div>';
+ h+='<div class="et-score"><div><div class="et-n">'+dgStreak+'</div><div class="kpi-l">'+(dgLearn?(dgActive?'Right · round '+dgRound+'/'+DG_LEARN_N:(dgState==='over'?'Right of '+DG_LEARN_N:'Right')):'In a row')+'</div></div><div><div class="et-n et-best">'+best+'</div><div class="kpi-l">'+(dgLearn?'Best of 10':'Your best here')+'</div></div></div>';
  if(dgActive){
   h+='<div class="et-grid dg-grid">'+L.choices.map(v=>'<button class="tbtn tog et-ans"'+(dgState!=='answer'?' disabled':'')+' onclick="answerDG('+v+')">'+DEGN[v]+'<small>'+DG_NUM[v]+'</small></button>').join('')+'</div>';
   h+='<div class="t-row" style="justify-content:center"><button class="tbtn tog" onclick="dgPlay(true)">'+ico('play')+'Key + note</button><button class="tbtn tog" onclick="dgPlay(false)">'+ico('play')+'Note</button><button class="tbtn tog" onclick="stopDG()">'+ico('stop')+'Stop</button></div>';
  }else{
-  h+='<button class="cta" onclick="startDG()">'+ico('play')+(dgState==='over'?'Start a new run':'Start a run')+'</button>';
-  if(dgState==='over')h+='<div class="t-row" style="justify-content:center;margin-top:10px"><button class="tbtn tog" onclick="dgAgain()">'+ico('play')+'Hear it in the key again</button></div>';
+  h+='<button class="cta" onclick="startDG()">'+ico('play')+(dgLearn?(dgState==='over'?'Start another 10':'Start 10 rounds'):(dgState==='over'?'Start a new run':'Start a run'))+'</button>';
+  if(dgState==='over')h+='<div class="t-row" style="justify-content:center;margin-top:10px"><button class="tbtn tog" onclick="dgAgain()">'+ico('play')+'Hear the last one in the key again</button></div>';
  }
  h+='<div class="et-msg" role="status">'+(msg||'')+'</div></div>';
- el.innerHTML=h+etHistoryHTML(store,key,best,L.name+(dgMove?' · new keys':''));
+ el.innerHTML=h+etHistoryHTML(store,key,best,(dgLearn?'Learn · ':'')+L.name+(dgMove?' · new keys':''),dgLearn?DG_LEARN_N:0);
 }
 /* ===================== PICK IT OUT — voice extraction (Practice tab, mic) =====================
    Hearing your own line inside a texture: two notes sound TOGETHER, then you sing the low one,

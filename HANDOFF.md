@@ -6,7 +6,27 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-22 · **Build: v48 / harmony-v48** — live on GitHub Pages (Ear routine on the Practice tab). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-23 · **Build: v49 / harmony-v49** — live on GitHub Pages (Scale degrees: Start level, Learn mode, guide). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v48 → v49) — Scale degrees made learnable
+User found the scale-degree drill really hard; sudden death on a skill they hadn't yet learned
+meant a stream of 0s and 1s. Asked for a do-or-sol level, a learn mode, and on-screen instructions.
+- Level 0 "Start" = do or sol (home vs open). Levels now Start / 1 / 2 / 3; storage keys '0', '0k'…
+- Mode switch Learn | Streak. Learn = 10 rounds; a miss names the answer, plays it and its walk home,
+  and carries on; the session is logged in `S.__deg.learn` (out of 10, chart scaled to 10).
+  `dgReady` (pure): two most recent sessions at 8+ → "ready for the next level, or Streak mode".
+  Streak mode is the old behaviour (`S.__deg` best/runs).
+- "What you'll hear · what to do" guide (`dgGuideHTML`): four chords (home → away → further →
+  home, bass do-fa-sol-do), pause, one note; keep do in your head, sing it back, sing up from do,
+  answer, hear it walk home; buttons; modes. Open by itself only until the first session.
+- Answer buttons stay locked while the chords play (state 'cue') and open as the note sounds; the
+  message tracks it ("chords set the key… then one note" → "which note was that?").
+- Level + mode are remembered (`S.__deg.pref`); a first-timer starts on Start + Learn.
+- Progress card: degree levels include Start; learn sessions shown as "learn · last 8/10"
+  (`dgLearnRows`). `streakProgHTML` now iterates the level keys it is given (+ optional extra rows).
+- Keys are named as singers write them: `keyName` → C, D♭, D, E♭, E, F, F♯, G, A♭, A, B♭, B
+  (also shows in the Thirds in a Key drill).
+- Harness: 345 assertions (+14), mutation-tested.
 
 ## What changed this session (v47 → v48) — Ear routine on the Practice tab
 User asked for Jump to It on the Practice tab, in the order to practise everything.

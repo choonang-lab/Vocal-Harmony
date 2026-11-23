@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -965,6 +965,34 @@ console.log('\n▸ Ear routine: drills in practice order, step 2 follows your pr
   const M1 = {}; eq(A.rtThinkDefault(M1), 2, 'first routine visit turns Think first on at 2 s');
   const M2 = { think: 0 }; eq(A.rtThinkDefault(M2), 0, '…but a chosen Off stays Off');
   A.setS(saved);
+}
+
+/* ================================================================ */
+/*  v49 — SCALE DEGREES: START LEVEL, LEARN MODE, GUIDE              */
+/* ================================================================ */
+console.log('\n▸ Scale degrees: do-or-sol start, learn mode, on-screen guide');
+{
+  eq(A.DG_LEVELS[0].choices.join(), '0,7', 'Start level is do or sol');
+  ok(A.DG_LEVELS[0].choices.every((v) => A.DG_LEVELS[1].choices.includes(v)), 'Level 1 keeps both Start notes');
+  eq(A.dgReady([]), false, 'no sessions: not ready');
+  eq(A.dgReady([{ n: 9 }]), false, 'one good session is not enough');
+  eq(A.dgReady([{ n: 9 }, { n: 8 }]), true, 'two sessions at 8+: ready to move up');
+  eq(A.dgReady([{ n: 10 }, { n: 7 }]), false, 'the last two must both be 8+');
+  eq(A.dgReady([{ n: 3 }, { n: 8 }, { n: 8 }]), true, 'only the last two count');
+  const saved = A.getS();
+  A.setS({ __deg: { best: { '1': 3 }, runs: [{ d: 'x', k: '1', n: 3 }] } });
+  const E = A.degStore(); ok(E.learn && E.learn.runs.length === 0 && E.best['1'] === 3, 'older saved data gains a learn log, streak bests kept');
+  eq(A.dgLearnRows(), '', 'no learn sessions: no learn rows on Progress');
+  A.etRecord(E.learn, '0', 6, 'a'); A.etRecord(E.learn, '0', 9, 'b');
+  const card = A.earProgHTML();
+  ok(card.includes('Start') && card.includes('learn · last 9/10') && card.includes('>9/10<') && card.includes('2 sessions'), 'Progress card shows the Start level and learn sessions out of 10');
+  const hist = A.etHistoryHTML(E.learn, '0', 9, 'Learn · Start', 10);
+  ok(/height:60%/.test(hist) && /height:90%/.test(hist), 'learn chart is scaled out of 10, not to the best');
+  A.setS(saved);
+  const g = A.dgGuideHTML(true);
+  ok(g.includes(' open') && !A.dgGuideHTML(false).includes(' open>'), 'guide opens by itself only for a first-timer');
+  eq([0, 1, 3, 6, 8, 10, -4, -5].map(A.keyName).join(), 'C,D♭,E♭,F♯,A♭,B♭,A♭,G', 'keys are named the way singers write them (A♭, not G#)');
+  ok(['Four chords', 'One note', 'Sing the note back', 'walks home', 'Key + note', 'Learn', 'Streak'].every((t) => g.includes(t)), 'guide covers what plays, what to do, the buttons and both modes');
 }
 
 /* ================================================================ */

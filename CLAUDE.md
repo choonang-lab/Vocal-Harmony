@@ -100,7 +100,8 @@ melody), plus the Module-0 range probe.
 - **Think first (v46):** jump-drill cues hand over through `afterCue()`, never straight to
   `beginListen` — that is where the optional silent gap (`meta().think`, 0/2/4 s) lives. A new cue
   type must call `setTimeout(afterCue, …)` too. Humming in the gap sets `early` on the result only.
-- Also not a check kind: the **Scale-degree drill** (v45, `openDegTest`, `dg*`, stored in `S.__deg`):
+- Also not a check kind: the **Scale-degree drill** (v45; v49 added level 0 "Start" = do/sol, a Learn mode
+  logged in `S.__deg.learn`, and the remembered `S.__deg.pref`) (`openDegTest`, `dg*`, stored in `S.__deg`):
   cadence sets a key, name the degree, every answer resolves to do (`dgResolve`). It reuses
   `etRecord`, `etHistoryHTML` and `streakProgHTML` — a third streak test should too.
 - **Pick It Out** (v47, `openVoiceX`, `vx*`, `S.__vx`) is the one streak test that uses the mic:
