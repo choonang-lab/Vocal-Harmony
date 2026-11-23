@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'CD_CHORDS', 'CD_LEVELS', 'cdNotes', 'cdMelody', 'cdPickKey', 'chdStore', 'learnRowsFor', 'cdGuideHTML', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -1083,6 +1083,35 @@ console.log('\n▸ Monthly check-in: same line, same key, every 4 weeks');
   ok(A.benchProgHTML().includes('40% on harmony') && A.benchProgHTML().includes('next '), 'Progress lists the take and the next due date');
   A.setS({ __meta: { streak: 0, best: 0, last: '', quick: 0, days: ['2026-11-22'] } });
   eq(A.benchTodayHTML(), '', 'a brand-new user isn’t asked yet');
+  A.setS(saved);
+}
+
+/* ================================================================ */
+/*  v53 — CHORD CHANGES                                              */
+/* ================================================================ */
+console.log('\n▸ Chord changes: I, IV, V, vi in a key, named by feel and bass');
+{
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11], pc = (x) => ((x % 12) + 12) % 12;
+  const shape = (name) => { const n = A.cdNotes(name, 0), ps = [...new Set(n.voices.map(pc))].sort((a, b) => a - b); return { ps: ps, bass: pc(n.bass) }; };
+  const triad = (root, minor) => [root, root + (minor ? 3 : 4), root + 7].map(pc).sort((a, b) => a - b).join();
+  eq(shape('I').ps.join(), triad(0), 'I is a major triad on do'); eq(shape('IV').ps.join(), triad(5), 'IV is a major triad on fa');
+  eq(shape('V').ps.join(), triad(7), 'V is a major triad on sol'); eq(shape('vi').ps.join(), triad(9, true), 'vi is a MINOR triad on la');
+  eq(['I', 'IV', 'V', 'vi'].map((c) => shape(c).bass).join(), '0,5,7,9', 'the bass is the root: do, fa, sol, la');
+  ok(['I', 'IV', 'V', 'vi'].every((c) => A.cdNotes(c, 0).voices.every((v) => MAJOR.includes(pc(v)))), 'every chord note is in the key');
+  ok(['I', 'IV', 'V', 'vi'].every((c) => { const n = A.cdNotes(c, -3); return n.bass < Math.min(...n.voices) - 5; }), 'the bass sits clearly below the chord');
+  const span = Math.max(...['I', 'IV', 'V', 'vi'].map((c) => Math.max(...A.cdNotes(c, 0).voices))) - Math.min(...['I', 'IV', 'V', 'vi'].map((c) => Math.min(...A.cdNotes(c, 0).voices)));
+  ok(span <= 10, 'close voicings: the chords move by small steps, like a pianist’s hands (span ' + span + ')');
+  let seed = 4; const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  let prev = 99, moved = true, inR = true; for (let i = 0; i < 300; i++) { const k = A.cdPickKey(prev, rnd); if (k === prev) moved = false; if (k < -7 || k > 0) inR = false; prev = k; }
+  ok(moved && inR, 'keys F3–C4, never the same twice in a row');
+  let topOk = true; for (let i = 0; i < 300; i++) { const c = ['I', 'IV', 'V', 'vi'][i % 4], k = -7 + (i % 8), m = A.cdMelody(c, k, rnd), n = A.cdNotes(c, k); if (!A.CD_CHORDS[c].v.map(pc).includes(pc(m - k)) || m <= Math.max(...n.voices) || m > 21) topOk = false; }
+  ok(topOk, 'the melody note is one of the chord’s own notes, above the chord, never above A5');
+  eq(A.CD_LEVELS[0].choices.join(), 'I,V', 'Start: I or V');
+  ok(A.CD_LEVELS[0].choices.every((c) => A.CD_LEVELS[1].choices.includes(c)) && A.CD_LEVELS[1].choices.every((c) => A.CD_LEVELS[2].choices.includes(c)), 'each level keeps the previous one’s chords');
+  const g = A.cdGuideHTML(true); ok(['home', 'A-men', 'tense', 'sad', 'lowest note', 'Learn', 'Streak'].every((t) => g.includes(t)), 'guide: how each chord feels, the bass clue, both modes');
+  const saved = A.getS(); A.setS({});
+  const E = A.chdStore(); A.etRecord(E.learn, '1', 7, 'a'); A.etRecord(E.learn, '1', 9, 'b');
+  const rows = A.learnRowsFor(E, A.CD_LEVELS); ok(rows.includes('Level 1') && rows.includes('learn · last 9/10'), 'Progress shows chord learn sessions');
   A.setS(saved);
 }
 

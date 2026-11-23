@@ -6,7 +6,26 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-23 · **Build: v52 / harmony-v52** — live on GitHub Pages (Monthly check-in). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v51 `fec77dc` (Harmony in Mandopop). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-24 · **Build: v53 / harmony-v53** — live on GitHub Pages (Chord-change drill). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v52 `cc2e554` (Monthly check-in). Earlier: v51 `fec77dc` (Harmony in Mandopop). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v52 → v53) — Chord changes drill
+Top gap from the pedagogy review: every drill sat on one home chord, but a harmony note must fit
+the chord underneath — what Module 5 (Harmonize the Radio) quietly assumes.
+- Practice → routine step 4 "Chord changes" (`openChordTest`, no mic; ear test is now step 5).
+  Each round: I (0.7 s), then a chord (1.3 s) — name it. Answers unlock as the second chord sounds.
+  Every answer plays chord → I so you hear the pull (`cdResolve`); a miss on I says it was home.
+- `CD_CHORDS`: I [0,4,7], IV [0,5,9], V [-1,2,7], vi [0,4,9] — close voicings around middle C;
+  bass = root, at least 5 semitones under the chord (`cdNotes`; V and vi drop an octave, lowest C2).
+  Keys F3–C4 (`cdPickKey`, new key every round). Levels: Start = I/V, 1 = I/IV/V, 2 = + vi.
+- Learn (10 rounds, carries on after a miss, `dgReady` nudge) / Streak, like the scale-degree drill;
+  "Melody note on top (harder)": a chord tone 10–21 semitones above do, louder (`cdMelody`).
+  Guide: how each chord feels (home / A-men / tense / sad), the bass clue (do / fa / sol / la),
+  earphones (phone speakers barely play the bass). Level/mode remembered (`S.__chd.pref`).
+- `S.__chd` {best, runs, learn, pref}; Progress card via `streakProgHTML` + `learnRowsFor` (the
+  scale-degree learn rows now share it). 5.1 Harmonize the Radio points to the drill.
+- Harness: 408 assertions (+14), mutation-tested (6 caught). Testing caught V/vi basses sitting
+  3–4 semitones under the chord — too close to pick out; fixed.
+- On-device to check: whether the bass is audible on earphones, and chord balance vs melody note.
 
 ## What changed this session (v51 → v52) — Monthly check-in (the transfer test)
 Pedagogy review: drills train components; the honest test is whether they show up in real singing.

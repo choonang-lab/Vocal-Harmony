@@ -109,6 +109,9 @@ melody), plus the Module-0 range probe.
 - **Monthly check-in** (v52, `openBench`, `bm*`, `S.__bench`): fixed line (row1, HIGH part), fixed key
   (`benchKey`, stored), fixed tempo — never make it follow user settings, or months stop being
   comparable. Audio lives in IndexedDB 'harmony_bench', outside Backup. `feedBM` hangs off the pitch loop.
+- **Chord changes** (v53, `openChordTest`, `cd*`, `S.__chd`): Learn/Streak like the scale-degree drill;
+  chords in `CD_CHORDS` (close voicings, root in the bass ≥5 semitones under). Shares `dgReady`,
+  `etRecord`, `etHistoryHTML`, `streakProgHTML`, `learnRowsFor`.
 - **Pick It Out** (v47, `openVoiceX`, `vx*`, `S.__vx`) is the one streak test that uses the mic:
   `feedVX` hangs off the pitch loop beside `feedJump`; `vxJudge` is its pure scorer (folds octaves,
   names the other note). It shares `etRecord`/`etHistoryHTML`/`streakProgHTML` like the others.
