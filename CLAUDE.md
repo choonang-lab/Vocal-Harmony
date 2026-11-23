@@ -106,6 +106,9 @@ melody), plus the Module-0 range probe.
   logged in `S.__deg.learn`, and the remembered `S.__deg.pref`) (`openDegTest`, `dg*`, stored in `S.__deg`):
   cadence sets a key, name the degree, every answer resolves to do (`dgResolve`). It reuses
   `etRecord`, `etHistoryHTML` and `streakProgHTML` — a third streak test should too.
+- **Timing & blend listen-back** (v55, `TB_ITEMS`, `tbHTML(id, src, groups)`, `S.__tb.log`): a self-check
+  under any recording. A new recording surface should add `tbHTML` with a stable per-take id; pass
+  groups 't' when the other part is synthetic (blend can't be judged), 'tb' otherwise.
 - **Monthly check-in** (v52, `openBench`, `bm*`, `S.__bench`): fixed line (row1, HIGH part), fixed key
   (`benchKey`, stored), fixed tempo — never make it follow user settings, or months stop being
   comparable. Audio lives in IndexedDB 'harmony_bench', outside Backup. `feedBM` hangs off the pitch loop.

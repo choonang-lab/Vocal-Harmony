@@ -551,6 +551,21 @@ div.ls{cursor:default;}
 .vx-voice{margin-top:10px;padding:12px;border-radius:12px;background:var(--surface2);}
 .vx-v-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:0.86rem;color:var(--text2);}
 .vx-v-top b{color:var(--text);}
+.tb{margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);}
+.tb-head{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+.rec .tb{border:0;padding:0;background:transparent;margin-top:16px;}
+.tb-intro{font-size:0.8rem;line-height:1.45;color:var(--text2);margin:8px 0 0;}
+.tb-intro b{color:var(--text);}
+.tb-g{font-family:var(--f-mono);font-size:0.66rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px;}
+.tb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);}
+.tb-g + .tb-row{border-top:0;}
+.tb-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.tb-txt b{font-size:0.88rem;color:var(--text);}
+.tb-txt span{font-size:0.76rem;line-height:1.35;color:var(--muted);}
+.tb-yn{display:flex;gap:6px;flex:0 0 auto;}
+.tb-b{min-height:36px;padding:0 10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--text2);font:inherit;font-size:0.78rem;font-weight:600;cursor:pointer;}
+.tb-b[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+.tb-b.no[aria-pressed="true"]{background:var(--surface2);border-color:var(--text2);color:var(--text);}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -571,7 +586,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v54</span></div>
+  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v55</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -1256,11 +1271,60 @@ function downloadRec(){if(!recURL)return;const a=document.createElement('a');a.h
 function recorderHTML(){
  const live=mediaRec&&mediaRec.state==='recording';
  let h='<div class="rec" id="recBox"><div class="rec-row"><button class="rec-btn '+(live?'stop live':'')+'" onclick="toggleRecord()"><span class="rec-dot"></span>'+(live?'Stop':'Record take')+'</button><span class="rec-time" id="recTime">'+(live?recTimeStr():'00:00')+'</span></div>';
- if(recURL&&recOwner===curId&&!live)h+='<audio controls src="'+recURL+'"></audio><span class="rec-dl" onclick="downloadRec()">⤓ Download this take to send to Claude</span>';
+ if(recURL&&recOwner===curId&&!live)h+='<audio controls src="'+recURL+'"></audio><span class="rec-dl" onclick="downloadRec()">⤓ Download this take to send to Claude</span>'+tbHTML('rec'+recT0,recOwner||'practice','tb');
  h+='<div class="rec-hint">Records straight in the app — no separate voice-memo app needed. Take stays until you record again or leave this checkpoint; download it to keep or share.</div></div>';
  return h;
 }
 function paintRec(){const box=document.getElementById('recBox');if(!box)return;box.outerHTML=recorderHTML();const t=document.getElementById('recTime');if(t&&mediaRec&&mediaRec.state==='recording')t.textContent=recTimeStr();}
+/* ===================== TIMING & BLEND LISTEN-BACK (v55) =====================
+   The tuner only hears pitch. Timing (together on entries, changes, cut-offs, clean starts) and blend
+   (vowel, balance, breaths) need ears on a recording. After a take, tick Yes / Not yet; unanswered
+   = skipped (blend only makes sense when both voices are on the recording). S.__tb.log =
+   [{id, d, src, a:{key:1|0}}] (max 120). Progress shows hit rates and the item to focus on. */
+const TB_ITEMS=[
+ {k:'in',g:'t',t:'Came in on time',h:'Your first note started with the tune — not a beat late.'},
+ {k:'move',g:'t',t:'Moved with the tune',h:'You changed notes when the melody did, not a moment after.'},
+ {k:'off',g:'t',t:'Stopped together',h:'Held notes ended when the tune’s did — no hanging on.'},
+ {k:'start',g:'t',t:'Clean starts',h:'Each note began on its pitch — no scooping up into it.'},
+ {k:'vowel',g:'b',t:'Same vowel',h:'Your “ah” or “oo” matched the lead’s shape, so the two sound like one.'},
+ {k:'level',g:'b',t:'A little under the tune',h:'The harmony sits just below the melody in volume; the tune stays on top.'},
+ {k:'breath',g:'b',t:'Breathed together',h:'You breathed in the same places as the lead.'}];
+function tbStore(){if(!S.__tb)S.__tb={log:[]};return S.__tb;}
+function tbEntry(id){return tbStore().log.find(e=>e.id===id)||null;}
+function tbDom(id){return 'tb_'+String(id).replace(/[^A-Za-z0-9]/g,'_');}
+/* pure: yes / answered for one checklist */
+function tbScore(a){const v=Object.values(a||{});return {yes:v.filter(x=>x===1).length,ans:v.length};}
+/* pure: per-item yes counts over a log */
+function tbRates(log){const r={};TB_ITEMS.forEach(i=>r[i.k]={yes:0,n:0});(log||[]).forEach(e=>Object.keys(e.a||{}).forEach(k=>{if(r[k]){r[k].n++;if(e.a[k]===1)r[k].yes++;}}));return r;}
+/* pure: the item to work on — lowest yes-rate with at least 2 answers; ties go to the earlier item; none if all perfect */
+function tbFocus(log){const r=tbRates(log);let best=null,br=2;TB_ITEMS.forEach(i=>{const x=r[i.k];if(x.n>=2){const q=x.yes/x.n;if(q<br&&q<1){br=q;best=i.k;}}});return best;}
+function tbItem(k){return TB_ITEMS.find(i=>i.k===k);}
+function tbSet(id,src,groups,k,v){
+ const L=tbStore().log;let e=tbEntry(id);
+ if(!e){e={id:id,d:todayStr(),src:src,a:{}};L.push(e);if(L.length>120)L.shift();}
+ if(e.a[k]===v)delete e.a[k];else e.a[k]=v;persist();
+ const el=document.getElementById(tbDom(id));if(el)el.outerHTML=tbHTML(id,src,groups);
+}
+function tbHTML(id,src,groups){
+ groups=groups||'tb';const e=tbEntry(id),a=(e&&e.a)||{},sc=tbScore(a);
+ const prev=tbStore().log.filter(x=>x.id!==id),f=tbFocus(prev);
+ const row=i=>'<div class="tb-row"><div class="tb-txt"><b>'+i.t+'</b><span>'+i.h+'</span></div><div class="tb-yn">'+
+  '<button class="tb-b" aria-pressed="'+(a[i.k]===1)+'" onclick="tbSet(\''+id+'\',\''+src+'\',\''+groups+'\',\''+i.k+'\',1)">Yes</button>'+
+  '<button class="tb-b no" aria-pressed="'+(a[i.k]===0)+'" onclick="tbSet(\''+id+'\',\''+src+'\',\''+groups+'\',\''+i.k+'\',0)">Not yet</button></div></div>';
+ let h='<div class="tb" id="'+tbDom(id)+'"><div class="tb-head"><span>Listen back · timing'+(groups.indexOf('b')>=0?' & blend':'')+'</span><span>'+(sc.ans?sc.yes+' of '+sc.ans:'')+'</span></div>';
+ h+='<p class="tb-intro">Play the take back and be honest — tick what you hear. Skip anything you can’t tell.'+(f&&tbItem(f).g&&groups.indexOf(tbItem(f).g)>=0?' Your focus from last time: <b>'+tbItem(f).t+'</b>.':'')+'</p>';
+ h+='<div class="tb-g">Timing</div>'+TB_ITEMS.filter(i=>i.g==='t').map(row).join('');
+ if(groups.indexOf('b')>=0)h+='<div class="tb-g">Blend — only if both voices are on the recording</div>'+TB_ITEMS.filter(i=>i.g==='b').map(row).join('');
+ if(sc.ans&&sc.yes<sc.ans)h+='<p class="tb-intro" style="margin-top:10px">Pick one “not yet” and give it all your attention next time — one thing at a time.</p>';
+ return h+'</div>';
+}
+function tbProgHTML(){
+ const L=tbStore().log.filter(e=>tbScore(e.a).ans>0);if(!L.length)return '';
+ const r=tbRates(L),f=tbFocus(L);
+ const rows=TB_ITEMS.filter(i=>r[i.k].n).map(i=>{const x=r[i.k],pct=Math.round(x.yes/x.n*100);return '<div class="skl"><span class="skl-n">'+i.t+'</span><span class="meter" role="img" aria-label="'+i.t+': yes '+x.yes+' of '+x.n+'"><i style="width:'+pct+'%"></i></span><span class="skl-v">'+x.yes+'/'+x.n+'</span><span class="skl-w">'+(i.g==='t'?'timing':'blend')+'</span></div>';}).join('');
+ return '<section class="card tb-card"><div class="card-eyebrow"><span>Timing &amp; blend · listen-backs</span><span>'+L.length+'</span></div>'+rows+
+  '<p class="card-sub" style="margin-top:10px">'+(f?'Your focus: <b>'+tbItem(f).t+'</b> — it’s been “not yet” most often. '+tbItem(f).h:'No weak spot yet — keep listening back after recordings.')+'</p></section>';
+}
 /* ===================== METRONOME ===================== */
 let metroTimer=null,metroBpm=96,metroBeat=0;
 function setMetroBpm(v){metroBpm=parseInt(v,10);const el=document.getElementById('metVal');if(el)el.textContent=metroBpm+' bpm';if(metroTimer){stopMetro();toggleMetro();}}
@@ -1698,7 +1762,7 @@ function benchListHTML(withControls){
  if(!T.length)return '<p class="card-sub" style="margin-top:10px">No check-ins yet. The first one is your starting point.</p>';
  let h='';
  if(cmp)h+='<div class="bm-cmp"><div><div class="et-n et-best">'+cmp.first.pct+'%</div><div class="kpi-l">First · '+bmShort(cmp.first.d)+'</div></div><div class="bm-arrow">→</div><div><div class="et-n">'+cmp.last.pct+'%</div><div class="kpi-l">Latest · '+bmShort(cmp.last.d)+'</div></div><div class="bm-delta">'+(cmp.delta>=0?'+':'')+cmp.delta+'</div></div>';
- h+=T.map((t,i)=>'<div class="bm-row"><div class="bm-top"><span class="bm-d">'+t.d+(i===T.length-1&&T.length>1?' · first':'')+'</span><span class="bm-p">'+t.pct+'% on harmony'+(t.collapse?' · '+t.collapse+' slip'+(t.collapse===1?'':'s'):'')+'</span></div>'+
+ h+=T.map((t,i)=>'<div class="bm-row"><div class="bm-top"><span class="bm-d">'+t.d+(i===T.length-1&&T.length>1?' · first':'')+'</span><span class="bm-p">'+t.pct+'% on harmony'+(t.collapse?' · '+t.collapse+' slip'+(t.collapse===1?'':'s'):'')+(function(){const e=tbEntry('bm:'+t.id),sc=tbScore(e&&e.a);return sc.ans?' · timing '+sc.yes+'/'+sc.ans:'';})()+'</span></div>'+
   '<span class="meter" role="img" aria-label="'+t.pct+'% of notes on the harmony"><i style="width:'+t.pct+'%"></i></span>'+
   (withControls?'<div class="t-row">'+(t.audio?'<button class="tbtn tog" onclick="bmPlay(\''+t.id+'\',false)">'+ico('play')+'You</button><button class="tbtn tog" onclick="bmPlay(\''+t.id+'\',true)">'+ico('play')+'With the tune</button><button class="tbtn tog" onclick="bmSave(\''+t.id+'\')">Save file</button>':'<span class="t-hint" style="margin:0">Score only — no recording on this device</span>')+'<button class="tbtn tog" onclick="bmDelete(\''+t.id+'\')">Delete</button></div>':'')+'</div>').join('');
  return h;
@@ -1712,6 +1776,7 @@ function paintBM(msg){
  h+=bmActive?'<button class="cta" onclick="bmStop()">'+ico('stop')+'Stop</button>':'<button class="cta" onclick="bmStart()">'+ico('mic')+(due.due?'Record this month’s take':'Record another take')+'</button>';
  h+='<div class="bm-bar"><i id="bmBar"></i></div><div class="et-msg" id="bmMsg" role="status">'+(msg||'')+'</div>';
  h+='<div class="t-hint">Turn the tuner on first, earphones in. Listen to the harmony once if you like, then record — no retakes needed; a rough take is still a true one. '+(due.first?'':(due.due?'This month’s check-in is due.':'Next check-in due '+due.next+'.'))+'</div></div>';
+ if(B.takes.length&&!bmActive){const lt=B.takes[B.takes.length-1];h+='<div class="tb-wrap"><p class="card-sub" style="margin:16px 0 0">Your latest take ('+bmShort(lt.d)+', '+lt.pct+'%): play “With the tune” below, then tick what you hear.</p>'+tbHTML('bm:'+lt.id,'checkin','t')+'</div>';}
  h+='<section class="card"><div class="card-eyebrow"><span>Your check-ins</span><span>'+B.takes.length+'</span></div>'+benchListHTML(true)+'<p class="card-sub" style="margin-top:12px">Recordings stay on this phone only — Backup saves the scores, not the audio. Use “Save file” to keep a copy, and save them before deleting or reinstalling the app.</p></section>';
  el.innerHTML=h;
 }
@@ -3126,6 +3191,7 @@ function renderProg(){
  h+='</section>';
  h+=reviewAccHTML();
  h+=benchProgHTML();
+ h+=tbProgHTML();
  h+=earProgHTML();
  h+='<section class="card"><div class="card-eyebrow"><span>Checkpoints</span><span>'+cps.filter(l=>isMastered(l.id)).length+' of '+cps.length+' passed</span></div>'+cps.map(l=>pathLesson(Object.assign({},l,{t:l.t.replace('Checkpoint — ','')}),null)).join('')+'<p class="card-foot">Modules 1–3 are auto-scored and can be taken early to test out; Module 4 and the final need a recording.</p></section>';
  return h;

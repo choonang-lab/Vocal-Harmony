@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'CD_CHORDS', 'CD_LEVELS', 'cdNotes', 'cdMelody', 'cdPickKey', 'chdStore', 'learnRowsFor', 'cdGuideHTML', 'vxRate', 'vxSampleSemi', 'vxSampleCheck', 'vxVoiceRows', 'vxVoiceHTML', 'vxStore', 'vxPref', 'vxKeyNow', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'CD_CHORDS', 'CD_LEVELS', 'cdNotes', 'cdMelody', 'cdPickKey', 'chdStore', 'learnRowsFor', 'cdGuideHTML', 'vxRate', 'vxSampleSemi', 'vxSampleCheck', 'vxVoiceRows', 'vxVoiceHTML', 'vxStore', 'vxPref', 'vxKeyNow', 'TB_ITEMS', 'tbScore', 'tbRates', 'tbFocus', 'tbSet', 'tbHTML', 'tbEntry', 'tbStore', 'tbProgHTML', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -1138,6 +1138,39 @@ console.log('\n▸ Pick it out in your own voice: one steady sample, pitch-shift
   ok(A.vxVoiceHTML().includes('Record my voice'), 'voice chosen, no sample: asks you to record one');
   A.vxStore().runs.push({ k: '1v', n: 3 }, { k: '1v', n: 5 }, { k: '1', n: 2 }); A.vxStore().best['1v'] = 5; A.vxStore().best['1'] = 2;
   const rows = A.vxVoiceRows(); ok(rows.includes('your voice') && rows.includes('>5<') && rows.includes('2 runs') && (rows.match(/class="skl"/g) || []).length === 1, 'Progress: separate best for your-voice runs (tone runs not repeated)');
+  A.setS(saved);
+}
+
+/* ================================================================ */
+/*  v55 — TIMING & BLEND LISTEN-BACK                                 */
+/* ================================================================ */
+console.log('\n▸ Timing & blend: listen-back checklist, hit rates, one focus');
+{
+  eq(A.TB_ITEMS.filter((i) => i.g === 't').length, 4, 'four timing items'); eq(A.TB_ITEMS.filter((i) => i.g === 'b').length, 3, 'three blend items');
+  ok(new Set(A.TB_ITEMS.map((i) => i.k)).size === A.TB_ITEMS.length, 'item keys are unique');
+  eq(JSON.stringify(A.tbScore({ in: 1, move: 0, vowel: 1 })), '{"yes":2,"ans":3}', 'score counts answered items only');
+  eq(JSON.stringify(A.tbScore(undefined)), '{"yes":0,"ans":0}', 'no answers: 0 of 0');
+  const log = [{ a: { in: 1, move: 0, vowel: 0 } }, { a: { in: 1, move: 0, vowel: 1 } }, { a: { in: 0, move: 1 } }];
+  const r = A.tbRates(log); ok(r.in.yes === 2 && r.in.n === 3 && r.move.yes === 1 && r.move.n === 3 && r.vowel.n === 2 && r.off.n === 0, 'rates per item');
+  eq(A.tbFocus(log), 'move', 'focus = lowest yes-rate (move 1/3 beats vowel 1/2)');
+  eq(A.tbFocus([{ a: { vowel: 0 } }]), null, 'one answer is not enough to call a weak spot');
+  eq(A.tbFocus([{ a: { in: 1, off: 1 } }, { a: { in: 1, off: 1 } }]), null, 'all yes: no focus');
+  eq(A.tbFocus([{ a: { off: 0, in: 0 } }, { a: { off: 1, in: 1 } }]), 'in', 'ties go to the earlier item');
+  const saved = A.getS(); A.setS({});
+  A.tbSet('rec1', 'practice', 'tb', 'in', 1); A.tbSet('rec1', 'practice', 'tb', 'move', 0);
+  ok(A.tbEntry('rec1').a.in === 1 && A.tbEntry('rec1').a.move === 0 && A.tbEntry('rec1').src === 'practice', 'ticks are saved against the take');
+  A.tbSet('rec1', 'practice', 'tb', 'in', 1); ok(!('in' in A.tbEntry('rec1').a), 'tapping the same answer again clears it');
+  A.tbSet('rec1', 'practice', 'tb', 'move', 1); eq(A.tbEntry('rec1').a.move, 1, 'switching answer replaces it');
+  eq(A.tbStore().log.length, 1, 'one entry per take');
+  for (let i = 0; i < 130; i++) A.tbSet('x' + i, 'practice', 'tb', 'in', 1);
+  eq(A.tbStore().log.length, 120, 'log capped at 120');
+  const tOnly = A.tbHTML('bm:z', 'checkin', 't'), both = A.tbHTML('rec9', 'practice', 'tb');
+  ok(tOnly.includes('Came in on time') && !tOnly.includes('Same vowel'), 'check-in shows timing only (the tune is synthetic, blend can’t be judged)');
+  ok(both.includes('Same vowel') && both.includes('only if both voices'), 'recorder shows blend too, marked as optional');
+  A.setS({}); eq(A.tbProgHTML(), '', 'Progress card hidden until there’s a listen-back');
+  A.tbSet('a', 'p', 'tb', 'vowel', 0); A.tbSet('b', 'p', 'tb', 'vowel', 0); A.tbSet('b', 'p', 'tb', 'in', 1);
+  const pc = A.tbProgHTML(); ok(pc.includes('Your focus: <b>Same vowel</b>') && pc.includes('0/2'), 'Progress names the focus');
+  ok(A.tbHTML('c', 'p', 'tb').includes('Your focus from last time: <b>Same vowel</b>'), 'the next checklist reminds you of the focus');
   A.setS(saved);
 }
 

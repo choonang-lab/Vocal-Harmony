@@ -6,7 +6,21 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-24 · **Build: v54 / harmony-v54** — live on GitHub Pages (Pick it out in your own voice). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v53 `3e0ee64` (Chord changes). Earlier: v52 `cc2e554` (Monthly check-in). Earlier: v51 `fec77dc` (Harmony in Mandopop). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-24 · **Build: v55 / harmony-v55** — live on GitHub Pages (Timing & blend listen-back). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v54 `6eedf9d` (Pick it out in your voice). Earlier: v53 `3e0ee64` (Chord changes). Earlier: v52 `cc2e554` (Monthly check-in). Earlier: v51 `fec77dc` (Harmony in Mandopop). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v54 → v55) — Timing & blend listen-back checklist
+Pedagogy gap #3: the tuner only hears pitch. Timing and blend need ears on a recording.
+- `TB_ITEMS`: timing — came in on time, moved with the tune, stopped together, clean starts;
+  blend — same vowel, a little under the tune, breathed together. Each row: Yes / Not yet; tap again
+  to clear; unanswered = skipped. `S.__tb.log = [{id, d, src, a:{key:1|0}}]` (max 120, `tbSet`).
+- Shown under every in-app recorder take (lessons + Practice quick recorder, id 'rec'+recT0, timing
+  and blend — blend marked "only if both voices are on the recording"), and in the monthly check-in
+  for the latest take (timing only: the tune there is synthetic, so blend can't be judged; the takes
+  list shows "timing x/y").
+- `tbFocus` (pure): the item with the lowest yes-rate over ≥2 answers (ties → earlier item; none if all
+  yes). Each new checklist reminds you of it; Progress card "Timing & blend" (`tbProgHTML`, hidden until
+  the first listen-back) shows per-item yes counts and names the focus.
+- Harness: 439 assertions (+20), mutation-tested (6 caught).
 
 ## What changed this session (v53 → v54) — Pick it out in your own voice
 Pedagogy gap #2: every drill used synthetic tones; pulling a line out of real voices is harder.
