@@ -6,7 +6,11 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-23 · **Build: v50 / harmony-v50** — live on GitHub Pages (Today = daily plan, weekly goal, ear ladder; 和声 dropped from the title). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-23 · **Build: v51 / harmony-v51** — live on GitHub Pages (Reference card renamed "Harmony in Mandopop"). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v50 → v51)
+- Reference card "和声 in Mandopop" → "Harmony in Mandopop" (user asked). No 和声 left in the app;
+  the Chinese song title and 伴奏 inside that card are repertoire content and stay.
 
 ## What changed this session (v49 → v50) — Today becomes a daily plan
 User: re-orient Today to the suggested path, help them come back regularly, allow busy days.
