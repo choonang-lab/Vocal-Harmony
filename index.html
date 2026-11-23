@@ -536,6 +536,18 @@ div.ls{cursor:default;}
 .lad-s.cur .lad-c{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
 .lad-s small{font-size:0.74rem;font-weight:600;color:var(--text2);}
 .lad-s.cur small{color:var(--text);}
+.bm-bar{height:6px;border-radius:3px;background:var(--surface2);margin-top:14px;overflow:hidden;}
+.bm-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s linear;}
+.bm-cmp{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:8px;margin-top:12px;text-align:center;}
+.bm-cmp .et-n{font-size:2rem;}
+.bm-arrow{font-size:1.2rem;color:var(--muted);}
+.bm-delta{font-family:var(--f-mono);font-size:0.85rem;font-weight:700;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-line);border-radius:999px;padding:4px 10px;}
+.bm-row{border-top:1px solid var(--border);padding:12px 0 4px;margin-top:12px;}
+.bm-row + .bm-row{margin-top:0;}
+.bm-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.bm-d{font-family:var(--f-mono);font-size:0.78rem;font-weight:600;color:var(--text);}
+.bm-p{font-size:0.82rem;color:var(--text2);}
+.bm-row .t-row{margin-top:10px;}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -556,7 +568,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v51</span></div>
+  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v52</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -952,7 +964,7 @@ async function togglePitch(hostId){
 }
 function pdError(host,msg){const h=document.getElementById(host);if(h){const c=h.querySelector('.pd-cents');if(c)c.textContent='mic blocked';let box=h.querySelector('.pd-msg');if(box){box.textContent=msg;box.classList.add('show');}}showToast('Mic blocked — see the tuner panel');}
 function clearPdMsg(){const h=pdHost&&document.getElementById(pdHost);if(h){const box=h.querySelector('.pd-msg');if(box){box.classList.remove('show');box.textContent='';}}}
-function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetIQ();resetET();resetDG();resetVX();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
+function stopPitch(){pdLeak=false;if(pdHost)paintLeak(pdHost);if(pdRAF){cancelAnimationFrame(pdRAF);pdRAF=null;}pdActive=false;pdHist.length=0;pdLocked=false;pdCap=null;pdArmed=true;pdSilCount=99;resetDrift();resetStep();resetAutoHold();rangeArmed=null;rangeBuf=[];rangeDevB=[];rangeGap=0;jdActive=false;jdState='idle';jdArmed=false;clearJumpTimers();resetEar();resetIQ();resetET();resetDG();resetVX();resetBM();resetRow();resetDuet();resetImprov();syncStepBtns();setStepSeq('– – –');setStepRes('');const h=pdHost&&document.getElementById(pdHost);if(h){h.classList.remove('locked');const r=h.querySelector('.pd-cents');if(r)r.textContent='tuner off';const no=h.querySelector('.pd-note');if(no)no.textContent='—';const nd=h.querySelector('.pd-needle');if(nd)setNeedle(nd,0);const lk=h.querySelector('.pd-lock');if(lk){lk.className='pd-lock';lk.textContent='';}const sc=h.querySelector('.pd-scoop');if(sc){sc.className='pd-scoop';sc.innerHTML='';}}syncPitchBtns();maybeReleaseMic();}
 function syncPitchBtns(){document.querySelectorAll('.pdBtn').forEach(b=>{const on=pdActive&&b.dataset.host===pdHost;b.innerHTML=ico('mic')+(on?'Tuner on — tap to stop':'Start tuner');b.classList.toggle('on',on);});}
 function autoCorrelate(buf,sr,minClarity){
  const SIZE=buf.length;
@@ -1012,6 +1024,7 @@ function loopPitch(){
  if(jdActive)feedJump(hz,hz>0);
  if(vxActive)feedVX(hz,hz>0);
  if(rowActive)feedRow(hz);
+ if(bmActive)feedBM(hz);
  if(duetActive&&hz>0){duetSamples.push({t:ac().currentTime,hz:hz});if(duetSamples.length>3000)duetSamples.shift();}
  if(imvActive&&hz>0){imvSamples.push({t:ac().currentTime,hz:hz});if(imvSamples.length>3000)imvSamples.shift();}
 }
@@ -1604,6 +1617,110 @@ function intervalQuizHTML(){const l=curId&&lessonById(curId),c=l&&iqCheck(l);if(
 const ANCHORS={4:{label:'“Oh when the saints”',notes:[[0,0.35],[4,0.35],[5,0.35],[7,1.1]]},7:{label:'“Twinkle, twinkle”',notes:[[0,0.4],[0,0.4],[7,0.4],[7,0.9]]},5:{label:'“Here comes the bride”',notes:[[0,0.55],[5,0.4],[5,0.25],[5,1.0]]},m3:{label:'the “nyah-nyah” chant',notes:[[7,0.45],[4,0.45],[9,0.45],[7,0.45],[4,0.9]]}};
 function anchorHTML(){const l=curId&&lessonById(curId);if(!l||l.anchor==null||!ANCHORS[l.anchor])return '';return '<div class="t-row"><button class="tbtn tog" onclick="playAnchor()">'+ico('play')+'Hear the anchor — '+ANCHORS[l.anchor].label+'</button></div>';}
 function playAnchor(){const l=curId&&lessonById(curId),a=l&&ANCHORS[l.anchor];if(!a)return;const r=(jdActive&&jdSteady&&!jdInKey)?jdSteadyRoot:TS.root;let t=0;a.notes.forEach(n=>{tone(r+n[0],n[1]*0.95,t,0.22);t+=n[1];});}
+/* ===================== MONTHLY CHECK-IN (v52) =====================
+   The transfer test: do the drills show up in real singing? Every 4 weeks, sing the harmony a third
+   above Row Your Boat's first line (row1), always in the same key (chosen from the range profile at
+   the first take) and at the same tempo, so takes are comparable. Scored with classifyHarmony
+   (% of notes on the harmony, slips onto the melody) and recorded; audio in IndexedDB
+   ('harmony_bench'), scores in S.__bench = {key, takes:[{id,d,pct,on,collapse,off,gap,total,avgHarm,mel,audio,mime}]}. */
+const BM_BPM=84,BM_DAYS=28;
+let bmActive=false,bmSamples=[],bmWins=[],bmTimer=null,bmProg=null,bmRec=null,bmChunks=[],bmFirst=0,bmEnd=0,bmRecT0=0,bmAudio=null;
+function bench(){if(!S.__bench)S.__bench={key:null,takes:[]};return S.__bench;}
+/* pure: a key whose harmony line (4..11 semitones above do) sits inside the voice, with a little room */
+function benchKey(p){if(!p)return -2;const lo=(p.low-60)+2-4,hi=(p.high-60)-2-11;if(hi<lo)return lo;return Math.floor((lo+hi)/2);}
+/* pure: due when there is no take yet, or the last one is 4+ weeks old */
+function benchDue(takes,today){if(!takes||!takes.length)return {due:true,first:true,next:today};const last=takes[takes.length-1].d,since=Math.round((pdate(today)-pdate(last))/86400000);return {due:since>=BM_DAYS,first:false,since:since,next:addDays(last,BM_DAYS)};}
+/* pure: first vs latest */
+function benchCompare(takes){if(!takes||takes.length<2)return null;const a=takes[0],b=takes[takes.length-1];return {first:a,last:b,delta:b.pct-a.pct};}
+/* pure: note windows for one take — always the HIGH part (n[1]), whatever the ▲/▼ switch says */
+function benchWindows(notes,key,first,beat){const w=[];let t=first;notes.forEach(n=>{const d=n[2]*beat;w.push({start:t,end:t+d,mel:n[0]+key,harm:n[1]+key});t+=d;});return w;}
+function bmDB(){return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no indexedDB'));const r=indexedDB.open('harmony_bench',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function bmIdb(mode,fn){return bmDB().then(db=>new Promise((res,rej)=>{const tx=db.transaction('audio',mode);const q=fn(tx.objectStore('audio'));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);}));}
+function bmClear(){if(bmTimer)clearTimeout(bmTimer);if(bmProg)clearInterval(bmProg);bmTimer=bmProg=null;}
+function resetBM(){bmClear();if(bmActive&&bmRec){try{bmRec.onstop=null;if(bmRec.state==='recording')bmRec.stop();}catch(e){}}bmActive=false;bmRec=null;bmChunks=[];bmSamples=[];}
+function bmStopAudio(){if(bmAudio){try{bmAudio.pause();}catch(e){}bmAudio=null;}}
+function benchKeyNow(){const B=bench();return B.key!=null?B.key:benchKey(profile());}
+function openBench(){
+ curId=null;stopDrone();stopPitch();clearTarget();resetBM();bmStopAudio();
+ const B=bench(),due=benchDue(B.takes,todayStr());
+ document.getElementById('dCrumb').textContent='Progress · Monthly check-in';
+ document.getElementById('dBody').innerHTML='<h1 class="d-title">Monthly Check-in</h1><div class="d-focus">Once a month, sing the same short harmony and keep the recording. It’s the honest test of whether the drills are carrying over into real singing — listen to month one next to today.</div>'+
+  '<div class="d-section">'+tunerHTML('tuner_bm')+'</div><div id="bmBody"></div>';
+ paintBM(due.first?'Your first take is your starting point — it’s meant to be rough.':'');
+ document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
+}
+function bmHear(){if(bmActive)return;const K=benchKeyNow(),beat=60/BM_BPM;let t=0.1;SONGS.row1.notes.forEach(n=>{const d=n[2]*beat;tone(n[0]+K,d*0.95,t,0.18);tone(n[1]+K,d*0.95,t,0.18);t+=d;});}
+async function bmStart(){
+ if(bmActive)return;
+ if(!pdActive){showToast('Turn on the tuner first');return;}
+ const B=bench();if(B.key==null){B.key=benchKey(profile());persist();}
+ const K=B.key,a=ac(),beat=60/BM_BPM;
+ bmChunks=[];bmRec=null;
+ if(window.MediaRecorder){try{const stream=await getMic(),mime=recPickMime();bmRec=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);bmRec.ondataavailable=e=>{if(e.data&&e.data.size)bmChunks.push(e.data);};bmRec.start();}catch(e){bmRec=null;}}
+ bmRecT0=a.currentTime;
+ const base=a.currentTime+0.25;for(let i=0;i<4;i++)metroClick(i===0,(base-a.currentTime)+i*beat);
+ bmFirst=base+4*beat;bmWins=benchWindows(SONGS.row1.notes,K,bmFirst,beat);bmEnd=bmWins[bmWins.length-1].end;
+ bmWins.forEach(w=>tone(w.mel,(w.end-w.start)*0.95,w.start-a.currentTime,0.2));
+ bmActive=true;bmSamples=[];paintBM('Counting in… sing the harmony, a third above the tune.');
+ bmProg=setInterval(()=>{const now=ac().currentTime,b=document.getElementById('bmBar');if(b)b.style.width=Math.max(0,Math.min(100,(now-bmFirst)/(bmEnd-bmFirst)*100))+'%';if(now>=bmEnd+0.4){bmFinish();return;}if(now>=bmFirst){const m=document.getElementById('bmMsg');if(m)m.textContent='♪ Singing — hold the harmony';}},150);
+ bmTimer=setTimeout(bmFinish,(bmEnd-a.currentTime)*1000+8000);   // backstop only: the take ends on the AUDIO clock (above), so a lagging clock can't cut off the last notes
+}
+function feedBM(hz){if(bmActive&&hz>0){bmSamples.push({t:ac().currentTime,hz:hz});if(bmSamples.length>3000)bmSamples.shift();}}
+function bmFinish(){
+ if(!bmActive)return;bmClear();bmActive=false;
+ const r=classifyHarmony(bmWins,bmSamples),B=bench();
+ const take={id:'bm'+Date.now(),d:todayStr(),pct:r.pct,on:r.on,collapse:r.collapse,off:r.off,gap:r.gap,total:r.total,avgHarm:r.avgHarm,mel:Math.round((bmFirst-bmRecT0)*1000)/1000,key:B.key,audio:false};
+ B.takes.push(take);if(B.takes.length>36)B.takes.shift();markDayActive();persist();
+ const cmp=benchCompare(B.takes);
+ const msg='Saved. '+r.pct+'% of the notes on the harmony'+(r.collapse?', '+r.collapse+' slip'+(r.collapse===1?'':'s')+' onto the tune':'')+'.'+(cmp?' First take: '+cmp.first.pct+'% → now '+r.pct+'%.':' Next check-in in 4 weeks.');
+ const rec=bmRec;bmRec=null;
+ if(rec&&rec.state==='recording'){rec.onstop=()=>{const blob=new Blob(bmChunks,{type:rec.mimeType||'audio/webm'});bmChunks=[];bmIdb('readwrite',st=>st.put(blob,take.id)).then(()=>{take.audio=true;take.mime=blob.type;persist();paintBM(msg);}).catch(()=>paintBM(msg+' (The recording couldn’t be stored on this device — the score is kept.)'));};rec.stop();}
+ paintBM(msg);
+}
+function bmStop(){if(!bmActive)return;resetBM();paintBM('Stopped — not saved.');}
+function bmTake(id){return bench().takes.find(t=>t.id===id);}
+function bmPlay(id,withMel){
+ bmStopAudio();const tk=bmTake(id);if(!tk||!tk.audio)return;
+ bmIdb('readonly',st=>st.get(id)).then(blob=>{if(!blob){showToast('Recording not found on this device');return;}
+  const au=new Audio(URL.createObjectURL(blob));bmAudio=au;
+  if(withMel)au.addEventListener('playing',()=>{const a=ac(),beat=60/BM_BPM,off=tk.mel-au.currentTime;benchWindows(SONGS.row1.notes,tk.key,0,beat).forEach(w=>{const at=off+w.start;if(at>=0)tone(w.mel,(w.end-w.start)*0.95,at,0.16);});},{once:true});
+  au.play().catch(()=>showToast('Tap again to play'));
+ }).catch(()=>showToast('Recordings aren’t available in this browser'));
+}
+function bmSave(id){const tk=bmTake(id);if(!tk||!tk.audio)return;bmIdb('readonly',st=>st.get(id)).then(blob=>{if(!blob)return;const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='harmony-checkin-'+tk.d+'.'+((tk.mime||'').indexOf('mp4')>=0?'m4a':((tk.mime||'').indexOf('ogg')>=0?'ogg':'webm'));a.click();});}
+function bmDelete(id){const tk=bmTake(id);if(!tk||!confirm('Delete the '+tk.d+' check-in and its recording? This can’t be undone.'))return;const B=bench();B.takes=B.takes.filter(t=>t.id!==id);persist();bmIdb('readwrite',st=>st.delete(id)).catch(()=>{});paintBM('Deleted.');}
+function bmShort(k){return pdate(k).toLocaleDateString(undefined,{day:'numeric',month:'short'});}
+function benchListHTML(withControls){
+ const B=bench(),T=B.takes.slice().reverse(),cmp=benchCompare(B.takes);
+ if(!T.length)return '<p class="card-sub" style="margin-top:10px">No check-ins yet. The first one is your starting point.</p>';
+ let h='';
+ if(cmp)h+='<div class="bm-cmp"><div><div class="et-n et-best">'+cmp.first.pct+'%</div><div class="kpi-l">First · '+bmShort(cmp.first.d)+'</div></div><div class="bm-arrow">→</div><div><div class="et-n">'+cmp.last.pct+'%</div><div class="kpi-l">Latest · '+bmShort(cmp.last.d)+'</div></div><div class="bm-delta">'+(cmp.delta>=0?'+':'')+cmp.delta+'</div></div>';
+ h+=T.map((t,i)=>'<div class="bm-row"><div class="bm-top"><span class="bm-d">'+t.d+(i===T.length-1&&T.length>1?' · first':'')+'</span><span class="bm-p">'+t.pct+'% on harmony'+(t.collapse?' · '+t.collapse+' slip'+(t.collapse===1?'':'s'):'')+'</span></div>'+
+  '<span class="meter" role="img" aria-label="'+t.pct+'% of notes on the harmony"><i style="width:'+t.pct+'%"></i></span>'+
+  (withControls?'<div class="t-row">'+(t.audio?'<button class="tbtn tog" onclick="bmPlay(\''+t.id+'\',false)">'+ico('play')+'You</button><button class="tbtn tog" onclick="bmPlay(\''+t.id+'\',true)">'+ico('play')+'With the tune</button><button class="tbtn tog" onclick="bmSave(\''+t.id+'\')">Save file</button>':'<span class="t-hint" style="margin:0">Score only — no recording on this device</span>')+'<button class="tbtn tog" onclick="bmDelete(\''+t.id+'\')">Delete</button></div>':'')+'</div>').join('');
+ return h;
+}
+function paintBM(msg){
+ const el=document.getElementById('bmBody');if(!el)return;
+ const B=bench(),K=benchKeyNow(),due=benchDue(B.takes,todayStr());
+ let h='<div class="tool-panel"><div class="t-title">This month’s take</div>';
+ h+='<p class="card-sub" style="margin:0 0 10px">Row Your Boat, first line — “Row, row, row your boat, gently down the stream”. The app plays the tune; you sing <b>a third above</b>. Key of '+keyName(K)+(B.key==null?' (picked from your range; it stays the same every month)':' · same every month')+', 84 bpm, 4 clicks in.</p>';
+ h+='<div class="t-row"><button class="tbtn tog" onclick="bmHear()"'+(bmActive?' disabled':'')+'>'+ico('play')+'Hear tune + harmony</button></div>';
+ h+=bmActive?'<button class="cta" onclick="bmStop()">'+ico('stop')+'Stop</button>':'<button class="cta" onclick="bmStart()">'+ico('mic')+(due.due?'Record this month’s take':'Record another take')+'</button>';
+ h+='<div class="bm-bar"><i id="bmBar"></i></div><div class="et-msg" id="bmMsg" role="status">'+(msg||'')+'</div>';
+ h+='<div class="t-hint">Turn the tuner on first, earphones in. Listen to the harmony once if you like, then record — no retakes needed; a rough take is still a true one. '+(due.first?'':(due.due?'This month’s check-in is due.':'Next check-in due '+due.next+'.'))+'</div></div>';
+ h+='<section class="card"><div class="card-eyebrow"><span>Your check-ins</span><span>'+B.takes.length+'</span></div>'+benchListHTML(true)+'<p class="card-sub" style="margin-top:12px">Recordings stay on this phone only — Backup saves the scores, not the audio. Use “Save file” to keep a copy, and save them before deleting or reinstalling the app.</p></section>';
+ el.innerHTML=h;
+}
+function benchTodayHTML(){
+ const B=bench(),due=benchDue(B.takes,todayStr());
+ if(!due.due||(meta().days||[]).length<3)return '';
+ return '<section class="card offer"><div class="card-row"><div><div class="card-title">Monthly check-in'+(due.first?'':' due')+'</div><div class="card-sub">'+(due.first?'2 minutes: record your starting point on one short harmony line, to compare against later.':'2 minutes: sing the same line as last time and hear how far you’ve come.')+'</div></div><button class="btn-outline" onclick="openBench()">Start</button></div></section>';
+}
+function benchProgHTML(){
+ const B=bench(),due=benchDue(B.takes,todayStr());
+ return '<section class="card"><div class="card-eyebrow"><span>Monthly check-in</span><span>'+(due.first?'not started':(due.due?'due now':'next '+due.next))+'</span></div>'+benchListHTML(false)+'<button class="cta-sec" onclick="openBench()">'+(due.due?'Record this month’s check-in':'Open check-ins')+'</button></section>';
+}
 /* ===================== INTERVAL EAR TEST (Practice tab, no mic) =====================
    A test to come back to. The root jumps every round, one miss ends the run, and the score is how
    many you named in a row. Three levels of choices, plus a harder mode with both notes at once.
@@ -2707,7 +2824,7 @@ function renderToday(){
  if(stp.includes('harm'))h+=planRowHTML(3,'harm','Inside harmony · Pick it out','One run · 3 min','openVoiceX()',has('harm'));
  h+='</section>';
  if(l){const m=moduleOf(id),cp=moduleCp(m);if(cp&&cp.id!==id&&canChallenge(cp.id)&&!isMastered(cp.id))h+='<button class="cta-sec purple" onclick="openLesson(\''+cp.id+'\')">Already solid on Module '+m.n+'? Test out</button>';}
- h+=offerHTML(P,t)+weekHTML(P,t)+ladderHTML();
+ h+=benchTodayHTML()+offerHTML(P,t)+weekHTML(P,t)+ladderHTML();
  return h;
 }
 /* Practice calendar: the last 12 weeks, Monday-first columns, one hue (practised) on a neutral
@@ -2822,6 +2939,7 @@ function renderProg(){
   h+='<button class="pm" onclick="go('+m.n+')">'+rmNode(state,String(m.n),p.done,p.tot)+'<span class="pm-t"><span class="pm-name">'+m.t+'</span><span class="meter" aria-hidden="true"><i style="width:'+Math.round(p.done/p.tot*100)+'%"></i></span></span><span class="pm-c">'+p.done+'/'+p.tot+'</span></button>';});
  h+='</section>';
  h+=reviewAccHTML();
+ h+=benchProgHTML();
  h+=earProgHTML();
  h+='<section class="card"><div class="card-eyebrow"><span>Checkpoints</span><span>'+cps.filter(l=>isMastered(l.id)).length+' of '+cps.length+' passed</span></div>'+cps.map(l=>pathLesson(Object.assign({},l,{t:l.t.replace('Checkpoint — ','')}),null)).join('')+'<p class="card-foot">Modules 1–3 are auto-scored and can be taken early to test out; Module 4 and the final need a recording.</p></section>';
  return h;

@@ -5,7 +5,7 @@
      · same-origin assets → cache-first  (icons, manifest)
      · Google Fonts       → stale-while-revalidate
 */
-const CACHE = 'harmony-v51';
+const CACHE = 'harmony-v52';
 
 /* Local app-shell files. index.html is essential; the rest are best-effort
    so a missing optional asset (e.g. an icon you haven't added yet) never

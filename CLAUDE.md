@@ -106,6 +106,9 @@ melody), plus the Module-0 range probe.
   logged in `S.__deg.learn`, and the remembered `S.__deg.pref`) (`openDegTest`, `dg*`, stored in `S.__deg`):
   cadence sets a key, name the degree, every answer resolves to do (`dgResolve`). It reuses
   `etRecord`, `etHistoryHTML` and `streakProgHTML` — a third streak test should too.
+- **Monthly check-in** (v52, `openBench`, `bm*`, `S.__bench`): fixed line (row1, HIGH part), fixed key
+  (`benchKey`, stored), fixed tempo — never make it follow user settings, or months stop being
+  comparable. Audio lives in IndexedDB 'harmony_bench', outside Backup. `feedBM` hangs off the pitch loop.
 - **Pick It Out** (v47, `openVoiceX`, `vx*`, `S.__vx`) is the one streak test that uses the mic:
   `feedVX` hangs off the pitch loop beside `feedJump`; `vxJudge` is its pure scorer (folds octaves,
   names the other note). It shares `etRecord`/`etHistoryHTML`/`streakProgHTML` like the others.

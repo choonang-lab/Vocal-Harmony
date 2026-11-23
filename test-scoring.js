@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -1047,6 +1047,42 @@ console.log('\n▸ Today: 10-minute plan, weekly goal, forgiving messages, ear l
   ok(h.includes('This week') && h.includes('Your ear') && !/day streak/.test(h), 'weekly goal and ear ladder shown; no streak badge');
   A.plan().mins = 15; h = A.renderToday(); ok(h.includes('Inside harmony · Pick it out'), '15 minutes shows the third step');
   A.plan().mins = 10; A.planTick('ears'); A.planTick('voice'); h = A.renderToday(); ok(h.includes('Done for today'), 'both steps ticked: done for today');
+  A.setS(saved);
+}
+
+/* ================================================================ */
+/*  v52 — MONTHLY CHECK-IN                                           */
+/* ================================================================ */
+console.log('\n▸ Monthly check-in: same line, same key, every 4 weeks');
+{
+  const notes = A.SONGS.row1.notes;
+  eq(notes.length, 10, 'the check-in line is Row Your Boat’s first phrase (10 notes)');
+  const lowest = Math.min(...notes.map((n) => n[1])), highest = Math.max(...notes.map((n) => n[1]));
+  const fits = (p) => { const k = A.benchKey(p); return k + lowest + 60 >= p.low + 2 && k + highest + 60 <= p.high - 2; };
+  ok([{ low: 45, high: 64 }, { low: 48, high: 67 }, { low: 53, high: 74 }, { low: 41, high: 62 }, { low: 55, high: 66 }].every(fits), 'the key puts the whole harmony line inside the voice, 2 semitones from each edge');
+  eq(A.benchKey(null), -2, 'no range check yet: a middle key (B♭)');
+  eq(A.benchDue([], '2026-11-23').due, true, 'no take yet: due');
+  eq(A.benchDue([{ d: '2026-11-01' }], '2026-11-28').due, false, '27 days later: not yet');
+  eq(A.benchDue([{ d: '2026-11-01' }], '2026-11-29').due, true, '28 days later: due');
+  eq(A.benchDue([{ d: '2026-11-01' }], '2026-11-10').next, '2026-11-29', 'next due date is 4 weeks after the last take');
+  eq(A.benchCompare([{ pct: 30 }]), null, 'one take: nothing to compare');
+  const c = A.benchCompare([{ pct: 30, d: 'a' }, { pct: 45, d: 'b' }, { pct: 70, d: 'c' }]); ok(c.first.pct === 30 && c.last.pct === 70 && c.delta === 40, 'compare first vs latest');
+  const beat = 60 / A.BM_BPM, w = A.benchWindows(notes, -2, 10, beat);
+  ok(w.every((x, i) => x.harm === notes[i][1] - 2 && x.mel === notes[i][0] - 2), 'windows: the HIGH part over the tune, in the take’s key');
+  A.setPart('below'); ok(A.benchWindows(notes, -2, 10, beat).every((x, i) => x.harm === notes[i][1] - 2), 'the check-in stays on the HIGH part even when the ▲/▼ switch is on the low part'); A.setPart('above');
+  ok(Math.abs(w[w.length - 1].end - (10 + notes.reduce((a, n) => a + n[2], 0) * beat)) < 1e-9, 'windows run the length of the phrase at 84 bpm');
+  const hz = (semi) => 261.626 * Math.pow(2, semi / 12);
+  const sing = (pick) => { const out = []; w.forEach((x) => { for (let t = x.start + 0.18; t < x.end - 0.04; t += 0.05) out.push({ t: t, hz: hz(pick(x)) }); }); return out; };
+  eq(A.classifyHarmony(w, sing((x) => x.harm)).pct, 100, 'singing the harmony scores 100%');
+  const col = A.classifyHarmony(w, sing((x) => x.mel)); ok(col.pct === 0 && col.collapse === 10, 'singing the tune scores 0% with every note a slip');
+  const saved = A.getS();
+  A.setS({ __meta: { streak: 0, best: 0, last: '', quick: 0, days: ['2026-11-20', '2026-11-21', '2026-11-22'] } });
+  ok(A.benchTodayHTML().includes('Monthly check-in') && A.benchTodayHTML().includes('starting point'), 'Today offers the first check-in once there are 3 practice days');
+  A.bench().takes.push({ id: 'x', d: A.todayStr(), pct: 40, collapse: 2, audio: false });
+  eq(A.benchTodayHTML(), '', 'just done: Today shows nothing');
+  ok(A.benchProgHTML().includes('40% on harmony') && A.benchProgHTML().includes('next '), 'Progress lists the take and the next due date');
+  A.setS({ __meta: { streak: 0, best: 0, last: '', quick: 0, days: ['2026-11-22'] } });
+  eq(A.benchTodayHTML(), '', 'a brand-new user isn’t asked yet');
   A.setS(saved);
 }
 
