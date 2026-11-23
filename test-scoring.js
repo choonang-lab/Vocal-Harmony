@@ -100,7 +100,7 @@ const EXPOSE = [
   'belowOf', 'belowLine', 'harmOf', 'rowRunOk', 'setPart',
   'meta', 'markDayActive', 'curStreak', 'calendarHTML', 'reviewAccHTML', 'dstr', 'todayStr', 'yestStr',
   'leakVerdict', 'LEAK_DB', 'droneGain', 'setDroneVol',
-  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'CD_CHORDS', 'CD_LEVELS', 'cdNotes', 'cdMelody', 'cdPickKey', 'chdStore', 'learnRowsFor', 'cdGuideHTML', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
+  'lessonNo', 'micLesson', 'jumpChecks', 'ANCHORS', 'iqDeck', 'etPick', 'etRecord', 'etKey', 'ET_LEVELS', 'IQ_SHORT', 'IQ_NAMES', 'DG_LEVELS', 'DG_NUM', 'DEGN', 'dgPickKey', 'dgResolve', 'streakProgHTML', 'thinkOf', 'thinkSecs', 'setThink', 'afterCue', 'beginListen', 'feedJump', 'jumpDrillHTML', 'VX_LEVELS', 'vxPick', 'vxJudge', 'vxRange', 'rtSingId', 'rtThinkDefault', 'routineHTML', 'dgReady', 'degStore', 'keyName', 'planSteps', 'plan', 'weekStartOf', 'dayComplete', 'weekInfo', 'planOffer', 'planStatus', 'levelPassed', 'earLadder', 'addDays', 'pdate', 'planTick', 'benchKey', 'benchDue', 'benchCompare', 'benchWindows', 'bench', 'benchTodayHTML', 'benchProgHTML', 'classifyHarmony', 'BM_BPM', 'CD_CHORDS', 'CD_LEVELS', 'cdNotes', 'cdMelody', 'cdPickKey', 'chdStore', 'learnRowsFor', 'cdGuideHTML', 'vxRate', 'vxSampleSemi', 'vxSampleCheck', 'vxVoiceRows', 'vxVoiceHTML', 'vxStore', 'vxPref', 'vxKeyNow', 'dgLearnRows', 'earProgHTML', 'dgGuideHTML', 'etHistoryHTML',
   'winMidOf', 'medOf', 'st', 'isMastered', 'statusOf', 'lessonById',
   'curNotes', 'setSong', 'MODULES', 'SONGS', 'FLAT', 'TS'
 ];
@@ -1112,6 +1112,32 @@ console.log('\n▸ Chord changes: I, IV, V, vi in a key, named by feel and bass'
   const saved = A.getS(); A.setS({});
   const E = A.chdStore(); A.etRecord(E.learn, '1', 7, 'a'); A.etRecord(E.learn, '1', 9, 'b');
   const rows = A.learnRowsFor(E, A.CD_LEVELS); ok(rows.includes('Level 1') && rows.includes('learn · last 9/10'), 'Progress shows chord learn sessions');
+  A.setS(saved);
+}
+
+/* ================================================================ */
+/*  v54 — PICK IT OUT IN YOUR OWN VOICE                              */
+/* ================================================================ */
+console.log('\n▸ Pick it out in your own voice: one steady sample, pitch-shifted');
+{
+  const hz = (semi) => 261.626 * Math.pow(2, semi / 12);
+  ok(Math.abs(A.vxRate(-3, hz(-3)) - 1) < 1e-9 && Math.abs(A.vxRate(9, hz(-3)) - 2) < 1e-9, 'rate: 1 on the sung note, 2 an octave up');
+  eq(A.vxSampleSemi(-9, 5), -2, 'the sample is sung in the middle of the range');
+  const F = 0.05, steady = (sec, f) => Array(Math.round(sec / F)).fill(f), quiet = (sec) => Array(Math.round(sec / F)).fill(0);
+  let r = A.vxSampleCheck(quiet(0.5).concat(steady(3, 220), quiet(1)), F);
+  ok(r.ok && Math.abs(r.hz - 220) < 0.5 && Math.abs(r.start - 0.5) < 1e-9 && Math.abs(r.len - 3) < 1e-9, 'a held note: found, with where it starts and how long it lasts');
+  const vib = Array.from({ length: 60 }, (_, i) => 220 * Math.pow(2, (25 * Math.sin(i / 2)) / 1200));
+  ok(A.vxSampleCheck(vib, F).ok, 'natural vibrato (±25 cents) still counts as steady');
+  const glide = Array.from({ length: 80 }, (_, i) => 200 * Math.pow(2, i / 80));
+  eq(A.vxSampleCheck(glide, F).reason, 'wobbly', 'a slide is rejected as wobbly');
+  eq(A.vxSampleCheck(quiet(4).concat(steady(0.6, 220)), F).reason, 'quiet', 'too little voice is rejected as quiet');
+  eq(A.vxSampleCheck(steady(1.2, 220).concat(quiet(0.2), steady(1.2, 220)), F).reason, 'wobbly', 'two short pieces don’t add up — it needs 1.5 s in one go');
+  const saved = A.getS(); A.setS({});
+  eq(A.vxKeyNow(), '1', 'tones: the usual streak key');
+  A.vxPref().voice = true; eq(A.vxKeyNow(), '1', 'voice chosen but no sample loaded: still the tones key (it plays tones)');
+  ok(A.vxVoiceHTML().includes('Record my voice'), 'voice chosen, no sample: asks you to record one');
+  A.vxStore().runs.push({ k: '1v', n: 3 }, { k: '1v', n: 5 }, { k: '1', n: 2 }); A.vxStore().best['1v'] = 5; A.vxStore().best['1'] = 2;
+  const rows = A.vxVoiceRows(); ok(rows.includes('your voice') && rows.includes('>5<') && rows.includes('2 runs') && (rows.match(/class="skl"/g) || []).length === 1, 'Progress: separate best for your-voice runs (tone runs not repeated)');
   A.setS(saved);
 }
 

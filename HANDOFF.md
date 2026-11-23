@@ -6,7 +6,27 @@
 > connector, tell Claude: *"Read HANDOFF.md and CLAUDE.md in choonang-lab/Vocal-Harmony,
 > then continue."* Read `CLAUDE.md` (architecture, conventions, landmines) alongside this.
 
-**Last updated:** 2026-11-24 · **Build: v53 / harmony-v53** — live on GitHub Pages (Chord-change drill). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v52 `cc2e554` (Monthly check-in). Earlier: v51 `fec77dc` (Harmony in Mandopop). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+**Last updated:** 2026-11-24 · **Build: v54 / harmony-v54** — live on GitHub Pages (Pick it out in your own voice). Builds auto-commit and deploy once verified (CLAUDE.md rule 6). Earlier: v53 `3e0ee64` (Chord changes). Earlier: v52 `cc2e554` (Monthly check-in). Earlier: v51 `fec77dc` (Harmony in Mandopop). Earlier: v50 `d9f3c8c` (Today = daily plan, weekly goal, ear ladder; title is Harmony Path). Earlier: v49 `d310823` (Scale degrees Start/Learn/guide). Earlier: v48 `8299b17` (Ear routine). Earlier: v47 `ba1b894` (Pick It Out). Earlier: v46 `77e6404` (Think-first gap). Earlier: v45 `3365a3c` (Scale-degree drill). Earlier: v44 `9710cb0` (Interval Ear Test). Earlier: v43 `3124b83` (Module 2 rebuild). Earlier: v42 `2e48eec` (leak check + drone volume). Earlier: v41 `cfb743e`. Earlier: v40 `18948de` (UI/UX redesign). Earlier: v39 `d775bb0` (items 4 + 8). Earlier: v38 `d81c694` (items 6 + 7). Earlier: v37 `2bf0334` (pedagogy items 1/2/3/5), v36 `723d206` (tuner-target audit), v34 `eee3853`, v33 `15cad1e`.
+
+## What changed this session (v53 → v54) — Pick it out in your own voice
+Pedagogy gap #2: every drill used synthetic tones; pulling a line out of real voices is harder.
+- Pick it out → Sound: Tones | Your voice (`S.__vx.pref.voice`). Record once (`vxRecordVoice`): the
+  app plays the middle of the range (`vxSampleSemi`), you sing it back on a steady "ah" for 5 s.
+- `vxAnalyse` runs autoCorrelate over the recording (50 ms hops) → `vxSampleCheck` (pure): the
+  longest stretch within 60 cents of the median, needs ≥ 1.5 s in one piece; rejects "quiet" and
+  "wobbly" (slides) with a plain message. Also a loudness gain from the steady stretch's RMS.
+- `S.__vx.voice = {hz, start, len, gain, d}`; audio in IndexedDB 'harmony_bench' as 'vx-voice' (not
+  in Backup — the screen says so). Loaded on open (`vxLoadVoice`).
+- Playback (`vxVoiceNote`): AudioBufferSourceNode, playbackRate = target / sung hz (`vxRate`),
+  looping over the steady stretch, with a short fade in/out. `vxNote` dispatches voice vs tone, used
+  for the pair and the after-miss teaching.
+- Voice streaks are separate (keys end in 'v' via `vxKeyNow`; Progress rows `vxVoiceRows`). A run in
+  voice mode without a loaded sample is blocked with a message rather than silently using tones.
+- Harness: 419 assertions (+11), mutation-tested. Browser: a generated voice-like WAV went through
+  decode → analysis (A#3, 3.5 s steady, start 0.5 s) → IndexedDB → reload → pair played at rates
+  0.840 / 1.334; a sliding sample was rejected and the good one kept.
+- On-device to check: a real "ah" recording on iOS, how natural the shifted voice sounds (formants
+  shift with pitch — kept small by sampling mid-range), and loop clicks on long notes.
 
 ## What changed this session (v52 → v53) — Chord changes drill
 Top gap from the pedagogy review: every drill sat on one home chord, but a harmony note must fit

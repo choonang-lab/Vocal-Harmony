@@ -548,6 +548,9 @@ div.ls{cursor:default;}
 .bm-d{font-family:var(--f-mono);font-size:0.78rem;font-weight:600;color:var(--text);}
 .bm-p{font-size:0.82rem;color:var(--text2);}
 .bm-row .t-row{margin-top:10px;}
+.vx-voice{margin-top:10px;padding:12px;border-radius:12px;background:var(--surface2);}
+.vx-v-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:0.86rem;color:var(--text2);}
+.vx-v-top b{color:var(--text);}
 .et-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:120px;margin-top:12px;}
 .et-bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;}
 .et-bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent-line);}
@@ -568,7 +571,7 @@ window.__getTheme=function(){return p;};})();
 <body>
 <div class="topbar">
 <header class="site-header"><div class="header-inner">
-  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v53</span></div>
+  <div class="logo"><span class="logo-en">Harmony <span>Path</span></span><span class="logo-v" title="build">v54</span></div>
   <button class="icon-btn" id="menuBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" onclick="toggleMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></button>
   <input type="file" id="imp" accept="application/json" style="display:none" onchange="doImport(event)">
 </div></header>
@@ -1798,7 +1801,12 @@ function learnRowsFor(E,LV){
  const keys=[...new Set(L.runs.map(r=>r.k))].sort();
  return keys.map(k=>{const rs=L.runs.filter(r=>r.k===k),lv=LV[parseInt(k,10)];if(!lv)return '';return '<div class="skl"><span class="skl-n">'+lv.name+(k.endsWith('k')?' · hard':'')+'</span><span class="skl-w" style="text-align:left">learn · last '+rs[rs.length-1].n+'/10</span><span class="skl-v">'+(L.best[k]||0)+'/10</span><span class="skl-w">'+rs.length+' session'+(rs.length===1?'':'s')+'</span></div>';}).join('');
 }
-function earProgHTML(){return streakProgHTML(S.__ear,ET_LEVELS,'t','Ear test','openEarTest','Take the ear test')+streakProgHTML(S.__deg,DG_LEVELS,'k','Scale degrees','openDegTest','Take the scale-degree drill',dgLearnRows())+streakProgHTML(S.__chd,CD_LEVELS,'m','Chord changes','openChordTest','Take the chord drill',learnRowsFor(S.__chd,CD_LEVELS))+streakProgHTML(S.__vx,VX_LEVELS,'m','Pick it out','openVoiceX','Take the pick-it-out drill');}
+/* Pick it out in your own voice: its own best per level (+ no-replay) */
+function vxVoiceRows(){
+ const E=S.__vx;if(!E||!E.runs)return '';const keys=[...new Set(E.runs.map(r=>r.k).filter(k=>k.endsWith('v')))].sort();
+ return keys.map(k=>{const lv=VX_LEVELS[parseInt(k,10)];if(!lv)return '';const n=E.runs.filter(r=>r.k===k).length;return '<div class="skl"><span class="skl-n">'+lv.name+(k.indexOf('m')>=0?' · hard':'')+'</span><span class="skl-w" style="text-align:left">your voice</span><span class="skl-v">'+(E.best[k]!=null?E.best[k]:0)+'</span><span class="skl-w">'+n+' run'+(n===1?'':'s')+'</span></div>';}).join('');
+}
+function earProgHTML(){return streakProgHTML(S.__ear,ET_LEVELS,'t','Ear test','openEarTest','Take the ear test')+streakProgHTML(S.__deg,DG_LEVELS,'k','Scale degrees','openDegTest','Take the scale-degree drill',dgLearnRows())+streakProgHTML(S.__chd,CD_LEVELS,'m','Chord changes','openChordTest','Take the chord drill',learnRowsFor(S.__chd,CD_LEVELS))+streakProgHTML(S.__vx,VX_LEVELS,'m','Pick it out','openVoiceX','Take the pick-it-out drill',vxVoiceRows());}
 /* ===================== SCALE-DEGREE DRILL (Practice tab, no mic) =====================
    Harmony singers hear the KEY, not bare intervals: "the melody is on mi, so I sing sol".
    Each round a I–IV–V–I cadence sets a major key, then one note plays; name its degree.
@@ -2026,19 +2034,91 @@ function vxJudge(cap,want,other){
  if(Math.abs(jdFold(hz,freq(other)))<=50)return {ok:false,which:'other',name:name};
  return {ok:false,which:'off',name:name};
 }
-function vxPair(t){tone(vxLow,1.6,t||0,0.2);tone(vxLow+vxIv,1.6,t||0,0.2);}
+/* ---- your own voice (v54) ----
+   One steady "ah" (S.__vx.voice = {hz, start, len, gain, d}; audio in IndexedDB as 'vx-voice') is played
+   through an AudioBufferSourceNode at playbackRate = target / sung pitch, looping over its steadiest
+   stretch. Sung from the middle of the range, the shifts stay small (about ±7 semitones). */
+let vxBuf=null,vxVoiceBusy=false,vxVoiceMsg='';
+function vxPref(){const E=vxStore();if(!E.pref)E.pref={voice:false};return E.pref;}
+function vxVoiceOn(){return !!(vxPref().voice&&vxStore().voice&&vxBuf);}
+function vxKeyNow(){return String(vxLevel)+(vxMem?'m':'')+(vxVoiceOn()?'v':'');}
+/* pure: playback rate that turns a sample sung at hz into semitone semi */
+function vxRate(semi,hz){return freq(semi)/hz;}
+/* pure: the middle of the singer's range — the note to sing the sample on */
+function vxSampleSemi(lo,hi){return Math.round((lo+hi)/2);}
+/* pure: find the steadiest stretch in a pitch track (hz per frame, <=0 = unvoiced).
+   steady = voiced and within 60 cents of the track's median; needs >= 1.5 s of it in one piece. */
+function vxSampleCheck(track,frame){
+ const v=track.filter(h=>h>0);if(v.length<track.length*0.3||v.length*frame<1.5)return {ok:false,reason:'quiet'};
+ const med=jdMed(v);let best=0,bs=0,run=0,rs=0;
+ track.forEach((h,i)=>{const ok=h>0&&Math.abs(1200*Math.log2(h/med))<=60;if(ok){if(!run)rs=i;run++;if(run>best){best=run;bs=rs;}}else run=0;});
+ if(best*frame<1.5)return {ok:false,reason:'wobbly'};
+ return {ok:true,hz:jdMed(track.slice(bs,bs+best)),start:bs*frame,len:best*frame};
+}
+function vxAnalyse(buf){
+ const d=buf.getChannelData(0),sr=buf.sampleRate,hop=Math.round(sr*0.05),win=2048,tr=[];
+ for(let i=0;i+win<=d.length;i+=hop){const h=autoCorrelate(d.subarray(i,i+win),sr,0.32);tr.push(h>0?h:0);}
+ const r=vxSampleCheck(tr,hop/sr);if(!r.ok)return r;
+ let ss=0,n=0;const a=Math.floor(r.start*sr),z=Math.min(d.length,a+Math.floor(r.len*sr));for(let i=a;i<z;i++){ss+=d[i]*d[i];n++;}
+ r.gain=Math.max(0.5,Math.min(8,0.12/Math.max(1e-4,Math.sqrt(ss/Math.max(1,n)))));return r;
+}
+function vxVoiceNote(semi,dur,when,vol){
+ const a=ac(),v=vxStore().voice;if(!vxBuf||!v)return tone(semi,dur,when,vol);
+ const go=()=>{const src=a.createBufferSource(),g=a.createGain(),t=a.currentTime+(when||0),pk=(vol||0.2)*(v.gain||1)/0.2*0.2;
+  src.buffer=vxBuf;src.playbackRate.value=vxRate(semi,v.hz);src.loop=true;src.loopStart=v.start;src.loopEnd=v.start+v.len;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+0.06);g.gain.setValueAtTime(pk,t+dur-0.12);g.gain.linearRampToValueAtTime(0,t+dur);
+  src.connect(g);g.connect(a.destination);src.start(t,v.start);src.stop(t+dur+0.05);};
+ if(a.state==='running')go();else a.resume().then(go).catch(go);
+}
+function vxNote(semi,dur,when,vol){if(vxVoiceOn())vxVoiceNote(semi,dur,when,vol);else tone(semi,dur,when,vol);}
+function vxPair(t){vxNote(vxLow,1.6,t||0,0.2);vxNote(vxLow+vxIv,1.6,t||0,0.2);}
+function vxLoadVoice(){if(vxBuf||!vxStore().voice)return Promise.resolve(!!vxBuf);return bmIdb('readonly',st=>st.get('vx-voice')).then(b=>b?b.arrayBuffer():null).then(ab=>ab?ac().decodeAudioData(ab):null).then(buf=>{vxBuf=buf;return !!buf;}).catch(()=>false);}
+async function vxUseSample(blob,save){
+ let buf;try{buf=await ac().decodeAudioData(await blob.arrayBuffer());}catch(e){vxVoiceMsg='Couldn’t read that recording — try again.';paintVX();return false;}
+ const r=vxAnalyse(buf);
+ if(!r.ok){vxVoiceMsg=r.reason==='quiet'?'I couldn’t hear a note — sing a little louder, close to the phone, and hold it.':'The note wandered — hold one steady “ah” for the whole time, no sliding.';paintVX();return false;}
+ if(save){try{await bmIdb('readwrite',st=>st.put(blob,'vx-voice'));}catch(e){vxVoiceMsg='Couldn’t save the recording on this device.';paintVX();return false;}}
+ vxBuf=buf;const E=vxStore();E.voice={hz:Math.round(r.hz*10)/10,start:Math.round(r.start*100)/100,len:Math.round(r.len*100)/100,gain:Math.round(r.gain*100)/100,d:todayStr()};vxPref().voice=true;persist();
+ vxVoiceMsg='Got it — '+hzToNote(r.hz).name+', '+r.len.toFixed(1)+' s steady. Pairs now play in your voice.';paintVX();return true;
+}
+async function vxRecordVoice(){
+ if(vxVoiceBusy||vxActive)return;
+ if(!window.MediaRecorder){showToast('Recording isn’t supported in this browser');return;}
+ let stream;try{await enterCaptureMode();stream=await getMic();}catch(e){showToast('Allow mic access to record');return;}
+ const mid=vxSampleSemi(vxRange()[0],vxRange()[1]);vxVoiceBusy=true;
+ vxVoiceMsg='Listen to the note…';paintVX();tone(mid,1.2,0.1,0.22);
+ setTimeout(()=>{
+  const mime=recPickMime(),chunks=[];let rec;try{rec=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);}catch(e){vxVoiceBusy=false;vxVoiceMsg='Recording failed — try again.';paintVX();return;}
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+  rec.onstop=()=>{vxVoiceBusy=false;maybeReleaseMic();vxUseSample(new Blob(chunks,{type:rec.mimeType||'audio/webm'}),true);};
+  rec.start();let left=5;vxVoiceMsg='Sing “ah” on that note and hold it… '+left;paintVX();
+  const iv=setInterval(()=>{left--;if(left>0){vxVoiceMsg='Sing “ah” on that note and hold it… '+left;paintVX();}else{clearInterval(iv);vxVoiceMsg='Checking…';paintVX();try{rec.stop();}catch(e){}}},1000);
+ },1500);
+}
+function setVXSound(voice){if(vxActive||vxVoiceBusy)return;vxPref().voice=!!voice;persist();vxVoiceMsg='';vxState='idle';paintVX();}
+function vxHearSample(){if(!vxBuf)return;const v=vxStore().voice,m=vxSampleSemi(vxRange()[0],vxRange()[1]);vxVoiceNote(m,1.2,0.05,0.2);vxVoiceNote(m+4,1.2,1.4,0.2);vxVoiceNote(m,1.2,2.8,0.2);vxVoiceNote(m+4,1.2,2.8,0.2);}
+function vxVoiceHTML(){
+ const E=vxStore(),v=E.voice,on=vxPref().voice;
+ let h='<div class="seg" role="group" aria-label="Sound" style="margin-top:12px">'+[['Tones',false],['Your voice',true]].map(m=>'<button class="seg-b" aria-pressed="'+(on===m[1])+'"'+(vxActive||vxVoiceBusy?' disabled':'')+' onclick="setVXSound('+m[1]+')">'+m[0]+'</button>').join('')+'</div>';
+ if(!on)return h+'<div class="et-sub">Plain tones. “Your voice” is harder — a real voice wobbles and blends.</div>';
+ h+='<div class="vx-voice">';
+ if(v&&vxBuf)h+='<div class="vx-v-top"><span>Your sample: <b>'+hzToNote(v.hz).name+'</b> · '+v.d+'</span><span class="t-row" style="margin:0"><button class="tbtn tog" onclick="vxHearSample()">'+ico('play')+'Hear it</button><button class="tbtn tog" onclick="vxRecordVoice()"'+(vxVoiceBusy?' disabled':'')+'>Re-record</button></span></div>';
+ else if(v)h+='<p class="card-sub" style="margin:0">Loading your saved sample ('+hzToNote(v.hz).name+')…</p>';
+ else h+='<p class="card-sub" style="margin:0 0 10px">Record your voice once: the app plays a note from the middle of your range — sing it back on a steady “ah” and hold it for 5 seconds. It becomes both notes of every pair.</p><button class="tbtn" onclick="vxRecordVoice()"'+(vxVoiceBusy?' disabled':'')+'>'+ico('mic')+'Record my voice</button>';
+ return h+(vxVoiceMsg?'<div class="et-msg" role="status">'+vxVoiceMsg+'</div>':'')+'<p class="t-hint" style="margin-top:8px">Earphones in. The sample stays on this phone (not in Backup).</p></div>';
+}
 function vxClear(){if(vxT1)clearTimeout(vxT1);if(vxT2)clearTimeout(vxT2);vxT1=vxT2=null;}
 function resetVX(){vxClear();vxActive=false;vxState='idle';vxCap=[];}
 function openVoiceX(){
  curId=null;stopDrone();stopPitch();clearTarget();resetVX();
  document.getElementById('dCrumb').textContent='Practice · Pick it out';
  document.getElementById('dBody').innerHTML='<h1 class="d-title">Pick It Out</h1><div class="d-focus">Two notes sound together. Sing the low one, then the high one. This is hearing your own line inside a harmony. One miss ends the run.</div><div class="d-section">'+tunerHTML('tuner_vx')+'</div><div id="vxBody"></div>';
- paintVX();
+ vxVoiceMsg='';paintVX();vxLoadVoice().then(()=>paintVX());
  document.getElementById('scrim').classList.add('open');document.getElementById('detail').classList.add('open');document.body.style.overflow='hidden';document.getElementById('detail').scrollTop=0;
 }
 function setVXLevel(l){if(vxActive)return;vxLevel=l;vxState='idle';paintVX();}
 function toggleVXMem(){if(vxActive)return;vxMem=!vxMem;vxState='idle';paintVX();}
-function startVX(){if(!pdActive){showToast('Turn on the tuner first');return;}clearTarget();vxActive=true;vxStreak=0;vxLow=99;nextVX();}
+function startVX(){if(!pdActive){showToast('Turn on the tuner first');return;}if(vxPref().voice&&!vxBuf){showToast(vxStore().voice?'Your voice sample is still loading':'Record your voice first — or switch to Tones');return;}clearTarget();vxActive=true;vxStreak=0;vxLow=99;nextVX();}
 function nextVX(){
  vxClear();const r=vxRange(),p=vxPick(VX_LEVELS[vxLevel].choices,vxLow,r[0],r[1]);vxLow=p.low;vxIv=p.iv;
  vxState='play';paintVX('Round '+(vxStreak+1)+' — listen to both notes…');vxPair(0);
@@ -2064,20 +2144,21 @@ function judgeVX(noAttempt){
  }
  if(r.ok){vxStreak++;paintVX('✓ Both notes — '+vxStreak+' in a row');vxT1=setTimeout(nextVX,1100);return;}
  vxActive=false;vxState='over';
- const rec=etRecord(vxStore(),String(vxLevel)+(vxMem?'m':''),vxStreak,todayStr());markDayActive();planTick('harm');persist();
+ const rec=etRecord(vxStore(),vxKeyNow(),vxStreak,todayStr());markDayActive();planTick('harm');persist();
  const pn=part==='low'?'low':'high',on=part==='low'?'high':'low';
  const why=r.which==='none'?'No note heard':(r.which==='other'?'✗ '+r.name+' is the '+on+' note — you wanted the '+pn+' one ('+nlabel(want)+')':'✗ You sang '+r.name+' — the '+pn+' note was '+nlabel(want));
  paintVX(why+'. Run over: '+vxStreak+' in a row'+(rec.newBest?' — a new best!':'.'));
  vxTeach(0.5);
 }
-function vxTeach(t){vxPair(t);tone(vxLow,0.8,t+1.9,0.22);tone(vxLow+vxIv,0.8,t+2.8,0.22);}   // together, then low, then high
+function vxTeach(t){vxPair(t);vxNote(vxLow,0.8,t+1.9,0.22);vxNote(vxLow+vxIv,0.8,t+2.8,0.22);}   // together, then low, then high
 function stopVX(){if(!vxActive)return;resetVX();paintVX('Run stopped — not recorded.');}
 function paintVX(msg){
  const el=document.getElementById('vxBody');if(!el)return;
- const store=vxStore(),key=String(vxLevel)+(vxMem?'m':''),best=store.best[key]||0,L=VX_LEVELS[vxLevel],dis=vxActive?' disabled':'';
+ const store=vxStore(),key=vxKeyNow(),best=store.best[key]||0,L=VX_LEVELS[vxLevel],dis=vxActive?' disabled':'';
  let h='<div class="tool-panel">';
  h+='<div class="seg" role="group" aria-label="Level">'+[1,2,3].map(l=>'<button class="seg-b" aria-pressed="'+(vxLevel===l)+'"'+dis+' onclick="setVXLevel('+l+')">'+VX_LEVELS[l].name+'</button>').join('')+'</div>';
  h+='<div class="et-sub">'+L.sub+'</div>';
+ h+=vxVoiceHTML();
  h+='<div class="t-row" style="justify-content:center"><button class="tbtn tog'+(vxMem?' on':'')+'" aria-pressed="'+vxMem+'"'+dis+' onclick="toggleVXMem()">No replay before the high note (harder)</button></div>';
  h+='<div class="et-score"><div><div class="et-n">'+vxStreak+'</div><div class="kpi-l">In a row</div></div><div><div class="et-n et-best">'+best+'</div><div class="kpi-l">Your best here</div></div></div>';
  if(vxActive){
@@ -2087,7 +2168,7 @@ function paintVX(msg){
   if(vxState==='over')h+='<div class="t-row" style="justify-content:center;margin-top:10px"><button class="tbtn tog" onclick="vxTeach(0)">'+ico('play')+'Hear them together, then apart</button></div>';
  }
  h+='<div class="et-msg" role="status">'+(msg||'')+'</div><div class="t-hint">Turn the tuner on first. Earphones in — the played notes must not reach the mic. Sing either note in your own octave; it still counts.</div></div>';
- el.innerHTML=h+etHistoryHTML(store,key,best,L.name+(vxMem?' · no replay':''));
+ el.innerHTML=h+etHistoryHTML(store,key,best,L.name+(vxMem?' · no replay':'')+(vxVoiceOn()?' · your voice':''));
 }
 /* ===================== M2 · EAR TEST (2.3 — locked vs off) =====================
    A listening quiz (no mic): plays a root + a third together — either a beatless

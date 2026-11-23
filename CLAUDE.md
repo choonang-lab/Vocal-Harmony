@@ -115,6 +115,8 @@ melody), plus the Module-0 range probe.
 - **Pick It Out** (v47, `openVoiceX`, `vx*`, `S.__vx`) is the one streak test that uses the mic:
   `feedVX` hangs off the pitch loop beside `feedJump`; `vxJudge` is its pure scorer (folds octaves,
   names the other note). It shares `etRecord`/`etHistoryHTML`/`streakProgHTML` like the others.
+  v54: optional own-voice sound — one sampled "ah" (`S.__vx.voice`, IndexedDB 'vx-voice') pitch-shifted by
+  playbackRate; always play pair notes through `vxNote`, never `tone` directly, or voice mode breaks.
 - Shared pure scorers — **reuse, don't duplicate:** `classifyMemory` (best-fit transposition),
   `classifyHarmony` (on-harmony vs collapse-onto-melody), `classifyImprov` (consonance + direction).
 - Multi-drill lessons: `rowRunOk` matches run-type to check-type so a memory run and a harmony
